@@ -1,0 +1,36 @@
+// src/services/authAPI.js
+import axios from 'axios';
+
+// Set the base URL for your Flask API. If your frontend and backend
+// are on different ports (e.g., 3000 and 5000), use the full URL here.
+// If you're using a proxy setup, '/api' is fine.
+const API_URL = 'http://localhost:5000/api'; 
+
+// --- Authentication Service Functions ---
+
+const register = async (userData) => {
+  const response = await axios.post(`${API_URL}/register`, userData);
+  
+  // Assuming successful registration returns user data or a success message.
+  // We don't save the user to localStorage here; that's done in the thunk (authSlice).
+  return response.data;
+};
+
+const login = async (userData) => {
+  const response = await axios.post(`${API_URL}/login`, userData);
+  
+  // Store the user data (or token/JWT) in localStorage upon successful login
+  if (response.data.user) {
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+  }
+  return response.data;
+};
+
+// --- Export the Service ---
+
+const authService = {
+  register,
+  login,
+};
+
+export default authService;

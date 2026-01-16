@@ -1,0 +1,20 @@
+# Web framework
+Flask
+Flask-CORS
+
+# Environment variables
+python-dotenv
+
+# Database
+pymongo
+
+# NLP / Embeddings
+sentence-transformers
+scikit-learn
+numpy
+
+# Translation
+deep-translator
+
+# LLM / API
+openai
