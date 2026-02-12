@@ -1,13 +1,23 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import jobSeekerImg from "../assets/job-seeker.jpg";
 import jobProviderImg from "../assets/job-provider.jpg";
-import NavbarLoggedIn from "../components/NavbarLoggedIn";
+import Navbar from "../components/Navbar";
 
 export default function Home() {
+  const navigate = useNavigate();
+
+  const handleJobSeekerClick = () => {
+    navigate('/job-seeker-dashboard');
+  };
+
+  const handleJobProviderClick = () => {
+    navigate('/job-provider-dashboard');
+  };
+
   return (
     <>
-      <NavbarLoggedIn />
+      <Navbar />
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center bg-gradient-to-br from-pink-100 via-blue-50 to-purple-100 px-4 py-8">
         
         {/* Header Section */}
@@ -24,9 +34,9 @@ export default function Home() {
         <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8 px-4">
           
           {/* Job Seeker Card */}
-          <Link 
-            to="/find-job" 
-            className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105"
+          <button 
+            onClick={handleJobSeekerClick}
+            className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 cursor-pointer text-left w-full"
           >
             <div className="absolute inset-0 bg-pink-500 opacity-0 group-hover:opacity-5 transition-opacity duration-500"></div>
             
@@ -62,12 +72,12 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </Link>
+          </button>
 
           {/* Job Provider Card */}
-          <Link 
-            to="/offer-job" 
-            className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105"
+          <button 
+            onClick={handleJobProviderClick}
+            className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 cursor-pointer text-left w-full"
           >
             <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-5 transition-opacity duration-500"></div>
             
@@ -103,7 +113,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </Link>
+          </button>
 
         </div>
 

@@ -40,6 +40,7 @@ const Login = () => {
           placeholder="Email"
           className="w-full p-2 mb-3 border rounded"
           onChange={handleChange}
+          autocomplete="email"
           required
         />
 
@@ -49,6 +50,7 @@ const Login = () => {
           placeholder="Password"
           className="w-full p-2 mb-4 border rounded"
           onChange={handleChange}
+          autocomplete="current-password"
           required
         />
 

@@ -1,7 +1,36 @@
-import React from 'react';
-import { Sparkles, User, Home } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, User, Home, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export default function Navbar({ isLoggedIn = false, userProfile = null }) {
+export default function Navbar() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const userFromStorage = JSON.parse(localStorage.getItem('user'));
+    setUser(userFromStorage);
+  }, []);
+
+  // Function to get user initials
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name[0].toUpperCase();
+  };
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setUser(null);
+    setShowDropdown(false);
+    navigate('/');
+  };
+
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50 border-b-2 border-pink-200">
       <div className="px-6 py-4 w-full">
@@ -18,14 +47,14 @@ export default function Navbar({ isLoggedIn = false, userProfile = null }) {
 
           {/* Menu */}
           <div className="flex items-center space-x-8">
-            {isLoggedIn ? (
+            {user ? (
               // Logged In Menu
               <>
                 <a 
-                  href="/" 
+                  href="/home" 
                   className="flex items-center text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
                 >
-                  <HomeIcon size={18} className="mr-1.5" />
+                  <Home size={18} className="mr-1.5" />
                   Home
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
                 </a>
@@ -36,26 +65,48 @@ export default function Navbar({ isLoggedIn = false, userProfile = null }) {
                   Features
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
                 </a>
-                <a href="/profile" className="flex items-center space-x-2 group">
-                  {userProfile?.image ? (
-                    <img 
-                      src={userProfile.image} 
-                      alt="Profile" 
-                      className="w-10 h-10 rounded-full border-2 border-pink-500 group-hover:border-pink-600 group-hover:scale-110 transition-all duration-300 object-cover"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full border-2 border-pink-500 bg-pink-100 flex items-center justify-center group-hover:border-pink-600 group-hover:scale-110 transition-all duration-300">
-                      <User size={20} className="text-pink-600" />
+                <a 
+                  href="#contact" 
+                  className="text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
+                >
+                  Contact
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
+                </a>
+
+                {/* Profile Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="w-10 h-10 rounded-full border-2 border-pink-500 bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold hover:border-pink-600 hover:scale-110 transition-all duration-300 cursor-pointer"
+                    title={user.name}
+                  >
+                    {getInitials(user.name)}
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-pink-200 overflow-hidden z-50">
+                      <div className="px-4 py-3 border-b border-pink-100 bg-gradient-to-r from-pink-50 to-purple-50">
+                        <p className="font-semibold text-gray-800">{user.name}</p>
+                        <p className="text-sm text-gray-600">{user.email}</p>
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 font-medium flex items-center space-x-2 transition-colors duration-200"
+                      >
+                        <LogOut size={18} />
+                        <span>Logout</span>
+                      </button>
                     </div>
                   )}
-                </a>
+                </div>
               </>
             ) : (
               // Logged Out Menu
               <>
                 <a 
                   href="#features" 
-                  className=" text-lg text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
+                  className="text-lg text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
                 >
                   Features
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>

@@ -1,11 +1,39 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import FeaturesSlider from "../components/FeaturesSlider";
 import Footer from "../components/Footer";
 import heroImg from "../assets/women-hero.jpg";
-import { FaBriefcase, FaBullhorn, FaStar } from "react-icons/fa";
+import { FaBriefcase, FaBullhorn } from "react-icons/fa";
 
 export default function Landing() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleJobSeekerClick = () => {
+    if (user) {
+      navigate('/job-seeker-dashboard');
+    } else {
+      navigate('/register?role=job-seeker');
+    }
+  };
+
+  const handleJobProviderClick = () => {
+    if (user) {
+      navigate('/job-provider-dashboard');
+    } else {
+      navigate('/register?role=job-provider');
+    }
+  };
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -50,35 +78,26 @@ export default function Landing() {
     </motion.p>
 
     <motion.div
-      className="grid grid-cols-1 sm:grid-cols-3 gap-6"
+      className="grid grid-cols-1 sm:grid-cols-2 gap-6"
       variants={fadeInUp}
     >
-      <a
-        href="/register?role=job-seeker"
-        className="bg-white text-black p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition text-center"
+      <button
+        onClick={handleJobSeekerClick}
+        className="bg-white text-black p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition text-center cursor-pointer"
       >
         <FaBriefcase className="mx-auto text-pink-500 text-4xl mb-4" />
         <h3 className="text-xl font-semibold mb-2">Find Work</h3>
         <p className="text-gray-600 text-sm">Jobs that fit your life.</p>
-      </a>
+      </button>
 
-      <a
-        href="/register?role=job-provider"
-        className="bg-white text-black p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition text-center"
+      <button
+        onClick={handleJobProviderClick}
+        className="bg-white text-black p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition text-center cursor-pointer"
       >
         <FaBullhorn className="mx-auto text-purple-500 text-4xl mb-4" />
         <h3 className="text-xl font-semibold mb-2">Offer Work</h3>
         <p className="text-gray-600 text-sm">Share opportunities and hire.</p>
-      </a>
-
-      <a
-        href="/register?role=entrepreneur"
-        className="bg-white text-black p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition text-center"
-      >
-        <FaStar className="mx-auto text-blue-500 text-4xl mb-4" />
-        <h3 className="text-xl font-semibold mb-2">Entrepreneur</h3>
-        <p className="text-gray-600 text-sm">Showcase services & business.</p>
-      </a>
+      </button>
     </motion.div>
   </motion.div>
 </section>

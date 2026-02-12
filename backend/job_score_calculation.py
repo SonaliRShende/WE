@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from bson import ObjectId
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from datetime import datetime
@@ -9,24 +10,41 @@ from datetime import datetime
 # Load environment variables
 load_dotenv()
 
-# Initialize MongoDB connection
-MONGO_URI = os.getenv("MONGO_URI")
-if not MONGO_URI:
-    print("❌ ERROR: MONGO_URI not found in .env file.")
-    exit()
+# Global variables for lazy loading
+mongo_client = None
+db = None
+js_embeddings_collection = None
+jp_embeddings_collection = None
+job_scores_collection = None
 
-try:
-    mongo_client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
-    mongo_client.admin.command('ping')
-    print("✅ Connected to MongoDB Atlas!")
-except Exception as e:
-    print("❌ MongoDB Connection failed:", e)
-    exit()
 
-db = mongo_client['skill_constraint_db']
-js_embeddings_collection = db['JS_embeddings']   # Job seeker embeddings
-jp_embeddings_collection = db['JP_embeddings']   # Job posting embeddings
-job_scores_collection = db['job_scores']         # Store computed scores
+def get_db():
+    """Lazy load MongoDB connection only when needed"""
+    global mongo_client, db, js_embeddings_collection, jp_embeddings_collection, job_scores_collection
+    
+    if mongo_client is None:
+        MONGO_URI = os.getenv("MONGO_URI")
+        if not MONGO_URI:
+            raise Exception("❌ ERROR: MONGO_URI not found in .env file.")
+        
+        try:
+            mongo_client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
+            mongo_client.admin.command('ping')
+            print("✅ Connected to MongoDB Atlas!")
+        except Exception as e:
+            raise Exception(f"❌ MongoDB Connection failed: {e}")
+        
+        db = mongo_client['skill_constraint_db']
+        js_embeddings_collection = db['JS_embeddings']
+        jp_embeddings_collection = db['JP_embeddings']
+        job_scores_collection = db['job_scores']
+    
+    return {
+        'db': db,
+        'js_embeddings': js_embeddings_collection,
+        'jp_embeddings': jp_embeddings_collection,
+        'job_scores': job_scores_collection
+    }
 
 
 def calculate_cosine_similarity(embedding1, embedding2):
@@ -169,14 +187,31 @@ def calculate_job_score(skill_score, constraint_score, weight_skill=0.7, weight_
 def generate_job_recommendations(user_id):
     """
     Generate ranked job recommendations for a user.
+    Now uses user_id for lookup and storage.
     """
     print("\n" + "=" * 60)
     print(f"Generating Job Recommendations for User: {user_id}")
     print("=" * 60)
 
-    user_doc = js_embeddings_collection.find_one({"application_id": user_id})
+    collections = get_db()
+    js_embeddings_collection = collections['js_embeddings']
+    jp_embeddings_collection = collections['jp_embeddings']
+    job_scores_collection = collections['job_scores']
+
+    # Convert string user_id to ObjectId for DB lookup
+    try:
+        if isinstance(user_id, str):
+            user_id_obj = ObjectId(user_id)
+        else:
+            user_id_obj = user_id
+    except Exception as e:
+        print(f"❌ Invalid user_id format: {user_id} - {e}")
+        return []
+
+    # Look up by user_id (now as ObjectId)
+    user_doc = js_embeddings_collection.find_one({"user_id": user_id_obj})
     if not user_doc:
-        print("❌ User embeddings not found")
+        print(f"❌ User embeddings not found for user_id: {user_id}")
         return []
 
     user_skills = user_doc.get('skills_embeddings', [])
@@ -197,7 +232,8 @@ def generate_job_recommendations(user_id):
         job_score = calculate_job_score(skill_score, constraint_score)
 
         job_scores_list.append({
-            "job_id": job.get('posting_id'),
+            "job_id": str(job.get('_id', '')),
+            "posting_id": str(job.get('posting_id', '')),
             "job_title": job.get('jobTitle', 'Unknown'),
             "company": job.get('company', 'Unknown'),
             "skill_score": skill_score,
@@ -214,16 +250,14 @@ def generate_job_recommendations(user_id):
     print("-" * 60)
 
     for idx, job in enumerate(ranked_jobs, start=1):
-        print(f"\n{idx}. Job Title : {job['job_title']}")
-        print(f"   skill score : {job['skill_score']:.3f}")
-        print(f"   constraints score : {job['constraint_score']:.3f}")
-        print(f"   Job score : {job['job_score']:.3f}")
+        print(f"{idx}. {job['job_title']} at {job['company']}")
+        print(f"   Score: {job['job_score']:.2%} | Skills: {job['skill_score']:.2%} | Constraints: {job['constraint_score']:.2%}\n")
 
-    # 4️⃣ Store results in DB
+    # 4️⃣ Store results in DB with user_id (as ObjectId)
     job_scores_collection.update_one(
-        {"user_id": user_id},
+        {"user_id": user_id_obj},
         {"$set": {
-            "user_id": user_id,
+            "user_id": user_id_obj,
             "ranked_jobs": ranked_jobs,
             "generated_at": datetime.now(),
             "total_jobs_evaluated": len(ranked_jobs)
@@ -239,8 +273,21 @@ def main():
     print("JOB SCORE CALCULATION SERVICE")
     print("=" * 60)
 
-    for user in js_embeddings_collection.find():
-        generate_job_recommendations(user.get('application_id'))
+    try:
+        collections = get_db()
+        js_embeddings_collection = collections['js_embeddings']
+        
+        # Iterate through all users and generate recommendations using user_id
+        for user_embedding_doc in js_embeddings_collection.find():
+            user_id = user_embedding_doc.get('user_id')
+            if user_id:
+                generate_job_recommendations(str(user_id))
+            else:
+                print(f"⚠️  Skipping document with no user_id: {user_embedding_doc.get('_id')}")
+    except Exception as e:
+        print(f"❌ ERROR in main: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

@@ -21,6 +21,8 @@ const Register = () => {
     e.preventDefault();
     const result = await dispatch(registerUser(formData));
     if (registerUser.fulfilled.match(result)) {
+      // Successfully registered - user is now in localStorage
+      // Redirect to /home where the navbar will auto-detect the logged-in user
       navigate("/home");
     }
   };

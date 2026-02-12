@@ -11,8 +11,11 @@ const API_URL = 'http://localhost:5000/api';
 const register = async (userData) => {
   const response = await axios.post(`${API_URL}/register`, userData);
   
-  // Assuming successful registration returns user data or a success message.
-  // We don't save the user to localStorage here; that's done in the thunk (authSlice).
+  // Save user to localStorage after successful registration
+  // Backend returns: { message, user: { name, email, id } }
+  if (response.data.user) {
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+  }
   return response.data;
 };
 

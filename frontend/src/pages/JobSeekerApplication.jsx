@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Upload, X, ArrowLeft, Loader, Globe } from 'lucide-react';
-import NavbarLoggedIn from "../components/NavbarLoggedIn";
+import Navbar from "../components/Navbar";
 
 const initialFormData = {
   name: '', email: '', contact: '', location: '', profilePic: null,
@@ -104,8 +104,24 @@ const InputField = ({ label, field, value, placeholder, type = "text", rows, man
   </div>
 );
 
-export default function JobSeekerApplication() {
-  const [formData, setFormData] = useState(initialFormData);
+export default function JobSeekerApplication({ existingData = null, onSuccess = null }) {
+  // If existingData provided, pre-fill the form
+  const [formData, setFormData] = useState(existingData ? {
+    name: existingData.name || '',
+    email: existingData.email || '',
+    contact: existingData.contact || '',
+    location: existingData.location || '',
+    profilePic: null,
+    qualification: existingData.qualification || '',
+    skills: existingData.skills || '',
+    previousJob: existingData.previousJob || '',
+    roles: existingData.roles || '',
+    skillsApplied: existingData.skillsApplied || '',
+    certifications: existingData.certifications || '',
+    portfolio: existingData.portfolio || '',
+    preferences: existingData.preferences || ''
+  } : initialFormData);
+  
   const [profilePreview, setProfilePreview] = useState(null);
   const [voiceState, setVoiceState] = useState({ state: 'idle', field: null });
   const [selectedLanguage, setSelectedLanguage] = useState('en-IN');
@@ -147,7 +163,16 @@ const handleSubmit = async (e) => {
         return;
     }
 
+    // Get user ID from localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) {
+        alert('User session not found. Please login again.');
+        return;
+    }
+
     const { profilePic, ...dataToSend } = formData; 
+    // include base64 preview if available so backend can persist image
+    const dataWithUserId = { ...dataToSend, user_id: user.id, profile_pic: profilePreview || null };
     
     try {
         const response = await fetch('http://127.0.0.1:5000/api/submit-application', {
@@ -155,14 +180,42 @@ const handleSubmit = async (e) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(dataToSend), // Send the form data as JSON
+            body: JSON.stringify(dataWithUserId), // Send the form data with user_id
         });
 
         const result = await response.json();
 
         if (response.ok) {
             console.log('Server Response:', result);
-            alert('✅ Application submitted successfully and stored in Atlas!');
+            alert('✅ Application submitted successfully!');
+            
+            // NEW: Generate embeddings after successful submission
+            try {
+                const embeddingResponse = await fetch(
+                    `http://127.0.0.1:5000/api/generate-embeddings/${user.id}`,
+                    { method: 'POST' }
+                );
+                const embeddingResult = await embeddingResponse.json();
+                console.log('✅ Embeddings generated:', embeddingResult);
+            } catch (embError) {
+                console.error('Embedding generation warning:', embError);
+            }
+            
+            // Reset form
+            setFormData(initialFormData);
+            setProfilePreview(null);
+            
+            // Call onSuccess callback if provided (for dashboard)
+            if (onSuccess) {
+              onSuccess();
+            }
+            
+            // Redirect to dashboard after brief delay
+            setTimeout(() => {
+                const navigate = require('react-router-dom').useNavigate;
+                // Use window navigation as fallback
+                window.location.href = '/job-seeker-dashboard';
+            }, 1500);
             
         } else {
             // Handle server-side validation or errors
@@ -301,7 +354,7 @@ const toggleVoiceInput = (field) => {
 };
   return (
     <>
-      <NavbarLoggedIn />
+      <Navbar />
       
       <VoiceFeedbackModal voiceState={voiceState} toggleVoiceInput={toggleVoiceInput} />
       

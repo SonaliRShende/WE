@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Upload, X, ArrowLeft, Loader, Globe } from 'lucide-react';
-import NavbarLoggedIn from "../components/NavbarLoggedIn";
+import Navbar from "../components/Navbar";
 
 const initialFormData = {
   // Personal Information
@@ -135,9 +135,31 @@ const InputField = ({ label, field, value, placeholder, type = "text", rows, man
   </div>
 );
 
-export default function JobProviderApplication() {
-  const [formData, setFormData] = useState(initialFormData);
-  const [logoPreview, setLogoPreview] = useState(null);
+export default function JobProviderApplication({ existingData = null, onSuccess = null }) {
+  const [formData, setFormData] = useState(existingData ? {
+    name: existingData.name ?? '',
+    age: existingData.age ?? '',
+    phoneNumber: existingData.phoneNumber ?? existingData.phone_number ?? '',
+    email: existingData.email ?? '',
+    companyName: existingData.companyName ?? existingData.company_name ?? '',
+    companyLogo: null,
+    jobTitle: existingData.jobTitle ?? existingData.job_title ?? '',
+    jobCategory: existingData.jobCategory ?? existingData.job_category ?? '',
+    jobDescription: existingData.jobDescription ?? existingData.job_description ?? '',
+    experienceRequired: existingData.experienceRequired ?? existingData.experience_required ?? '',
+    salaryMin: existingData.salaryMin ?? existingData.salary_min ?? '',
+    salaryMax: existingData.salaryMax ?? existingData.salary_max ?? '',
+    salaryType: existingData.salaryType ?? existingData.salary_type ?? 'yearly',
+    jobLocation: existingData.jobLocation ?? existingData.job_location ?? '',
+    jobType: existingData.jobType ?? existingData.job_type ?? 'full-time',
+    benefits: existingData.benefits ?? '',
+    applicationDeadline: existingData.applicationDeadline ?? existingData.application_deadline ?? '',
+    requiredQualifications: existingData.requiredQualifications ?? existingData.required_qualifications ?? ''
+  } : initialFormData);
+
+  const [logoPreview, setLogoPreview] = useState(
+    existingData && (existingData.company_logo || existingData.companyLogo) ? (existingData.company_logo || existingData.companyLogo) : null
+  );
   const [voiceState, setVoiceState] = useState({ state: 'idle', field: null });
   const [selectedLanguage, setSelectedLanguage] = useState('en-IN');
   const processingRef = useRef(false); 
@@ -176,7 +198,16 @@ export default function JobProviderApplication() {
       return;
     }
 
+    // Get user ID from localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) {
+      alert('User session not found. Please login again.');
+      return;
+    }
+
     const { companyLogo, ...dataToSend } = formData; 
+    // include base64 preview if available so backend can persist image
+    const dataWithUserId = { ...dataToSend, user_id: user.id, company_logo: logoPreview || null };
     
     try {
       const response = await fetch('http://127.0.0.1:5000/api/submit-job-posting', {
@@ -184,7 +215,7 @@ export default function JobProviderApplication() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify(dataWithUserId),
       });
 
       const result = await response.json();
@@ -194,6 +225,11 @@ export default function JobProviderApplication() {
         alert('✅ Job posting submitted successfully!');
         setFormData(initialFormData);
         setLogoPreview(null);
+        
+        // Redirect to provider dashboard after brief delay
+        setTimeout(() => {
+            window.location.href = '/job-provider-dashboard';
+        }, 1500);
       } else {
         console.error('Submission failed:', result.error);
         alert(`❌ Job posting submission failed: ${result.error || 'Server error'}`);
@@ -353,7 +389,7 @@ export default function JobProviderApplication() {
 
   return (
     <>
-      <NavbarLoggedIn />
+      <Navbar />
       
       <VoiceFeedbackModal voiceState={voiceState} toggleVoiceInput={toggleVoiceInput} />
       
