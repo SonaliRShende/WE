@@ -97,6 +97,7 @@ function UnavailableData({ message, onBack }) {
 
 // Component to view job applications received
 function ViewJobApplications({ userId, onBack, hasJobPosting }) {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -138,6 +139,10 @@ function ViewJobApplications({ userId, onBack, hasJobPosting }) {
     }
   };
 
+  const handleSeekerClick = (seekerId) => {
+    navigate(`/view-seeker/${seekerId}`);
+  };
+
   if (loading) return <div className="text-center mt-8 text-lg text-gray-600">Loading applications...</div>;
   if (error) return <div className="text-center mt-8 text-lg text-red-600">{error}</div>;
   if (!applications.length) return (
@@ -167,34 +172,22 @@ function ViewJobApplications({ userId, onBack, hasJobPosting }) {
       <p className="text-gray-600 mb-8">Found {applications.length} seeker(s) matching your job requirements</p>
       <div className="space-y-5">
         {applications.slice(page * perPage, (page + 1) * perPage).map((seeker, idx) => (
-          <div key={idx} className="border-3 border-gradient rounded-xl overflow-hidden hover:shadow-lg transition bg-white">
+          <div 
+            key={idx} 
+            onClick={() => handleSeekerClick(seeker.seeker_id)}
+            className="border-3 border-gradient rounded-xl overflow-hidden hover:shadow-lg transition bg-white cursor-pointer hover:border-blue-400"
+          >
             <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 border-b-3 border-blue-200">
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="text-2xl font-bold text-gray-800">{seeker.seeker_name}</h3>
                   <p className="text-lg text-gray-600 mt-1">📧 {seeker.seeker_email}</p>
                 </div>
-                <div className="text-right">
-                  <div className="text-4xl font-bold text-blue-600">{seeker.match_score}%</div>
-                  <p className="text-sm text-gray-600 mt-1">Match Score</p>
-                </div>
               </div>
             </div>
             
             <div className="p-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
-                  <p className="text-sm font-semibold text-purple-600 mb-2">Skills Matched</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-purple-600">{seeker.skills_count}</span>
-                    <span className="text-gray-600">skills</span>
-                  </div>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
-                  <p className="text-sm font-semibold text-green-600 mb-2">Status</p>
-                  <p className="text-lg font-bold text-green-600">Available</p>
-                </div>
-              </div>
+              <p className="text-gray-600">Click to view full profile</p>
             </div>
           </div>
         ))}

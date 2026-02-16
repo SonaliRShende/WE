@@ -1,4 +1,5 @@
 import os
+import traceback
 from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -70,6 +71,8 @@ def embed_specific_job_seeker(user_id):
     try:
         from bson import ObjectId
         
+        print(f"[{datetime.now()}] embed_specific_job_seeker START - user_id: {user_id}")
+        
         collections = get_db()
         model_instance = get_model()
         applications_collection = collections['applications']
@@ -78,16 +81,17 @@ def embed_specific_job_seeker(user_id):
         # Convert string to ObjectId if needed
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
+            print(f"[{datetime.now()}] Converted user_id to ObjectId: {user_id}")
         
         # Fetch only this user's application
         app = applications_collection.find_one({"user_id": user_id})
         
         if not app:
-            print(f"⚠️  No application found for user_id: {user_id}")
+            print(f"[{datetime.now()}] ⚠️  No application found for user_id: {user_id}")
             return False
         
         app_id = app['_id']
-        print(f"\n[SELECTIVE] Embedding job seeker: {user_id}")
+        print(f"[{datetime.now()}] [SELECTIVE] Embedding job seeker: {user_id}, app_id: {app_id}")
         
         embeddings_data = {
             "application_id": app_id,
@@ -104,7 +108,7 @@ def embed_specific_job_seeker(user_id):
         
         # Process Skills
         if 'structured_skills' in app and app['structured_skills']:
-            print(f"  ✓ Embedding {len(app['structured_skills'])} skills...")
+            print(f"[{datetime.now()}]   ✓ Embedding {len(app['structured_skills'])} skills...")
             for skill in app['structured_skills']:
                 skill_name = skill.get('skill_name', '')
                 if skill_name:
@@ -113,10 +117,11 @@ def embed_specific_job_seeker(user_id):
                         "skill_name": skill_name,
                         "embedding": embedding
                     })
+                    print(f"[{datetime.now()}]     - Embedded skill: {skill_name}")
         
         # Process Constraints
         if 'structured_constraints' in app and app['structured_constraints']:
-            print(f"  ✓ Embedding {len(app['structured_constraints'])} constraints...")
+            print(f"[{datetime.now()}]   ✓ Embedding {len(app['structured_constraints'])} constraints...")
             for constraint in app['structured_constraints']:
                 constraint_text = constraint.get('constraint_text', '')
                 if constraint_text:
@@ -125,11 +130,12 @@ def embed_specific_job_seeker(user_id):
                         "constraint_text": constraint_text,
                         "embedding": embedding
                     })
+                    print(f"[{datetime.now()}]     - Embedded constraint: {constraint_text}")
         
         # Process Qualification
         qualification = app.get('qualification', '')
         if qualification:
-            print(f"  ✓ Embedding qualification: {qualification}")
+            print(f"[{datetime.now()}]   ✓ Embedding qualification: {qualification}")
             embedding = model_instance.encode(qualification).tolist()
             embeddings_data['qualification_embedding'] = {
                 "qualification": qualification,
@@ -139,7 +145,7 @@ def embed_specific_job_seeker(user_id):
         # Process Location
         location = app.get('location', '')
         if location:
-            print(f"  ✓ Embedding location: {location}")
+            print(f"[{datetime.now()}]   ✓ Embedding location: {location}")
             embedding = model_instance.encode(location).tolist()
             embeddings_data['location_embedding'] = {
                 "location": location,
@@ -147,17 +153,19 @@ def embed_specific_job_seeker(user_id):
             }
         
         # Store/Update embeddings
-        js_embeddings_collection.update_one(
+        result = js_embeddings_collection.update_one(
             {"user_id": user_id},
             {"$set": embeddings_data},
             upsert=True
         )
-        print(f"  ✅ Embeddings updated for user {user_id}")
+        
+        print(f"[{datetime.now()}]   ✅ Embeddings stored. Matched: {result.matched_count}, Upserted: {result.upserted_id}")
+        print(f"[{datetime.now()}] embed_specific_job_seeker COMPLETE - user_id: {user_id}")
         return True
         
     except Exception as e:
-        print(f"❌ Error embedding job seeker: {e}")
-        import traceback
+        print(f"[{datetime.now()}] ❌ Error embedding job seeker: {e}")
+        print(f"[{datetime.now()}] Error type: {type(e).__name__}")
         traceback.print_exc()
         return False
 
@@ -173,6 +181,8 @@ def embed_specific_job_posting(user_id):
     try:
         from bson import ObjectId
         
+        print(f"[{datetime.now()}] embed_specific_job_posting START - user_id: {user_id}")
+        
         collections = get_db()
         model_instance = get_model()
         job_postings_collection = collections['postings']
@@ -181,16 +191,17 @@ def embed_specific_job_posting(user_id):
         # Convert string to ObjectId if needed
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
+            print(f"[{datetime.now()}] Converted user_id to ObjectId: {user_id}")
         
         # Fetch only this provider's posting
         posting = job_postings_collection.find_one({"user_id": user_id})
         
         if not posting:
-            print(f"⚠️  No posting found for user_id: {user_id}")
+            print(f"[{datetime.now()}] ⚠️  No posting found for user_id: {user_id}")
             return False
         
         posting_id = posting['_id']
-        print(f"\n[SELECTIVE] Embedding job posting: {user_id}")
+        print(f"[{datetime.now()}] [SELECTIVE] Embedding job posting: {user_id}, posting_id: {posting_id}")
         
         embeddings_data = {
             "posting_id": posting_id,
@@ -212,6 +223,7 @@ def embed_specific_job_posting(user_id):
         # Job Title
         job_title = posting.get('jobTitle', '')
         if job_title:
+            print(f"[{datetime.now()}]   ✓ Embedding jobTitle: {job_title}")
             embeddings_data['jobTitle_embedding'] = {
                 "jobTitle": job_title,
                 "embedding": model_instance.encode(job_title).tolist()
@@ -220,6 +232,7 @@ def embed_specific_job_posting(user_id):
         # Job Category
         job_category = posting.get('jobCategory', '')
         if job_category:
+            print(f"[{datetime.now()}]   ✓ Embedding jobCategory: {job_category}")
             embeddings_data['jobCategory_embedding'] = {
                 "jobCategory": job_category,
                 "embedding": model_instance.encode(job_category).tolist()
@@ -228,6 +241,7 @@ def embed_specific_job_posting(user_id):
         # Experience Required
         exp_required = posting.get('experienceRequired', '')
         if exp_required:
+            print(f"[{datetime.now()}]   ✓ Embedding experienceRequired: {exp_required}")
             embeddings_data['experienceRequired_embedding'] = {
                 "experienceRequired": exp_required,
                 "embedding": model_instance.encode(str(exp_required)).tolist()
@@ -236,6 +250,7 @@ def embed_specific_job_posting(user_id):
         # Job Location
         job_location = posting.get('jobLocation', '')
         if job_location:
+            print(f"[{datetime.now()}]   ✓ Embedding jobLocation: {job_location}")
             embeddings_data['jobLocation_embedding'] = {
                 "jobLocation": job_location,
                 "embedding": model_instance.encode(job_location).tolist()
@@ -244,6 +259,7 @@ def embed_specific_job_posting(user_id):
         # Job Type
         job_type = posting.get('jobType', '')
         if job_type:
+            print(f"[{datetime.now()}]   ✓ Embedding jobType: {job_type}")
             embeddings_data['jobType_embedding'] = {
                 "jobType": job_type,
                 "embedding": model_instance.encode(job_type).tolist()
@@ -251,7 +267,7 @@ def embed_specific_job_posting(user_id):
         
         # Qualifications
         if 'structured_qualifications' in posting and posting['structured_qualifications']:
-            print(f"  ✓ Embedding {len(posting['structured_qualifications'])} qualifications...")
+            print(f"[{datetime.now()}]   ✓ Embedding {len(posting['structured_qualifications'])} qualifications...")
             for qual in posting['structured_qualifications']:
                 qual_text = qual.get('qualification', '')
                 if qual_text:
@@ -259,10 +275,11 @@ def embed_specific_job_posting(user_id):
                         "qualification": qual_text,
                         "embedding": model_instance.encode(qual_text).tolist()
                     })
+                    print(f"[{datetime.now()}]     - Embedded qualification: {qual_text}")
         
         # Job Requirements
         if 'structured_job_requirements' in posting and posting['structured_job_requirements']:
-            print(f"  ✓ Embedding {len(posting['structured_job_requirements'])} job requirements...")
+            print(f"[{datetime.now()}]   ✓ Embedding {len(posting['structured_job_requirements'])} job requirements...")
             for req in posting['structured_job_requirements']:
                 req_text = req.get('requirement', '')
                 if req_text:
@@ -270,10 +287,11 @@ def embed_specific_job_posting(user_id):
                         "requirement": req_text,
                         "embedding": model_instance.encode(req_text).tolist()
                     })
+                    print(f"[{datetime.now()}]     - Embedded requirement: {req_text}")
         
         # Benefits
         if 'structured_benefits' in posting and posting['structured_benefits']:
-            print(f"  ✓ Embedding {len(posting['structured_benefits'])} benefits...")
+            print(f"[{datetime.now()}]   ✓ Embedding {len(posting['structured_benefits'])} benefits...")
             for benefit in posting['structured_benefits']:
                 benefit_text = benefit.get('benefit', '')
                 if benefit_text:
@@ -281,19 +299,21 @@ def embed_specific_job_posting(user_id):
                         "benefit": benefit_text,
                         "embedding": model_instance.encode(benefit_text).tolist()
                     })
+                    print(f"[{datetime.now()}]     - Embedded benefit: {benefit_text}")
         
         # Store/Update embeddings
-        jp_embeddings_collection.update_one(
+        result = jp_embeddings_collection.update_one(
             {"user_id": user_id},
             {"$set": embeddings_data},
             upsert=True
         )
-        print(f"  ✅ Embeddings updated for posting {user_id}")
+        print(f"[{datetime.now()}]   ✅ Embeddings stored. Matched: {result.matched_count}, Upserted: {result.upserted_id}")
+        print(f"[{datetime.now()}] embed_specific_job_posting COMPLETE - user_id: {user_id}")
         return True
         
     except Exception as e:
-        print(f"❌ Error embedding job posting: {e}")
-        import traceback
+        print(f"[{datetime.now()}] ❌ Error embedding job posting: {e}")
+        print(f"[{datetime.now()}] Error type: {type(e).__name__}")
         traceback.print_exc()
         return False
 

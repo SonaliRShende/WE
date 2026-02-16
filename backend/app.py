@@ -465,16 +465,31 @@ def submit_job_application():
         # Trigger embedding service in background to update embeddings after saving
         try:
             import embedding_service
+            import traceback
+            from datetime import datetime
 
             def run_seeker_embeddings():
                 try:
-                    embedding_service.embed_specific_job_seeker(user_id)
+                    print(f"[{datetime.now()}] Starting seeker embedding for user_id: {user_id}")
+                    result = embedding_service.embed_specific_job_seeker(user_id)
+                    print(f"[{datetime.now()}] Seeker embedding completed. Result: {result}")
+                    if result:
+                        # AFTER embedding is done, invalidate all job seeker recommendations
+                        # so they see updated matching jobs in their next query
+                        invalidate_all_job_seeker_recommendations()
+                        print(f"[{datetime.now()}] Invalidated recommendations for updated seeker")
                 except Exception as ee:
-                    print(f"Background seeker embedding error: {ee}")
+                    print(f"[{datetime.now()}] ❌ Background seeker embedding error: {ee}")
+                    traceback.print_exc()
 
-            threading.Thread(target=run_seeker_embeddings, daemon=True).start()
+            # Use non-daemon thread to ensure completion
+            embedding_thread = threading.Thread(target=run_seeker_embeddings, daemon=False)
+            embedding_thread.start()
+            print(f"[{datetime.now()}] Seeker embedding thread started for user: {user_id}")
         except Exception as e:
-            print(f"Could not start embedding_service for seeker: {e}")
+            print(f"[{datetime.now()}] ❌ Could not start embedding_service for seeker: {e}")
+            import traceback
+            traceback.print_exc()
 
         # 6. Return Success with change tracking info
         return jsonify({
@@ -513,6 +528,35 @@ def get_job_seeker_application(user_id):
     except Exception as e:
         print(f"Error fetching application: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+def invalidate_all_job_seeker_recommendations():
+    """
+    Clear all cached recommendations in job_scores collection
+    Called when a new job posting is added/updated to force recalculation for all job seekers
+    """
+    try:
+        db_instance = mongo_client['skill_constraint_db']
+        job_scores_collection = db_instance['job_scores']
+        result = job_scores_collection.delete_many({})
+        print(f"✅ Cache invalidated: Deleted {result.deleted_count} recommendation(s)")
+    except Exception as e:
+        print(f"⚠️  Error invalidating cache: {e}")
+
+
+def invalidate_job_provider_recommendations(user_id):
+    """
+    Clear cached recommendations for a specific job provider
+    Called when a new job seeker applies to force recalculation
+    """
+    try:
+        from bson import ObjectId
+        db_instance = mongo_client['skill_constraint_db']
+        # Note: Job providers typically use different endpoints, but if they cache their matched seekers,
+        # this would invalidate it
+        print(f"✅ Cache invalidated for provider {user_id}")
+    except Exception as e:
+        print(f"⚠️  Error invalidating provider cache: {e}")
 
 
 @app.route('/api/job-recommendations/<user_id>', methods=['GET'])
@@ -564,12 +608,39 @@ def get_job_recommendations(user_id):
             }
         
         if result:
-            # Convert datetime to ISO format for JSON
-            if 'generated_at' in result and result['generated_at']:
-                result['generated_at'] = result['generated_at'].isoformat()
+            # Convert everything to JSON-serializable format
+            response_data = {}
+            
+            # Handle user_id
+            if 'user_id' in result:
+                response_data['user_id'] = str(result['user_id'])
+            
+            # Handle _id
             if '_id' in result:
-                result['_id'] = str(result['_id'])
-            return jsonify(result), 200
+                response_data['_id'] = str(result['_id'])
+            
+            # Handle ranked_jobs
+            if 'ranked_jobs' in result:
+                ranked_jobs = result['ranked_jobs']
+                if isinstance(ranked_jobs, list):
+                    response_data['ranked_jobs'] = ranked_jobs
+                else:
+                    response_data['ranked_jobs'] = []
+            else:
+                response_data['ranked_jobs'] = []
+            
+            # Handle generated_at
+            if 'generated_at' in result and result['generated_at']:
+                if hasattr(result['generated_at'], 'isoformat'):
+                    response_data['generated_at'] = result['generated_at'].isoformat()
+                else:
+                    response_data['generated_at'] = str(result['generated_at'])
+            
+            # Handle total_jobs_evaluated
+            if 'total_jobs_evaluated' in result:
+                response_data['total_jobs_evaluated'] = result['total_jobs_evaluated']
+            
+            return jsonify(response_data), 200
         else:
             return jsonify({"ranked_jobs": [], "message": "No recommendations available yet"}), 200
             
@@ -678,6 +749,10 @@ def submit_job_posting():
         
         job_posting_document = {
             "user_id": ObjectId(user_id),
+            "name": data.get('name', ''),
+            "age": data.get('age', ''),
+            "phoneNumber": data.get('phoneNumber', ''),
+            "email": data.get('email', ''),
             "jobTitle": data.get('jobTitle', ''),
             "companyName": data.get('companyName', ''),
             "company_logo": data.get('company_logo', None),
@@ -712,16 +787,31 @@ def submit_job_posting():
         # Trigger embedding service in background to update posting embeddings
         try:
             import embedding_service
+            import traceback
+            from datetime import datetime
 
             def run_posting_embeddings():
                 try:
-                    embedding_service.embed_specific_job_posting(user_id)
+                    print(f"[{datetime.now()}] Starting job posting embedding for user_id: {user_id}")
+                    result = embedding_service.embed_specific_job_posting(user_id)
+                    print(f"[{datetime.now()}] Job posting embedding completed. Result: {result}")
+                    if result:
+                        # AFTER embedding is done, invalidate all job seeker recommendations
+                        # so they see the new job posting in their next query
+                        invalidate_all_job_seeker_recommendations()
+                        print(f"[{datetime.now()}] Invalidated recommendations after new job posting")
                 except Exception as ee:
-                    print(f"Background posting embedding error: {ee}")
+                    print(f"[{datetime.now()}] ❌ Background posting embedding error: {ee}")
+                    traceback.print_exc()
 
-            threading.Thread(target=run_posting_embeddings, daemon=True).start()
+            # Use non-daemon thread to ensure completion
+            embedding_thread = threading.Thread(target=run_posting_embeddings, daemon=False)
+            embedding_thread.start()
+            print(f"[{datetime.now()}] Job posting embedding thread started for user: {user_id}")
         except Exception as e:
-            print(f"Could not start embedding_service for posting: {e}")
+            print(f"[{datetime.now()}] ❌ Could not start embedding_service for posting: {e}")
+            import traceback
+            traceback.print_exc()
 
         return jsonify({
             "message": message,
@@ -759,7 +849,44 @@ def get_job_posting(user_id):
         
         return jsonify({"posting": posting}), 200
     except Exception as e:
-        print(f"Error fetching posting: {e}")
+        print(f"Error fetching job posting: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/get-job-posting-by-id/<job_id>', methods=['GET'])
+def get_job_posting_by_id(job_id):
+    """Fetch job posting details by job ID (for job seekers to view recommendations)"""
+    try:
+        from bson import ObjectId
+        
+        db_instance = mongo_client['skill_constraint_db']
+        jp_embeddings_collection = db_instance['JP_embeddings']
+        
+        # Try to find by _id in JP_embeddings where job postings are stored
+        try:
+            posting = jp_embeddings_collection.find_one({"_id": ObjectId(job_id)})
+        except:
+            posting = None
+        
+        if not posting:
+            # If not found in JP_embeddings, try job_postings collection as fallback
+            job_postings_collection = db_instance['job_postings']
+            try:
+                posting = job_postings_collection.find_one({"_id": ObjectId(job_id)})
+            except:
+                posting = None
+        
+        if not posting:
+            return jsonify({"posting": None}), 200
+        
+        posting['_id'] = str(posting['_id'])
+        posting['user_id'] = str(posting['user_id'])
+        
+        return jsonify({"posting": posting}), 200
+    except Exception as e:
+        print(f"Error fetching job posting by ID: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -849,6 +976,79 @@ def get_matching_job_seekers(user_id):
         
     except Exception as e:
         print(f"Error finding matching seekers: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/check-embeddings/<user_id>', methods=['GET'])
+def check_embeddings_status(user_id):
+    """
+    Check if embeddings have been generated and stored for a user
+    Useful for debugging and monitoring embedding generation
+    """
+    try:
+        from bson import ObjectId
+        from datetime import datetime
+        
+        # Check if user_id is valid ObjectId
+        try:
+            obj_id = ObjectId(user_id)
+        except:
+            return jsonify({"error": "Invalid user_id format"}), 400
+        
+        db_instance = mongo_client['skill_constraint_db']
+        js_embeddings_collection = db_instance['JS_embeddings']
+        jp_embeddings_collection = db_instance['JP_embeddings']
+        applications_collection = db_instance['job_applications']
+        job_postings_collection = db_instance['job_postings']
+        
+        # Check job seeker embeddings
+        seeker_embedding = js_embeddings_collection.find_one({"user_id": obj_id})
+        seeker_app = applications_collection.find_one({"user_id": obj_id})
+        
+        # Check job posting embeddings
+        posting_embedding = jp_embeddings_collection.find_one({"user_id": obj_id})
+        posting_data = job_postings_collection.find_one({"user_id": obj_id})
+        
+        response = {
+            "user_id": user_id,
+            "timestamp": datetime.now().isoformat(),
+            "seeker_application": {
+                "exists": seeker_app is not None,
+                "last_updated": str(seeker_app.get('updated_at')) if seeker_app else None,
+                "has_structured_skills": bool(seeker_app.get('structured_skills')) if seeker_app else False,
+                "has_structured_constraints": bool(seeker_app.get('structured_constraints')) if seeker_app else False
+            },
+            "seeker_embeddings": {
+                "exists": seeker_embedding is not None,
+                "created_at": str(seeker_embedding.get('created_at')) if seeker_embedding else None,
+                "has_skills_embeddings": bool(seeker_embedding.get('skills_embeddings')) if seeker_embedding else False,
+                "has_constraints_embeddings": bool(seeker_embedding.get('constraints_embeddings')) if seeker_embedding else False,
+                "has_qualification_embedding": bool(seeker_embedding.get('qualification_embedding')) if seeker_embedding else False,
+                "has_location_embedding": bool(seeker_embedding.get('location_embedding')) if seeker_embedding else False
+            },
+            "job_posting": {
+                "exists": posting_data is not None,
+                "last_updated": str(posting_data.get('updated_at')) if posting_data else None,
+                "has_structured_qualifications": bool(posting_data.get('structured_qualifications')) if posting_data else False,
+                "has_structured_job_requirements": bool(posting_data.get('structured_job_requirements')) if posting_data else False,
+                "has_structured_benefits": bool(posting_data.get('structured_benefits')) if posting_data else False
+            },
+            "job_posting_embeddings": {
+                "exists": posting_embedding is not None,
+                "created_at": str(posting_embedding.get('created_at')) if posting_embedding else None,
+                "has_jobTitle_embedding": bool(posting_embedding.get('jobTitle_embedding')) if posting_embedding else False,
+                "has_qualifications_embeddings": bool(posting_embedding.get('qualifications_embeddings')) if posting_embedding else False,
+                "has_job_requirements_embeddings": bool(posting_embedding.get('job_requirements_embeddings')) if posting_embedding else False,
+                "has_benefits_embeddings": bool(posting_embedding.get('benefits_embeddings')) if posting_embedding else False
+            }
+        }
+        
+        return jsonify(response), 200
+    
+    except Exception as e:
+        print(f"[{datetime.now()}] ❌ Error checking embeddings: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

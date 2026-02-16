@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Upload, X, ArrowLeft, Loader, Globe } from 'lucide-react';
+import { Mic, MicOff, Upload, X, ArrowLeft, Loader, Globe, CheckCircle } from 'lucide-react';
 import Navbar from "../components/Navbar";
 
 const initialFormData = {
@@ -69,6 +69,53 @@ const VoiceFeedbackModal = ({ voiceState, toggleVoiceInput }) => {
   );
 };
 
+const SubmissionModal = ({ isSubmitting, isSuccess }) => {
+  if (!isSubmitting && !isSuccess) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+      <div className="bg-white p-12 rounded-2xl shadow-2xl text-center w-96">
+        {isSuccess ? (
+          <>
+            <div className="flex justify-center mb-6">
+              <div className="bg-green-100 rounded-full p-4">
+                <CheckCircle size={64} className="text-green-500" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">Success! 🎉</h2>
+            <p className="text-gray-600 text-lg mb-8">
+              Your application has been submitted successfully!
+            </p>
+            <p className="text-sm text-gray-500">
+              Redirecting to your dashboard...
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="flex justify-center mb-6">
+              <div className="relative w-16 h-16">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full animate-spin"></div>
+                <div className="absolute inset-1 bg-white rounded-full flex items-center justify-center">
+                  <Loader size={32} className="text-pink-500 animate-spin" />
+                </div>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">Submitting...</h2>
+            <p className="text-gray-600">
+              Please wait while we process your application
+            </p>
+            <div className="mt-6 flex gap-2 justify-center">
+              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const InputField = ({ label, field, value, placeholder, type = "text", rows, mandatory = false, handleInputChange, toggleVoiceInput }) => (
   <div className="mb-6">
     <label className="block text-gray-700 font-medium mb-2">
@@ -124,6 +171,8 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
   
   const [profilePreview, setProfilePreview] = useState(null);
   const [voiceState, setVoiceState] = useState({ state: 'idle', field: null });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en-IN');
   const processingRef = useRef(false); 
   const recognitionRef = useRef(null);
@@ -170,6 +219,10 @@ const handleSubmit = async (e) => {
         return;
     }
 
+    // Show loading modal
+    setIsSubmitting(true);
+    setIsSuccess(false);
+
     const { profilePic, ...dataToSend } = formData; 
     // include base64 preview if available so backend can persist image
     const dataWithUserId = { ...dataToSend, user_id: user.id, profile_pic: profilePreview || null };
@@ -187,7 +240,6 @@ const handleSubmit = async (e) => {
 
         if (response.ok) {
             console.log('Server Response:', result);
-            alert('✅ Application submitted successfully!');
             
             // NEW: Generate embeddings after successful submission
             try {
@@ -201,6 +253,9 @@ const handleSubmit = async (e) => {
                 console.error('Embedding generation warning:', embError);
             }
             
+            // Show success modal
+            setIsSuccess(true);
+            
             // Reset form
             setFormData(initialFormData);
             setProfilePreview(null);
@@ -212,18 +267,18 @@ const handleSubmit = async (e) => {
             
             // Redirect to dashboard after brief delay
             setTimeout(() => {
-                const navigate = require('react-router-dom').useNavigate;
-                // Use window navigation as fallback
                 window.location.href = '/job-seeker-dashboard';
-            }, 1500);
+            }, 2500);
             
         } else {
             // Handle server-side validation or errors
             console.error('Submission failed:', result.error);
+            setIsSubmitting(false);
             alert(`❌ Application submission failed: ${result.error || 'Server error'}`);
         }
     } catch (error) {
         console.error('Network or unexpected error:', error);
+        setIsSubmitting(false);
         alert('Could not connect to the backend server. Is app.py running?');
     }
 };
@@ -357,6 +412,7 @@ const toggleVoiceInput = (field) => {
       <Navbar />
       
       <VoiceFeedbackModal voiceState={voiceState} toggleVoiceInput={toggleVoiceInput} />
+      <SubmissionModal isSubmitting={isSubmitting} isSuccess={isSuccess} />
       
       <div className="min-h-screen bg-gradient-to-br from-pink-100 via-blue-50 to-purple-100 px-6 py-12">
         <div className="max-w-4xl mx-auto">
@@ -456,10 +512,10 @@ const toggleVoiceInput = (field) => {
                 <button
                   onClick={handleSubmit}
                   type="button"
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-12 py-4 rounded-full font-semibold text-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300"
-                  disabled={voiceState.state !== 'idle'}
+                  className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-12 py-4 rounded-full font-semibold text-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={voiceState.state !== 'idle' || isSubmitting}
                 >
-                  Submit Application
+                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
                 </button>
               </div>
             </div>

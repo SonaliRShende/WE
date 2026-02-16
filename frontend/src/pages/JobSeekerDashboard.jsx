@@ -105,21 +105,13 @@ function UnavailableData({ message, onBack }) {
 
 // Component to view job recommendations
 function ViewJobRecommendations({ userId, onBack, hasApplicationData }) {
+  const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const perPage = 10;
 
-  // If no application data, show unavailable message
-  if (!hasApplicationData) {
-    return (
-      <UnavailableData 
-        message="Please fill out your profile first to see job recommendations tailored for you."
-        onBack={onBack}
-      />
-    );
-  }
 
   useEffect(() => {
     fetchJobRecommendations();
@@ -144,6 +136,10 @@ function ViewJobRecommendations({ userId, onBack, hasApplicationData }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleJobClick = (jobId, matchScore) => {
+    navigate(`/view-job/${jobId}`, { state: { matchScore: (matchScore * 100).toFixed(0) } });
   };
 
   if (loading) return <div className="text-center mt-8 text-lg text-gray-600">🔄 Loading recommendations...</div>;
@@ -177,7 +173,11 @@ function ViewJobRecommendations({ userId, onBack, hasApplicationData }) {
       
       <div className="space-y-5">
         {recommendations.slice(page * perPage, (page + 1) * perPage).map((job, idx) => (
-          <div key={idx} className="border-3 border-gradient rounded-xl overflow-hidden hover:shadow-lg transition bg-white">
+          <div 
+            key={idx} 
+            onClick={() => handleJobClick(job.job_id, job.job_score)}
+            className="border-3 border-gradient rounded-xl overflow-hidden hover:shadow-lg transition bg-white cursor-pointer hover:border-purple-400"
+          >
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 border-b-3 border-purple-200">
               <div className="flex justify-between items-start mb-3">
                 <div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -12,6 +13,8 @@ const Login = () => {
     email: "",
     password: ""
   });
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,19 +43,28 @@ const Login = () => {
           placeholder="Email"
           className="w-full p-2 mb-3 border rounded"
           onChange={handleChange}
-          autocomplete="email"
+          autoComplete="email"
           required
         />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          className="w-full p-2 mb-4 border rounded"
-          onChange={handleChange}
-          autocomplete="current-password"
-          required
-        />
+        <div className="relative mb-4">
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            placeholder="Password"
+            className="w-full p-2 border rounded pr-10"
+            onChange={handleChange}
+            autoComplete="current-password"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
 
         <button
           type="submit"

@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-job-recommendation-app
+    ports:
+      - "5000:5000"
+    environment:
+      # MongoDB URI - Replace with your actual MongoDB connection string
+      MONGO_URI: ${MONGO_URI:-mongodb+srv://user:password@cluster.mongodb.net/skill_constraint_db?retryWrites=true&w=majority}
+      
+      # OpenRouter API Key - Replace with your actual API key
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-your-api-key-here}
+      
+      # Flask Configuration
+      FLASK_ENV: production
+      FLASK_APP: app.py
+      PYTHONUNBUFFERED: 1
+    
+    # Volume mounting for development (optional - comment out for production)
+    # volumes:
+    #   - ./backend:/app
+    #   - ./frontend:/app/frontend
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: MongoDB service (if you want to run MongoDB in a container)
+  # Uncomment the following section if you want to use MongoDB in Docker
+  # mongodb:
+  #   image: mongo:7.0
+  #   container_name: ai-job-recommendation-mongodb
+  #   ports:
+  #     - "27017:27017"
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
+  #     MONGO_INITDB_DATABASE: skill_constraint_db
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #     - mongodb_config:/data/configdb
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+# Optional: Named volumes (uncomment if using MongoDB service)
+# volumes:
+#   mongodb_data:
+#   mongodb_config:

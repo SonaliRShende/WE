@@ -9,6 +9,8 @@ import JobProviderApplication from "./pages/JobProviderApplication";
 import JobProviderFormPage from "./pages/JobProviderFormPage";
 import JobSeekerDashboard from "./pages/JobSeekerDashboard";
 import JobProviderDashboard from "./pages/JobProviderDashboard";
+import ViewJobSeekerProfilePage from "./pages/ViewJobSeekerProfilePage";
+import ViewJobPostingPage from "./pages/ViewJobPostingPage";
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
         <Route path="/job-provider-form" element={<JobProviderFormPage/>}/>
         <Route path="/job-seeker-dashboard" element={<JobSeekerDashboard/>}/>
         <Route path="/job-provider-dashboard" element={<JobProviderDashboard/>}/>
+        <Route path="/view-seeker/:seekerId" element={<ViewJobSeekerProfilePage/>}/>
+        <Route path="/view-job/:jobId" element={<ViewJobPostingPage/>}/>
       </Routes>
     </Router>
   );
