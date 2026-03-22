@@ -18,10 +18,14 @@ load_dotenv()
 app = Flask(__name__)
 # CORS configuration for local and deployed frontends
 frontend_origin = os.getenv("FRONTEND_ORIGIN")
+allow_vercel_previews = os.getenv("ALLOW_VERCEL_PREVIEWS", "1").lower() in {"1", "true", "yes", "on"}
 
 if frontend_origin:
     allowed_origins = [origin.strip() for origin in frontend_origin.split(",") if origin.strip()]
-    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
+    cors_origins = allowed_origins[:]
+    if allow_vercel_previews:
+        cors_origins.append(r"https://.*\.vercel\.app")
+    CORS(app, resources={r"/api/*": {"origins": cors_origins}})
 else:
     CORS(app)
 
@@ -29,6 +33,11 @@ else:
 @app.get("/healthz")
 def health_check():
     return jsonify({"status": "ok"}), 200
+
+
+@app.get("/")
+def root_health_check():
+    return jsonify({"status": "ok", "service": "backend"}), 200
 
 # Connect to MongoDB
 MONGO_URI = os.getenv("MONGO_URI")

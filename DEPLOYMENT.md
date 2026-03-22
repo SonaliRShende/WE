@@ -29,7 +29,7 @@ You can deploy directly using `render.yaml` in the repo root.
 - Health check path: `/healthz`
 
 ### Required environment variables on Render
-
+`
 - `MONGO_URI` = your MongoDB Atlas connection string
 - `OPENROUTER_API_KEY` = your OpenRouter API key
 - `FRONTEND_ORIGIN` = your Vercel frontend URL (or comma-separated URLs)
@@ -41,7 +41,7 @@ You can deploy directly using `render.yaml` in the repo root.
 - Do **not** enable paid add-ons (Redis/Postgres) unless required
 
 After deploy, copy backend URL (example: `https://ai-backend.onrender.com`).
-
+https://we-ffbg.onrender.com
 ## 2) Deploy frontend to Vercel
 
 - In Vercel, import the same GitHub repo.
