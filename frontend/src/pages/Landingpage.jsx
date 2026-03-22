@@ -35,10 +35,13 @@ export default function Landing() {
       <Navbar />
       <main className="flex-1">
          <section className="relative overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-100"
-            style={{ backgroundImage: `url(${heroImg})` }}
-          />
+  <div
+    className="absolute inset-0 bg-cover opacity-100"
+    style={{
+      backgroundImage: `url(${heroImg})`,
+      backgroundPosition: "75% center",
+    }}
+  />
          <div className="absolute inset-0 " />
            <div className="relative mx-auto  max-w-7xl gap-10 px-4 py-18 sm:px-6 md:grid-cols-[1.1fr_0.9fr] md:py-6">
             <motion.div

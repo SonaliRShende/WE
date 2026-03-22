@@ -17,12 +17,12 @@ export default function BrandLogo({
         />
       </div>
 
-      <div className={compact ? "hidden sm:block" : ""}>
-      <p className="text-lg font-semibold text-slate-950 sm:text-xl font-serif">
+      <div >
+      <p className="text-lg font-semibold text-slate-950 sm:text-sm font-serif">
         {messages.brand.name}
       </p>
         {showTagline && (
-          <p className=" text-sm text-slate-600 lg:block">
+          <p className="sm:text-xs text-sm text-slate-600 lg:block">
             {messages.brand.tagline}
           </p>
         )}

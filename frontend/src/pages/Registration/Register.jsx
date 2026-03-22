@@ -46,9 +46,7 @@ const Register = () => {
             <p className="mt-4 max-w-md text-base leading-8 text-sky-100">
               {messages.auth.registerBody}
             </p>
-            <div className="mt-8 rounded-[1.75rem] border border-white/15 bg-white/10 p-5 backdrop-blur">
-              <p className="text-sm leading-7 text-sky-50">{messages.auth.formNote}</p>
-            </div>
+
           </section>
 
           <section className="px-8 py-12 sm:px-12">

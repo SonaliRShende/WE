@@ -204,7 +204,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   to="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl  px-4 py-3 text-sm font-semibold text-white"
                 >
                   <UserPlus size={16} />
                   {messages.nav.getStarted}

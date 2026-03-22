@@ -95,7 +95,6 @@ const en = {
     signIn: "Sign in",
     needAccount: "Need an account?",
     signUp: "Sign up",
-    formNote: "Your selected website language will stay active after sign-in."
   },
   voice: {
     starting: "Activating microphone...",
