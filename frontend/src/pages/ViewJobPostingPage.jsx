@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { formatOptionLabel } from "../content/locales";
 import { useLocale } from "../context/LocaleContext";
+import { buildApiUrl } from "../config/api";
 
 function InfoField({ label, value, emptyLabel }) {
   return (
@@ -120,7 +121,7 @@ export default function ViewJobPostingPage() {
 
         for (const candidateId of candidateIds) {
           const response = await fetch(
-            `http://127.0.0.1:5000/api/get-job-posting-by-id/${candidateId}`
+            buildApiUrl(`/api/get-job-posting-by-id/${candidateId}`)
           );
 
           if (!response.ok) {

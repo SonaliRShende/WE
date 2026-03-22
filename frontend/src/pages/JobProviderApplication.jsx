@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
+import { buildApiUrl } from "../config/api";
 
 const initialFormData = {
   name: "",
@@ -306,7 +307,7 @@ export default function JobProviderApplication({ existingData = null, onSuccess 
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/submit-job-posting", {
+      const response = await fetch(buildApiUrl("/api/submit-job-posting"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

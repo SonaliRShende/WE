@@ -16,8 +16,19 @@ load_dotenv()
 
 # --- Initialization ---
 app = Flask(__name__)
-# Enable CORS for development (allowing requests from your React app on a different port)
-CORS(app) 
+# CORS configuration for local and deployed frontends
+frontend_origin = os.getenv("FRONTEND_ORIGIN")
+
+if frontend_origin:
+    allowed_origins = [origin.strip() for origin in frontend_origin.split(",") if origin.strip()]
+    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
+else:
+    CORS(app)
+
+
+@app.get("/healthz")
+def health_check():
+    return jsonify({"status": "ok"}), 200
 
 # Connect to MongoDB
 MONGO_URI = os.getenv("MONGO_URI")
@@ -1188,7 +1199,8 @@ def check_embeddings_status(user_id):
 
 
 if __name__ == '__main__':
-    # Run the Flask server on port 5000
+    # Run the Flask server using platform-provided port in production
     debug_mode = os.getenv("FLASK_DEBUG", "1").lower() in {"1", "true", "yes", "on"}
     use_reloader = os.getenv("FLASK_USE_RELOADER", "0").lower() in {"1", "true", "yes", "on"}
-    app.run(debug=debug_mode, use_reloader=use_reloader, port=5000)
+    port = int(os.getenv("PORT", "5000"))
+    app.run(host="0.0.0.0", port=port, debug=debug_mode, use_reloader=use_reloader)

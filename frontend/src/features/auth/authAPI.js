@@ -1,11 +1,10 @@
 // src/services/authAPI.js
 import axios from 'axios';
+import { API_URL } from '../../config/api';
 
 // Set the base URL for your Flask API. If your frontend and backend
 // are on different ports (e.g., 3000 and 5000), use the full URL here.
 // If you're using a proxy setup, '/api' is fine.
-const API_URL = 'http://localhost:5000/api'; 
-
 // --- Authentication Service Functions ---
 
 const register = async (userData) => {

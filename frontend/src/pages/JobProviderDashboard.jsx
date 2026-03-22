@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
 import { formatOptionLabel } from "../content/locales";
+import { buildApiUrl } from "../config/api";
 
 function InfoField({ label, value, emptyLabel }) {
   return (
@@ -108,7 +109,7 @@ function ViewJobApplications({ userId, onBack, hasJobPosting, messages }) {
     const fetchApplications = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://127.0.0.1:5000/api/matching-job-seekers/${userId}`);
+        const response = await fetch(buildApiUrl(`/api/matching-job-seekers/${userId}`));
         const data = await response.json();
         setApplications(data.matches || []);
       } catch (fetchError) {
@@ -256,7 +257,7 @@ export default function JobProviderDashboard() {
 
     const fetchJobPostingData = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/api/get-job-posting/${userFromStorage.id}`);
+        const response = await fetch(buildApiUrl(`/api/get-job-posting/${userFromStorage.id}`));
         const result = await response.json();
         if (result.posting) {
           setJobPostingData(result.posting);

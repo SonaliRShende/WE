@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
+import { buildApiUrl } from "../config/api";
 
 function InfoField({ label, value, emptyLabel }) {
   return (
@@ -104,7 +105,7 @@ export default function ViewJobSeekerProfilePage() {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://127.0.0.1:5000/api/get-job-seeker-application/${seekerId}`
+          buildApiUrl(`/api/get-job-seeker-application/${seekerId}`)
         );
         const data = await response.json();
         if (data.application) {

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ai-driven-job-recommendation-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 180
+    autoDeploy: true
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: FLASK_USE_RELOADER
+        value: "0"
+      - key: MONGO_URI
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false

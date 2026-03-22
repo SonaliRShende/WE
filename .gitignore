@@ -13,16 +13,28 @@ __pycache__/
 venv/
 env/
 
+# Models / checkpoints
+*.pt
+*.pth
 # -------------------------
 # Environment variables
 # -------------------------
 .env
+# Env
+.env
+venv/
+.venv/
 
 # -------------------------
 # VS Code
 # -------------------------
 .vscode/
 
+
+# Node
+node_modules/
+dist/
+build/
 # -------------------------
 # OS generated files
 # -------------------------
@@ -38,7 +50,9 @@ Thumbs.db
 # MongoDB / local DB files (if any)
 # -------------------------
 *.db
-
+# Generated experiment files
+backend/models/quick_debug/
+backend/models/evaluation/
 # -------------------------
 # Temporary files
 # -------------------------

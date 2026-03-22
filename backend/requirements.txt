@@ -1,6 +1,7 @@
 # Web framework
 Flask
 Flask-CORS
+gunicorn
 
 # Environment variables
 python-dotenv

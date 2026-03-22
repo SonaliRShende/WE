@@ -3,6 +3,7 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
+import { buildApiUrl } from "../config/api";
 
 function InfoField({ label, value, emptyLabel }) {
   return (
@@ -103,7 +104,7 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
     const fetchJobRecommendations = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://127.0.0.1:5000/api/job-recommendations/${userId}`);
+        const response = await fetch(buildApiUrl(`/api/job-recommendations/${userId}`));
         const data = await response.json();
         setRecommendations(data.ranked_jobs || []);
       } catch (fetchError) {
@@ -293,7 +294,7 @@ export default function JobSeekerDashboard() {
     const fetchApplicationData = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/api/get-job-seeker-application/${userFromStorage.id}`
+          buildApiUrl(`/api/get-job-seeker-application/${userFromStorage.id}`)
         );
         const result = await response.json();
         if (result.application) {

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
+import { buildApiUrl } from "../config/api";
 
 const initialFormData = {
   name: "",
@@ -292,7 +293,7 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/submit-application", {
+      const response = await fetch(buildApiUrl("/api/submit-application"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -309,7 +310,7 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
       }
 
       try {
-        await fetch(`http://127.0.0.1:5000/api/generate-embeddings/${user.id}`, {
+        await fetch(buildApiUrl(`/api/generate-embeddings/${user.id}`), {
           method: "POST",
         });
       } catch (embeddingError) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocale } from "../context/LocaleContext";
 import JobSeekerApplication from "./JobSeekerApplication";
+import { buildApiUrl } from "../config/api";
 
 export default function JobSeekerFormPage() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function JobSeekerFormPage() {
 
   const fetchApplicationData = async (userId) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/get-job-seeker-application/${userId}`);
+      const response = await fetch(buildApiUrl(`/api/get-job-seeker-application/${userId}`));
       const result = await response.json();
       if (result.application) {
         setApplicationData(result.application);
