@@ -1,56 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Eye, Plus } from 'lucide-react';
+﻿import { useEffect, useState } from "react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import JobProviderApplication from './JobProviderApplication';
+import { useLocale } from "../context/LocaleContext";
+import { formatOptionLabel } from "../content/locales";
 
-// Component to view existing job posting
-function ViewJobPosting({ data, onBack }) {
+function InfoField({ label, value, emptyLabel }) {
+  return (
+    <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-slate-100">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className="mt-2 whitespace-pre-wrap text-base text-slate-800">{value || emptyLabel}</p>
+    </div>
+  );
+}
+
+function ViewJobPosting({ data, onBack, copy, messages }) {
   return (
     <div>
-      <button 
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-6 text-gray-600 hover:text-gray-800 font-medium flex items-center"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
       >
-        <ArrowLeft size={18} className="mr-2" />
-        Back
+        <ArrowLeft size={18} />
+        {messages.common.backToOptions}
       </button>
 
-      <div className="space-y-8">
-        {/* Company logo if present */}
+      <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-center">
         {data.company_logo && (
-          <div className="mb-4">
-            <img src={data.company_logo} alt="Company Logo" className="w-40 h-20 object-contain rounded-lg shadow-sm" />
-          </div>
+          <img
+            src={data.company_logo}
+            alt={copy.uploadLabel}
+            className="h-24 w-24 rounded-[1.75rem] object-cover shadow-lg"
+          />
         )}
-        {/* Personal Information */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-gray-200 pb-2">
-            Company Information
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoField label="Name" value={data.name} />
-            <InfoField label="Email" value={data.email} />
-            <InfoField label="Phone Number" value={data.phoneNumber} />
-            <InfoField label="Company Name" value={data.companyName} />
+        <div>
+          <h2 className="text-3xl font-semibold text-slate-950">{messages.viewPages.jobTitle}</h2>
+          <p className="mt-2 text-base text-slate-600">{messages.jobProviderDashboard.viewBody}</p>
+        </div>
+      </div>
+
+      <div className="mt-8 space-y-6">
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.companyInformation}</h3>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <InfoField label={copy.fields.name.label} value={data.name} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.email.label} value={data.email} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.phoneNumber.label} value={data.phoneNumber || data.phone_number} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.companyName.label} value={data.companyName || data.company_name} emptyLabel={messages.common.notProvided} />
           </div>
         </section>
 
-        {/* Job Details */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-gray-200 pb-2">
-            Job Details
-          </h3>
-          <div className="space-y-4">
-            <InfoField label="Job Title" value={data.jobTitle} />
-            <InfoField label="Job Category" value={data.jobCategory} />
-            <InfoField label="Job Type" value={data.jobType} />
-            <InfoField label="Location" value={data.jobLocation} />
-            <InfoField label="Description" value={data.jobDescription} />
-            <InfoField label="Experience Required" value={data.experienceRequired} />
-            <InfoField label="Salary Range" value={`${data.salaryMin} - ${data.salaryMax} (${data.salaryType})`} />
-            <InfoField label="Benefits" value={data.benefits} />
-            <InfoField label="Required Qualifications" value={data.requiredQualifications} />
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.jobDetailsSection}</h3>
+          <div className="mt-5 grid gap-4">
+            <InfoField label={copy.fields.jobTitle.label} value={data.jobTitle || data.job_title} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.jobCategory.label} value={formatOptionLabel(messages, "jobCategories", data.jobCategory || data.job_category)} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.jobType.label} value={formatOptionLabel(messages, "jobTypes", data.jobType || data.job_type)} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.jobLocation.label} value={data.jobLocation || data.job_location} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.jobDescription.label} value={data.jobDescription || data.job_description} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.experienceRequired.label} value={data.experienceRequired || data.experience_required} emptyLabel={messages.common.notProvided} />
+            <InfoField
+              label={messages.viewPages.salaryRange}
+              value={`${data.salaryMin || data.salary_min || ""} - ${data.salaryMax || data.salary_max || ""} (${formatOptionLabel(messages, "salaryTypes", data.salaryType || data.salary_type)})`}
+              emptyLabel={messages.common.notProvided}
+            />
+            <InfoField label={copy.fields.benefits.label} value={data.benefits} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.requiredQualifications.label} value={data.requiredQualifications || data.required_qualifications} emptyLabel={messages.common.notProvided} />
           </div>
         </section>
       </div>
@@ -58,160 +74,160 @@ function ViewJobPosting({ data, onBack }) {
   );
 }
 
-function InfoField({ label, value }) {
+function UnavailableData({ message, onBack, messages }) {
   return (
-    <div>
-      <label className="text-sm font-medium text-gray-600">{label}</label>
-      <p className="text-gray-800 mt-1">{value || 'Not provided'}</p>
-    </div>
-  );
-}
-
-// Component for unavailable data
-function UnavailableData({ message, onBack }) {
-  return (
-    <div>
-      <button 
+    <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+      <h2 className="text-2xl font-semibold text-slate-950">{messages.viewPages.jobNotFound}</h2>
+      <p className="mt-3 text-base text-slate-600">{message}</p>
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-8 text-gray-600 hover:text-gray-800 font-medium flex items-center text-lg"
+        className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-sky-700"
       >
-        <ArrowLeft size={20} className="mr-2" />
-        Back to Options
+        <ArrowLeft size={18} />
+        {messages.common.backToOptions}
       </button>
-
-      <div className="text-center mt-12 py-16">
-        <div className="text-6xl mb-6">📭</div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">Data Not Available</h2>
-        <p className="text-lg text-gray-600 mb-8">{message}</p>
-        <button
-          onClick={onBack}
-          className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-lg hover:underline"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Back to Options
-        </button>
-      </div>
     </div>
   );
 }
 
-// Component to view job applications received
-function ViewJobApplications({ userId, onBack, hasJobPosting }) {
+function ViewJobApplications({ userId, onBack, hasJobPosting, messages }) {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
-  const perPage = 10;
+  const perPage = 6;
 
-  // If no job posting, show unavailable message
+  useEffect(() => {
+    if (!hasJobPosting) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchApplications = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://127.0.0.1:5000/api/matching-job-seekers/${userId}`);
+        const data = await response.json();
+        setApplications(data.matches || []);
+      } catch (fetchError) {
+        console.error("Error fetching matching seekers:", fetchError);
+        setError(messages.jobProviderDashboard.couldNotLoadCandidates);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, [hasJobPosting, messages.jobProviderDashboard.couldNotLoadCandidates, userId]);
+
   if (!hasJobPosting) {
     return (
-      <UnavailableData 
-        message="Please post a job first to see applications from candidates."
+      <UnavailableData
+        message={messages.jobProviderDashboard.noPosting}
         onBack={onBack}
+        messages={messages}
       />
     );
   }
 
-  useEffect(() => {
-    fetchApplications();
-  }, [userId]);
+  if (loading) {
+    return <p className="text-lg text-slate-600">{messages.jobProviderDashboard.loadingCandidates}</p>;
+  }
 
-  const fetchApplications = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/matching-job-seekers/${userId}`
-      );
-      const data = await response.json();
-      
-      if (data.matches) {
-        setApplications(data.matches);
-      } else {
-        setApplications([]);
-      }
-    } catch (err) {
-      console.error('Error fetching matching seekers:', err);
-      setError('Could not load matching candidates. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (error) {
+    return <p className="text-lg text-rose-600">{error}</p>;
+  }
 
-  const handleSeekerClick = (seekerId) => {
-    navigate(`/view-seeker/${seekerId}`);
-  };
+  if (!applications.length) {
+    return (
+      <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+        <h2 className="text-2xl font-semibold text-slate-950">
+          {messages.jobProviderDashboard.noCandidates}
+        </h2>
+        <button
+          type="button"
+          onClick={onBack}
+          className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-sky-700"
+        >
+          <ArrowLeft size={18} />
+          {messages.common.backToOptions}
+        </button>
+      </div>
+    );
+  }
 
-  if (loading) return <div className="text-center mt-8 text-lg text-gray-600">Loading applications...</div>;
-  if (error) return <div className="text-center mt-8 text-lg text-red-600">{error}</div>;
-  if (!applications.length) return (
-    <div className="text-center mt-8">
-      <p className="text-lg text-gray-600 mb-4">No matching seekers found yet.</p>
-      <button
-        onClick={onBack}
-        className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-      >
-        <ArrowLeft size={18} className="mr-2" />
-        Back to Options
-      </button>
-    </div>
-  );
+  const currentItems = applications.slice(page * perPage, (page + 1) * perPage);
 
   return (
     <div>
-      <button 
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-6 text-gray-600 hover:text-gray-800 font-medium flex items-center"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
       >
-        <ArrowLeft size={18} className="mr-2" />
-        Back
+        <ArrowLeft size={18} />
+        {messages.common.backToOptions}
       </button>
 
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">Matching Job Seekers</h2>
-      <p className="text-gray-600 mb-8">Found {applications.length} seeker(s) matching your job requirements</p>
-      <div className="space-y-5">
-        {applications.slice(page * perPage, (page + 1) * perPage).map((seeker, idx) => (
-          <div 
-            key={idx} 
-            onClick={() => handleSeekerClick(seeker.seeker_id)}
-            className="border-3 border-gradient rounded-xl overflow-hidden hover:shadow-lg transition bg-white cursor-pointer hover:border-blue-400"
+      <h2 className="mt-6 text-3xl font-semibold text-slate-950">
+        {messages.jobProviderDashboard.candidatesTitle}
+      </h2>
+      <p className="mt-2 text-base text-slate-600">
+        {messages.jobProviderDashboard.candidatesCount({ count: applications.length })}
+      </p>
+
+      <div className="mt-8 space-y-5">
+        {currentItems.map((seeker) => (
+          <button
+            key={seeker.seeker_id}
+            type="button"
+            onClick={() => navigate(`/view-seeker/${seeker.seeker_id}`)}
+            className="w-full rounded-[1.75rem] border border-slate-200 bg-white p-6 text-left shadow-[0_24px_60px_-40px_rgba(15,23,42,0.35)] transition hover:-translate-y-0.5 hover:border-sky-200"
           >
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 border-b-3 border-blue-200">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-800">{seeker.seeker_name}</h3>
-                  <p className="text-lg text-gray-600 mt-1">📧 {seeker.seeker_email}</p>
-                </div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-2xl font-semibold text-slate-950">{seeker.seeker_name}</h3>
+                <p className="mt-2 text-base text-slate-600">{seeker.seeker_email}</p>
               </div>
+              <ChevronRight className="hidden text-sky-700 sm:block" />
             </div>
-            
-            <div className="p-6">
-              <p className="text-gray-600">Click to view full profile</p>
-            </div>
-          </div>
+            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
+              {messages.jobProviderDashboard.clickProfile}
+            </p>
+          </button>
         ))}
       </div>
 
-      {/* Pagination Controls for provider */}
       {applications.length > perPage && (
-        <div className="mt-8 flex items-center justify-center gap-4">
+        <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            type="button"
+            onClick={() => setPage((current) => Math.max(0, current - 1))}
             disabled={page === 0}
-            className={`px-4 py-2 rounded-lg border ${page === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
-            Previous
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {messages.common.previous}
           </button>
-
-          <div className="text-sm text-gray-600">
-            Showing {(page * perPage) + 1} - {Math.min((page + 1) * perPage, applications.length)} of {applications.length}
-          </div>
-
+          <p className="text-sm text-slate-500">
+            {messages.common.showingRange({
+              start: page * perPage + 1,
+              end: Math.min((page + 1) * perPage, applications.length),
+              total: applications.length,
+            })}
+          </p>
           <button
-            onClick={() => setPage((p) => Math.min(Math.floor((applications.length - 1) / perPage), p + 1))}
+            type="button"
+            onClick={() =>
+              setPage((current) =>
+                Math.min(Math.floor((applications.length - 1) / perPage), current + 1)
+              )
+            }
             disabled={(page + 1) * perPage >= applications.length}
-            className={`px-4 py-2 rounded-lg border ${(page + 1) * perPage >= applications.length ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
-            Next
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {messages.common.next}
           </button>
         </div>
       )}
@@ -221,156 +237,154 @@ function ViewJobApplications({ userId, onBack, hasJobPosting }) {
 
 export default function JobProviderDashboard() {
   const navigate = useNavigate();
+  const { messages } = useLocale();
+  const copy = messages.jobProviderForm;
   const [jobPostingData, setJobPostingData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('options'); // 'options', 'form', 'applications', 'view'
+  const [activeTab, setActiveTab] = useState("options");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Get user from localStorage
-    const userFromStorage = JSON.parse(localStorage.getItem('user'));
+    const userFromStorage = JSON.parse(localStorage.getItem("user"));
     if (!userFromStorage?.id) {
-      alert('User session not found. Please login again.');
-      navigate('/login');
+      alert(messages.common.sessionMissing);
+      navigate("/login");
       return;
     }
+
     setUser(userFromStorage);
-    
-    // Fetch user's existing job posting if any
-    fetchJobPostingData(userFromStorage.id);
-  }, [navigate]);
 
-  const fetchJobPostingData = async (userId) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:5000/api/get-job-posting/${userId}`);
-      const result = await response.json();
-      if (result.posting) {
-        setJobPostingData(result.posting);
+    const fetchJobPostingData = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/api/get-job-posting/${userFromStorage.id}`);
+        const result = await response.json();
+        if (result.posting) {
+          setJobPostingData(result.posting);
+        }
+      } catch (error) {
+        console.error("Error fetching job posting:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching job posting:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  if (loading) return (
-    <>
-      <Navbar />
-      <div className="text-center mt-20 text-lg text-gray-600">Loading...</div>
-    </>
-  );
+    fetchJobPostingData();
+  }, [messages.common.sessionMissing, navigate]);
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="px-4 py-16 text-center text-lg text-slate-600">{messages.common.loading}</div>
+      </>
+    );
+  }
+
+  const actionCards = [
+    {
+      title: jobPostingData
+        ? messages.jobProviderDashboard.updateTitle
+        : messages.jobProviderDashboard.createTitle,
+      body: jobPostingData
+        ? messages.jobProviderDashboard.updateBody
+        : messages.jobProviderDashboard.createBody,
+      action: () => navigate("/job-provider-form"),
+    },
+    {
+      title: messages.jobProviderDashboard.viewTitle,
+      body: messages.jobProviderDashboard.viewBody,
+      action: () => setActiveTab("view"),
+    },
+    {
+      title: messages.jobProviderDashboard.applicationsTitle,
+      body: messages.jobProviderDashboard.applicationsBody,
+      action: () => setActiveTab("applications"),
+    },
+  ];
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-blue-50 to-purple-100 px-6 py-12">
-        <div className="max-w-4xl mx-auto">
-          
-          {/* Back Button */}
-          <div className="mb-8">
-            <button 
-              onClick={() => navigate('/home')}
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-            >
-              <ArrowLeft size={20} className="mr-2" />
-              Back to Home
-            </button>
-          </div>
+      <main className="px-4 py-10 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+          >
+            <ArrowLeft size={18} />
+            {messages.common.backToHome}
+          </button>
 
-          {/* Header */}
-          <div className="bg-white shadow-xl rounded-2xl p-8 mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Job Provider Profile</h1>
-            <p className="text-gray-600">Manage your job postings and view applications</p>
-          </div>
+          <section className="mt-6 rounded-[2.25rem] border border-slate-200 bg-white/90 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">
+              {messages.brand.shortName}
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
+              {messages.jobProviderDashboard.title}
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
+              {messages.jobProviderDashboard.body}
+            </p>
+          </section>
 
-          {/* Main Content */}
-          <div className="bg-white shadow-xl rounded-2xl p-8">
-            
-            {/* Tab Navigation */}
-            {activeTab === 'options' && (
-              <div className="space-y-5">
-                <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Job Provider Hub</h2>
-                
-                <div className="space-y-5">
-                  {!jobPostingData ? (
-                    <p className="text-gray-600 text-center text-lg mb-8">Welcome! Choose what you'd like to do:</p>
-                  ) : (
-                    <p className="text-gray-600 text-center text-lg mb-8">Welcome back! Choose what you'd like to do:</p>
-                  )}
-                  
-                  {/* Post/Update Job Button */}
-                  <button
-                    onClick={() => navigate('/job-provider-form')}
-                    className="w-full p-7 border-3 border-blue-400 rounded-xl hover:bg-blue-50 hover:border-blue-600 transition flex items-center justify-between group bg-gradient-to-r from-blue-50 to-transparent"
-                  >
-                    <div className="text-left">
-                      <h3 className="text-2xl font-bold text-gray-800 group-hover:text-blue-600 mb-2">
-                        {jobPostingData ? '✏️ Update Your Job Posting' : '📝 Post a Job Opening'}
-                      </h3>
-                      <p className="text-gray-600">
-                        {jobPostingData ? 'Edit and improve your job listing' : 'Create a job posting and reach talented candidates'}
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* View Job Posting Button */}
-                  <button
-                    onClick={() => setActiveTab('view')}
-                    className="w-full p-7 border-3 border-green-400 rounded-xl hover:bg-green-50 hover:border-green-600 transition flex items-center justify-between group bg-gradient-to-r from-green-50 to-transparent"
-                  >
-                    <div className="text-left">
-                      <h3 className="text-2xl font-bold text-gray-800 group-hover:text-green-600 mb-2">
-                        👁️ View Your Job Posting
-                      </h3>
-                      <p className="text-gray-600">Review your active job listing</p>
-                    </div>
-                  </button>
-
-                  {/* View Applications Button */}
-                  <button
-                    onClick={() => setActiveTab('applications')}
-                    className="w-full p-7 border-3 border-purple-400 rounded-xl hover:bg-purple-50 hover:border-purple-600 transition flex items-center justify-between group bg-gradient-to-r from-purple-50 to-transparent"
-                  >
-                    <div className="text-left">
-                      <h3 className="text-2xl font-bold text-gray-800 group-hover:text-purple-600 mb-2">
-                        📬 View Job Applications
-                      </h3>
-                      <p className="text-gray-600">See applications from interested candidates</p>
-                    </div>
-                  </button>
+          <section className="mt-8 rounded-[2.25rem] border border-slate-200 bg-white/90 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] sm:p-8">
+            {activeTab === "options" && (
+              <div>
+                <h2 className="text-3xl font-semibold text-slate-950">
+                  {messages.jobProviderDashboard.hubTitle}
+                </h2>
+                <p className="mt-3 text-base text-slate-600">
+                  {jobPostingData
+                    ? messages.jobProviderDashboard.welcomeBack
+                    : messages.jobProviderDashboard.welcomeNew}
+                </p>
+                <div className="mt-8 grid gap-5">
+                  {actionCards.map((card) => (
+                    <button
+                      key={card.title}
+                      type="button"
+                      onClick={card.action}
+                      className="flex w-full items-center justify-between rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6 text-left transition hover:border-sky-200 hover:bg-sky-50/70"
+                    >
+                      <div>
+                        <h3 className="text-2xl font-semibold text-slate-950">{card.title}</h3>
+                        <p className="mt-2 text-base text-slate-600">{card.body}</p>
+                      </div>
+                      <ChevronRight className="hidden text-sky-700 sm:block" />
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* Form View - Removed, opens in separate page */}
-
-            {/* View Existing Job Posting */}
-            {activeTab === 'view' && (
-              jobPostingData ? (
-                <ViewJobPosting 
+            {activeTab === "view" &&
+              (jobPostingData ? (
+                <ViewJobPosting
                   data={jobPostingData}
-                  onBack={() => setActiveTab('options')}
+                  onBack={() => setActiveTab("options")}
+                  copy={copy}
+                  messages={messages}
                 />
               ) : (
-                <UnavailableData 
-                  message="You haven't posted a job yet. Please post one first to view your information."
-                  onBack={() => setActiveTab('options')}
+                <UnavailableData
+                  message={messages.jobProviderDashboard.noPosting}
+                  onBack={() => setActiveTab("options")}
+                  messages={messages}
                 />
-              )
-            )}
+              ))}
 
-            {/* View Applications */}
-            {activeTab === 'applications' && user && (
-              <ViewJobApplications 
+            {activeTab === "applications" && user && (
+              <ViewJobApplications
                 userId={user.id}
-                onBack={() => setActiveTab('options')}
+                onBack={() => setActiveTab("options")}
                 hasJobPosting={!!jobPostingData}
+                messages={messages}
               />
             )}
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
     </>
   );
 }

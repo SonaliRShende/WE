@@ -1,141 +1,219 @@
-import React, { useState, useEffect } from 'react';
-import { Sparkles, User, Home, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import {
+  LogIn,
+  LogOut,
+  Menu,
+  UserPlus,
+  X,
+} from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import BrandLogo from "./BrandLogo";
+import LanguageSelector from "./LanguageSelector";
+import { useLocale } from "../context/LocaleContext";
+
+const getInitials = (name) => {
+  if (!name) {
+    return "U";
+  }
+
+  const parts = name.trim().split(" ");
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  return name[0].toUpperCase();
+};
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { messages } = useLocale();
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in
-    const userFromStorage = JSON.parse(localStorage.getItem('user'));
-    setUser(userFromStorage);
-  }, []);
+    const stored = localStorage.getItem("user");
+    setUser(stored ? JSON.parse(stored) : null);
+    setShowDropdown(false);
+    setMobileOpen(false);
+  }, [location.pathname]);
 
-  // Function to get user initials
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name[0].toUpperCase();
-  };
-
-  // Logout handler
   const handleLogout = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
     setUser(null);
     setShowDropdown(false);
-    navigate('/');
+    setMobileOpen(false);
+    navigate("/");
   };
 
+  const guestLinks = [
+    { href: "/#features", label: messages.nav.features },
+    { href: "/#about", label: messages.nav.about },
+    { href: "/#contact", label: messages.nav.contact },
+  ];
+
+  const userLinks = [
+    { to: "/", label: messages.nav.home },
+    { href: "/#contact", label: messages.nav.contact },
+  ];
+
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50 border-b-2 border-pink-200">
-      <div className="px-6 py-4 w-full">
-        <div className="flex justify-between items-center">
-          {/* Logo */}
-          <a href="/" className="flex items-center space-x-3 group">
-            <div className="bg-pink-500 p-2.5 rounded-xl shadow-md group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-              <Sparkles className="text-white" size={24} />
-            </div>
-            <span className="text-2xl font-bold text-pink-600">
-              Prerna - Job Connect
-            </span>
-          </a>
+    <nav className="sticky top-0 z-50 border-b border-white/60 bg-white/80 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-8xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <Link to="/" className="shrink-0">
+          <BrandLogo compact />
+        </Link>
 
-          {/* Menu */}
-          <div className="flex items-center space-x-8">
-            {user ? (
-              // Logged In Menu
-              <>
-                <a 
-                  href="/home" 
-                  className="flex items-center text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
-                >
-                  <Home size={18} className="mr-1.5" />
-                  Home
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
-                </a>
-                <a 
-                  href="#features" 
-                  className="text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
-                >
-                  Features
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
-                </a>
-                <a 
-                  href="#contact" 
-                  className="text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
-                >
-                  Contact
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
-                </a>
+        <div className="hidden items-center gap-3 lg:flex">
+          {(user ? userLinks : guestLinks).map((item) =>
+            item.to ? (
+              <Link
+                key={item.label}
+                to={item.to}
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <a
+                key={item.label}
+                href={item.href}
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+              >
+                {item.label}
+              </a>
+            )
+          )}
+          <LanguageSelector />
+          {user ? (
+            <>
 
-                {/* Profile Dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    className="w-10 h-10 rounded-full border-2 border-pink-500 bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold hover:border-pink-600 hover:scale-110 transition-all duration-300 cursor-pointer"
-                    title={user.name}
-                  >
-                    {getInitials(user.name)}
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-pink-200 overflow-hidden z-50">
-                      <div className="px-4 py-3 border-b border-pink-100 bg-gradient-to-r from-pink-50 to-purple-50">
-                        <p className="font-semibold text-gray-800">{user.name}</p>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                      </div>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 font-medium flex items-center space-x-2 transition-colors duration-200"
-                      >
-                        <LogOut size={18} />
-                        <span>Logout</span>
-                      </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowDropdown((current) => !current)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-sky-200"
+                  title={user.name}
+                >
+                  {getInitials(user.name)}
+                </button>
+                {showDropdown && (
+                  <div className="absolute right-0 mt-3 w-72 rounded-3xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-900/10">
+                    <div className="rounded-2xl bg-slate-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                        {messages.nav.signedInAs}
+                      </p>
+                      <p className="mt-2 text-base font-semibold text-slate-950">{user.name}</p>
+                      <p className="text-sm text-slate-600">{user.email}</p>
                     </div>
-                  )}
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                    >
+                      <LogOut size={16} />
+                      {messages.nav.logout}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+              >
+                <LogIn size={16} />
+                {messages.nav.login}
+              </Link>
+              <Link
+                to="/register"
+                className="inline-flex items-center gap-2 rounded-full  px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-100"
+              >
+                <UserPlus size={16} />
+                {messages.nav.getStarted}
+              </Link>
+            </>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setMobileOpen((current) => !current)}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm lg:hidden"
+          aria-label={messages.nav.menu}
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </div>
+
+      {mobileOpen && (
+        <div className="border-t border-slate-200 bg-white px-4 py-4 shadow-lg lg:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3">
+            {(user ? userLinks : guestLinks).map((item) =>
+              item.to ? (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  className="rounded-2xl px-4 py-3 text-sm font-medium text-slate-800 transition hover:bg-slate-100"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="rounded-2xl px-4 py-3 text-sm font-medium text-slate-800 transition hover:bg-slate-100"
+                >
+                  {item.label}
+                </a>
+              )
+            )}
+
+            <LanguageSelector compact />
+
+            {user ? (
+              <>
+
+                <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    {messages.nav.signedInAs}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-slate-950">{user.name}</p>
+                  <p className="text-sm text-slate-600">{user.email}</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
+                >
+                  <LogOut size={16} />
+                  {messages.nav.logout}
+                </button>
               </>
             ) : (
-              // Logged Out Menu
-              <>
-                <a 
-                  href="#features" 
-                  className="text-lg text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-800"
                 >
-                  Features
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
-                </a>
-                <a 
-                  href="#about" 
-                  className="text-lg text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
+                  <LogIn size={16} />
+                  {messages.nav.login}
+                </Link>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
                 >
-                  About
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
-                </a>
-                <a 
-                  href="#contact" 
-                  className="text-gray-600 hover:text-pink-600 font-medium transition-colors duration-200 relative group"
-                >
-                  Contact
-                  <span className="text-lg absolute bottom-0 left-0 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
-                </a>
-                <a 
-                  href="/register" 
-                  className="text-lg bg-pink-500 text-white px-6 py-2.5 rounded-full font-semibold shadow-md hover:shadow-xl hover:bg-pink-600 transform hover:-translate-y-0.5 transition-all duration-300"
-                >
-                  Sign Up
-                </a>
-              </>
+                  <UserPlus size={16} />
+                  {messages.nav.getStarted}
+                </Link>
+              </div>
             )}
           </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 }

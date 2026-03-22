@@ -1,132 +1,128 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Upload, X, ArrowLeft, Loader, Globe, CheckCircle } from 'lucide-react';
+﻿import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowLeft,
+  CheckCircle,
+  Loader,
+  Mic,
+  MicOff,
+  Upload,
+  X,
+} from "lucide-react";
 import Navbar from "../components/Navbar";
+import { useLocale } from "../context/LocaleContext";
 
 const initialFormData = {
-  // Personal Information
-  name: '',
-  age: '',
-  phoneNumber: '',
-  email: '',
-  companyName: '',
+  name: "",
+  age: "",
+  phoneNumber: "",
+  email: "",
+  companyName: "",
   companyLogo: null,
-  
-  // Job Details
-  jobTitle: '',
-  jobCategory: '',
-  jobDescription: '',
-  experienceRequired: '',
-  salaryMin: '',
-  salaryMax: '',
-  salaryType: 'yearly',
-  jobLocation: '',
-  jobType: 'full-time',
-  benefits: '',
-  applicationDeadline: '',
-  requiredQualifications: ''
+  jobTitle: "",
+  jobCategory: "",
+  jobDescription: "",
+  experienceRequired: "",
+  salaryMin: "",
+  salaryMax: "",
+  salaryType: "yearly",
+  jobLocation: "",
+  jobType: "full-time",
+  benefits: "",
+  applicationDeadline: "",
+  requiredQualifications: "",
 };
 
-const VoiceFeedbackModal = ({ voiceState, toggleVoiceInput }) => {
+const VoiceFeedbackModal = ({ voiceState, toggleVoiceInput, fieldLabels, messages }) => {
   const { state, field } = voiceState;
-  
-  if (state === 'idle') return null;
 
-  let title, icon, colorClass, buttonText;
-  const fieldLabel = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-  
-  switch (state) {
-    case 'starting':
-      title = 'Activating Microphone...';
-      icon = <Mic size={48} className="text-yellow-500" />;
-      colorClass = 'border-yellow-500';
-      buttonText = 'Cancel';
-      break;
-    case 'listening':
-      title = 'Listening... Please Speak Now!';
-      icon = <MicOff size={48} className="text-red-500 animate-pulse" />;
-      colorClass = 'border-red-500';
-      buttonText = 'Stop Recording';
-      break;
-    case 'processing':
-      title = 'Transcribing Voice...';
-      icon = <Loader size={48} className="text-blue-500 animate-spin" />;
-      colorClass = 'border-blue-500';
-      buttonText = 'Wait...';
-      break;
-    default:
-      return null;
+  if (state === "idle") {
+    return null;
   }
-  
+
+  const fieldLabel = fieldLabels[field] ?? field;
+
+  const variants = {
+    starting: {
+      title: messages.voice.starting,
+      icon: <Mic size={48} className="text-amber-500" />,
+      border: "border-amber-300",
+      buttonText: messages.voice.cancel,
+      buttonClass: "bg-slate-100 text-slate-800 hover:bg-slate-200",
+    },
+    listening: {
+      title: messages.voice.listening,
+      icon: <MicOff size={48} className="animate-pulse text-rose-500" />,
+      border: "border-rose-300",
+      buttonText: messages.voice.stop,
+      buttonClass: "bg-rose-500 text-white hover:bg-rose-600",
+    },
+    processing: {
+      title: messages.voice.processing,
+      icon: <Loader size={48} className="animate-spin text-sky-600" />,
+      border: "border-sky-300",
+      buttonText: messages.voice.wait,
+      buttonClass: "cursor-not-allowed bg-sky-100 text-sky-700",
+    },
+  };
+
+  const current = variants[state];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-sm"> 
-      <div className={`bg-white p-10 rounded-xl shadow-2xl text-center border-4 ${colorClass} w-80`}>
-        {icon}
-        <h3 className="text-xl font-semibold text-gray-800 mt-4 mb-2">{title}</h3>
-        <p className="text-sm text-gray-600 mb-6">For Field: <strong>{fieldLabel}</strong></p>
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-4 backdrop-blur-sm">
+      <div className={`w-full max-w-sm rounded-[2rem] border bg-white p-8 text-center shadow-2xl ${current.border}`}>
+        <div className="flex justify-center">{current.icon}</div>
+        <h3 className="mt-4 text-2xl font-semibold text-slate-950">{current.title}</h3>
+        <p className="mt-2 text-sm text-slate-600">
+          {messages.common.fieldPrefix}: <strong>{fieldLabel}</strong>
+        </p>
         <button
-          onClick={() => toggleVoiceInput(field)} 
-          className={`px-6 py-2 rounded-full font-medium transition duration-200 ${
-            state === 'listening' 
-              ? 'bg-red-500 text-white hover:bg-red-600'
-              : state === 'starting' 
-                ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                : 'bg-blue-100 text-blue-500 cursor-not-allowed'
-          }`}
-          disabled={state === 'processing'}
+          type="button"
+          onClick={() => toggleVoiceInput(field)}
+          disabled={state === "processing"}
+          className={`mt-6 rounded-full px-5 py-3 text-sm font-semibold transition ${current.buttonClass}`}
         >
-          {buttonText}
+          {current.buttonText}
         </button>
-        {state === 'listening' && (
-          <p className="text-xs text-gray-500 mt-2">
-            (Recording will stop automatically after a pause)
-          </p>
+        {state === "listening" && (
+          <p className="mt-3 text-xs text-slate-500">{messages.voice.autoStop}</p>
         )}
       </div>
     </div>
   );
 };
 
-const SubmissionModal = ({ isSubmitting, isSuccess }) => {
-  if (!isSubmitting && !isSuccess) return null;
+const SubmissionModal = ({ isSubmitting, isSuccess, messages }) => {
+  if (!isSubmitting && !isSuccess) {
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="bg-white p-12 rounded-2xl shadow-2xl text-center w-96">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-[2rem] bg-white p-10 text-center shadow-2xl">
         {isSuccess ? (
           <>
-            <div className="flex justify-center mb-6">
-              <div className="bg-green-100 rounded-full p-4">
-                <CheckCircle size={64} className="text-green-500" />
-              </div>
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
+              <CheckCircle size={48} className="text-emerald-600" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-3">Success! 🎉</h2>
-            <p className="text-gray-600 text-lg mb-8">
-              Your job posting has been submitted successfully!
+            <h2 className="mt-6 text-3xl font-semibold text-slate-950">
+              {messages.submission.successTitle}
+            </h2>
+            <p className="mt-3 text-base text-slate-600">
+              {messages.submission.providerSuccessBody}
             </p>
-            <p className="text-sm text-gray-500">
-              Redirecting to your dashboard...
-            </p>
+            <p className="mt-5 text-sm text-slate-500">{messages.submission.redirecting}</p>
           </>
         ) : (
           <>
-            <div className="flex justify-center mb-6">
-              <div className="relative w-16 h-16">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full animate-spin"></div>
-                <div className="absolute inset-1 bg-white rounded-full flex items-center justify-center">
-                  <Loader size={32} className="text-blue-500 animate-spin" />
-                </div>
-              </div>
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-sky-100">
+              <Loader size={40} className="animate-spin text-sky-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">Submitting...</h2>
-            <p className="text-gray-600">
-              Please wait while we process your job posting
+            <h2 className="mt-6 text-3xl font-semibold text-slate-950">
+              {messages.submission.submitting}
+            </h2>
+            <p className="mt-3 text-base text-slate-600">
+              {messages.submission.providerSubmittingBody}
             </p>
-            <div className="mt-6 flex gap-2 justify-center">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-            </div>
           </>
         )}
       </div>
@@ -134,449 +130,614 @@ const SubmissionModal = ({ isSubmitting, isSuccess }) => {
   );
 };
 
-const InputField = ({ label, field, value, placeholder, type = "text", rows, mandatory = false, handleInputChange, toggleVoiceInput, options = null }) => (
-  <div className="mb-6">
-    <label className="block text-gray-700 font-medium mb-2">
-      {label} {mandatory && <span className="text-blue-500">*</span>}
-    </label>
+const InputField = ({
+  label,
+  field,
+  value,
+  placeholder,
+  type = "text",
+  rows,
+  mandatory = false,
+  handleInputChange,
+  toggleVoiceInput,
+  voiceButtonTitle,
+  options = null,
+  selectPrompt,
+}) => (
+  <label className="block">
+    <span className="mb-2 block text-sm font-semibold text-slate-700">
+      {label} {mandatory && <span className="text-rose-500">*</span>}
+    </span>
     <div className="relative">
       {type === "textarea" ? (
         <textarea
           value={value}
-          onChange={(e) => handleInputChange(field, e.target.value)}
+          onChange={(event) => handleInputChange(field, event.target.value)}
           placeholder={placeholder}
           rows={rows || 4}
-          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition resize-none"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-14 text-slate-950 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
         />
       ) : type === "select" ? (
         <select
           value={value}
-          onChange={(e) => handleInputChange(field, e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+          onChange={(event) => handleInputChange(field, event.target.value)}
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
         >
-          <option value="">Select {label}</option>
-          {options && options.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          <option value="">{selectPrompt}</option>
+          {options?.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
           ))}
         </select>
       ) : (
         <input
           type={type}
           value={value}
-          onChange={(e) => handleInputChange(field, e.target.value)}
+          onChange={(event) => handleInputChange(field, event.target.value)}
           placeholder={placeholder}
-          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-14 text-slate-950 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
         />
       )}
       {type !== "select" && (
         <button
           type="button"
           onClick={() => toggleVoiceInput(field)}
-          className="absolute right-3 top-3 p-2 rounded-full transition bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600"
-          title="Click to Speak"
+          className="absolute right-3 top-3 rounded-full bg-slate-100 p-2 text-slate-600 transition hover:bg-sky-100 hover:text-sky-700"
+          title={voiceButtonTitle}
         >
           <Mic size={18} />
         </button>
       )}
     </div>
-  </div>
+  </label>
 );
 
 export default function JobProviderApplication({ existingData = null, onSuccess = null }) {
-  const [formData, setFormData] = useState(existingData ? {
-    name: existingData.name ?? '',
-    age: existingData.age ?? '',
-    phoneNumber: existingData.phoneNumber ?? existingData.phone_number ?? '',
-    email: existingData.email ?? '',
-    companyName: existingData.companyName ?? existingData.company_name ?? '',
-    companyLogo: null,
-    jobTitle: existingData.jobTitle ?? existingData.job_title ?? '',
-    jobCategory: existingData.jobCategory ?? existingData.job_category ?? '',
-    jobDescription: existingData.jobDescription ?? existingData.job_description ?? '',
-    experienceRequired: existingData.experienceRequired ?? existingData.experience_required ?? '',
-    salaryMin: existingData.salaryMin ?? existingData.salary_min ?? '',
-    salaryMax: existingData.salaryMax ?? existingData.salary_max ?? '',
-    salaryType: existingData.salaryType ?? existingData.salary_type ?? 'yearly',
-    jobLocation: existingData.jobLocation ?? existingData.job_location ?? '',
-    jobType: existingData.jobType ?? existingData.job_type ?? 'full-time',
-    benefits: existingData.benefits ?? '',
-    applicationDeadline: existingData.applicationDeadline ?? existingData.application_deadline ?? '',
-    requiredQualifications: existingData.requiredQualifications ?? existingData.required_qualifications ?? ''
-  } : initialFormData);
+  const { messages, speechLocale, languageLabel, t } = useLocale();
+  const copy = messages.jobProviderForm;
 
-  const [logoPreview, setLogoPreview] = useState(
-    existingData && (existingData.company_logo || existingData.companyLogo) ? (existingData.company_logo || existingData.companyLogo) : null
+  const [formData, setFormData] = useState(
+    existingData
+      ? {
+          name: existingData.name ?? "",
+          age: existingData.age ?? "",
+          phoneNumber: existingData.phoneNumber ?? existingData.phone_number ?? "",
+          email: existingData.email ?? "",
+          companyName: existingData.companyName ?? existingData.company_name ?? "",
+          companyLogo: null,
+          jobTitle: existingData.jobTitle ?? existingData.job_title ?? "",
+          jobCategory: existingData.jobCategory ?? existingData.job_category ?? "",
+          jobDescription: existingData.jobDescription ?? existingData.job_description ?? "",
+          experienceRequired:
+            existingData.experienceRequired ?? existingData.experience_required ?? "",
+          salaryMin: existingData.salaryMin ?? existingData.salary_min ?? "",
+          salaryMax: existingData.salaryMax ?? existingData.salary_max ?? "",
+          salaryType: existingData.salaryType ?? existingData.salary_type ?? "yearly",
+          jobLocation: existingData.jobLocation ?? existingData.job_location ?? "",
+          jobType: existingData.jobType ?? existingData.job_type ?? "full-time",
+          benefits: existingData.benefits ?? "",
+          applicationDeadline:
+            existingData.applicationDeadline ?? existingData.application_deadline ?? "",
+          requiredQualifications:
+            existingData.requiredQualifications ?? existingData.required_qualifications ?? "",
+        }
+      : initialFormData
   );
-  const [voiceState, setVoiceState] = useState({ state: 'idle', field: null });
+  const [logoPreview, setLogoPreview] = useState(
+    existingData && (existingData.company_logo || existingData.companyLogo)
+      ? existingData.company_logo || existingData.companyLogo
+      : null
+  );
+  const [voiceState, setVoiceState] = useState({ state: "idle", field: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('en-IN');
-  const processingRef = useRef(false); 
+  const processingRef = useRef(false);
   const recognitionRef = useRef(null);
 
+  const fieldLabels = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(copy.fields).map(([key, value]) => [key, value.label])
+      ),
+    [copy.fields]
+  );
+
+  const jobCategories = useMemo(
+    () =>
+      Object.entries(messages.taxonomy.jobCategories).map(([value, label]) => ({ value, label })),
+    [messages.taxonomy.jobCategories]
+  );
+  const jobTypes = useMemo(
+    () => Object.entries(messages.taxonomy.jobTypes).map(([value, label]) => ({ value, label })),
+    [messages.taxonomy.jobTypes]
+  );
+  const salaryTypes = useMemo(
+    () => Object.entries(messages.taxonomy.salaryTypes).map(([value, label]) => ({ value, label })),
+    [messages.taxonomy.salaryTypes]
+  );
+
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((previous) => ({ ...previous, [field]: value }));
   };
 
-  const handleLogoUpload = (e) => {
-    const file = e.target.files[0];
+  const handleLogoUpload = (event) => {
+    const file = event.target.files[0];
     if (file) {
-      setFormData(prev => ({ ...prev, companyLogo: file }));
+      setFormData((previous) => ({ ...previous, companyLogo: file }));
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result);
-      };
+      reader.onloadend = () => setLogoPreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
   const removeLogo = () => {
-    setFormData(prev => ({ ...prev, companyLogo: null }));
+    setFormData((previous) => ({ ...previous, companyLogo: null }));
     setLogoPreview(null);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (voiceState.state !== 'idle') {
-      alert("Please wait for voice input to finish processing or click 'Stop Recording' in the modal.");
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (voiceState.state !== "idle") {
+      alert(messages.common.voiceWait);
       return;
     }
-    
+
     if (!formData.name || !formData.email || !formData.phoneNumber || !formData.jobTitle || !formData.jobDescription) {
-      alert('Please fill all mandatory fields (Name, Email, Phone Number, Job Title, Job Description)');
+      alert(copy.requiredAlert);
       return;
     }
 
-    // Get user ID from localStorage
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = JSON.parse(localStorage.getItem("user"));
     if (!user?.id) {
-      alert('User session not found. Please login again.');
+      alert(messages.common.sessionMissing);
       return;
     }
 
-    const { companyLogo, ...dataToSend } = formData; 
-    // include base64 preview if available so backend can persist image
-    const dataWithUserId = { ...dataToSend, user_id: user.id, company_logo: logoPreview || null };
-    
     setIsSubmitting(true);
-    
+    setIsSuccess(false);
+
+    const { companyLogo, ...dataToSend } = formData;
+    const payload = {
+      ...dataToSend,
+      user_id: user.id,
+      company_logo: logoPreview || null,
+    };
+
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/submit-job-posting', {
-        method: 'POST',
+      const response = await fetch("http://127.0.0.1:5000/api/submit-job-posting", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(dataWithUserId),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
-
-      if (response.ok) {
-        console.log('Server Response:', result);
-        setIsSuccess(true);
-        setFormData(initialFormData);
-        setLogoPreview(null);
-        
-        // Redirect to provider dashboard after showing success modal
-        setTimeout(() => {
-            window.location.href = '/job-provider-dashboard';
-        }, 2500);
-      } else {
-        console.error('Submission failed:', result.error);
+      if (!response.ok) {
         setIsSubmitting(false);
-        alert(`❌ Job posting submission failed: ${result.error || 'Server error'}`);
+        alert(result.error || messages.common.backendUnavailable);
+        return;
       }
+
+      setIsSuccess(true);
+      setFormData(initialFormData);
+      setLogoPreview(null);
+
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      setTimeout(() => {
+        window.location.href = "/job-provider-dashboard";
+      }, 2200);
     } catch (error) {
-      console.error('Network or unexpected error:', error);
+      console.error("Network or unexpected error:", error);
       setIsSubmitting(false);
-      alert('Could not connect to the backend server. Is app.py running?');
+      alert(messages.common.backendUnavailable);
     }
   };
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = selectedLanguage;
-
-      recognition.onstart = () => {
-        console.log('Recognition started');
-        setVoiceState(prev => ({ ...prev, state: 'listening' }));
-        processingRef.current = false;
-      };
-
-      recognition.onresult = (event) => {
-        if (processingRef.current) {
-          console.log('Already processing, skipping duplicate');
-          return;
-        }
-        
-        processingRef.current = true;
-        
-        const speechResult = event.results[0][0].transcript;
-        console.log('Voice Transcription:', speechResult);
-        
-        setVoiceState(prev => {
-          if (!prev.field) {
-            processingRef.current = false;
-            return prev;
-          }
-          
-          const currentField = prev.field;
-          
-          setFormData(prevForm => {
-            const existingText = prevForm[currentField] || '';
-            const newText = speechResult.trim();
-            
-            return {
-              ...prevForm,
-              [currentField]: existingText ? `${existingText} ${newText}` : newText
-            };
-          });
-          
-          return { ...prev, state: 'processing' };
-        });
-        
-        setTimeout(() => {
-          processingRef.current = false;
-        }, 1000);
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        alert(`Voice Input Error: ${event.error}. Try Chrome/Edge.`);
-        setVoiceState({ state: 'idle', field: null });
-        processingRef.current = false;
-      };
-      
-      recognition.onend = () => {
-        console.log('Recognition ended');
-        setTimeout(() => {
-          setVoiceState({ state: 'idle', field: null });
-          processingRef.current = false;
-        }, 500);
-      };
-      
-      recognitionRef.current = recognition;
-    } else {
-      console.warn("Web Speech API not fully supported in this browser.");
+    if (!SpeechRecognition) {
+      recognitionRef.current = null;
+      return undefined;
     }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = speechLocale;
+
+    recognition.onstart = () => {
+      setVoiceState((previous) => ({ ...previous, state: "listening" }));
+      processingRef.current = false;
+    };
+
+    recognition.onresult = (event) => {
+      if (processingRef.current) {
+        return;
+      }
+
+      processingRef.current = true;
+      const spokenText = event.results[0][0].transcript.trim();
+
+      setVoiceState((previous) => {
+        if (!previous.field) {
+          processingRef.current = false;
+          return previous;
+        }
+
+        const currentField = previous.field;
+        setFormData((previousForm) => {
+          const currentValue = previousForm[currentField] || "";
+          return {
+            ...previousForm,
+            [currentField]: currentValue ? `${currentValue} ${spokenText}` : spokenText,
+          };
+        });
+
+        return { ...previous, state: "processing" };
+      });
+
+      setTimeout(() => {
+        processingRef.current = false;
+      }, 1000);
+    };
+
+    recognition.onerror = (event) => {
+      alert(t("voice.error", { error: event.error }));
+      setVoiceState({ state: "idle", field: null });
+      processingRef.current = false;
+    };
+
+    recognition.onend = () => {
+      setTimeout(() => {
+        setVoiceState({ state: "idle", field: null });
+        processingRef.current = false;
+      }, 350);
+    };
+
+    recognitionRef.current = recognition;
 
     return () => {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
-        } catch (e) {
-          console.log('Recognition cleanup (safe to ignore):', e);
+        } catch (error) {
+          console.error("Recognition cleanup:", error);
         }
-        recognitionRef.current = null;
       }
+      recognitionRef.current = null;
       processingRef.current = false;
     };
-  }, [selectedLanguage]);
+  }, [speechLocale, t]);
 
   const toggleVoiceInput = (field) => {
-    console.log('Toggle voice called for field:', field, 'Current state:', voiceState);
-    
-    const isActive = voiceState.field === field && voiceState.state !== 'idle';
-    
+    const isActive = voiceState.field === field && voiceState.state !== "idle";
+
     if (!recognitionRef.current) {
-      alert("Voice recognition is not supported by your browser or requires a secure connection (HTTPS). Try Chrome or Edge.");
+      alert(messages.common.browserVoiceUnsupported);
       return;
     }
 
     if (isActive) {
-      console.log('Stopping recognition');
       recognitionRef.current.stop();
       processingRef.current = false;
-    } else {
-      if (voiceState.state !== 'idle') {
-        recognitionRef.current.stop();
-        processingRef.current = false;
-      }
-      
-      setVoiceState({ state: 'starting', field: field });
-      
-      setTimeout(() => {
-        try {
-          console.log('Starting recognition for field:', field);
-          recognitionRef.current.start();
-        } catch (e) {
-          console.error("Failed to start recognition:", e);
-          setVoiceState({ state: 'idle', field: null });
-          alert("Error starting microphone. The microphone might already be in use. Try again.");
-        }
-      }, 200);
+      return;
     }
+
+    if (voiceState.state !== "idle") {
+      recognitionRef.current.stop();
+      processingRef.current = false;
+    }
+
+    setVoiceState({ state: "starting", field });
+
+    setTimeout(() => {
+      try {
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error("Failed to start recognition:", error);
+        setVoiceState({ state: "idle", field: null });
+        alert(messages.common.voiceStartError);
+      }
+    }, 180);
   };
-
-  const jobCategories = [
-    { value: 'technology', label: 'Technology' },
-    { value: 'healthcare', label: 'Healthcare' },
-    { value: 'education', label: 'Education' },
-    { value: 'finance', label: 'Finance' },
-    { value: 'sales', label: 'Sales & Marketing' },
-    { value: 'operations', label: 'Operations' },
-    { value: 'hospitality', label: 'Hospitality' },
-    { value: 'retail', label: 'Retail' },
-    { value: 'manufacturing', label: 'Manufacturing' },
-    { value: 'other', label: 'Other' }
-  ];
-
-  const jobTypes = [
-    { value: 'full-time', label: 'Full-time' },
-    { value: 'part-time', label: 'Part-time' },
-    { value: 'contract', label: 'Contract' },
-    { value: 'temporary', label: 'Temporary' },
-    { value: 'freelance', label: 'Freelance' }
-  ];
-
-  const salaryTypes = [
-    { value: 'yearly', label: 'Yearly' },
-    { value: 'monthly', label: 'Monthly' },
-    { value: 'hourly', label: 'Hourly' }
-  ];
 
   return (
     <>
       <Navbar />
-      
-      <VoiceFeedbackModal voiceState={voiceState} toggleVoiceInput={toggleVoiceInput} />
-      
-      <SubmissionModal isSubmitting={isSubmitting} isSuccess={isSuccess} />
-      
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-slate-50 to-cyan-100 px-6 py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <a href="/" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
-              <ArrowLeft size={20} className="mr-2" />
-              Back to Home
-            </a>
-          </div>
+      <VoiceFeedbackModal
+        voiceState={voiceState}
+        toggleVoiceInput={toggleVoiceInput}
+        fieldLabels={fieldLabels}
+        messages={messages}
+      />
+      <SubmissionModal
+        isSubmitting={isSubmitting}
+        isSuccess={isSuccess}
+        messages={messages}
+      />
 
-          <div className="bg-white shadow-xl rounded-2xl p-8 md:p-12">
-            <div className="text-center mb-10">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-                Post a Job Opportunity
-              </h1>
-              <p className="text-gray-600 text-lg">
-                Help us find the perfect candidate for your organization by sharing job details.
-              </p>
-            </div>
+      <main className="px-4 py-10 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <a
+            href="/job-provider-dashboard"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+          >
+            <ArrowLeft size={18} />
+            {messages.common.backToHome}
+          </a>
 
-            {/* Language Selector */}
-            <div className="mb-8 flex justify-center">
-              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-3 rounded-full shadow-md border border-blue-200">
-                <div className="flex items-center space-x-3">
-                  <Globe className="text-blue-600" size={20} />
-                  <label className="font-medium text-gray-700">Voice Language:</label>
-                  <select 
-                    value={selectedLanguage} 
-                    onChange={(e) => setSelectedLanguage(e.target.value)}
-                    className="px-4 py-1.5 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-400 bg-white font-medium text-gray-700 cursor-pointer"
-                  >
-                    <option value="en-IN">🇮🇳 English (India)</option>
-                    <option value="hi-IN">🇮🇳 हिंदी (Hindi)</option>
-                    <option value="en-US">🇺🇸 English (US)</option>
-                    <option value="en-GB">🇬🇧 English (UK)</option>
-                    <option value="mr-IN">🇮🇳 मराठी (Marathi)</option>
-                  </select>
-                </div>
+          <section className="mt-6 rounded-[2.25rem] border border-slate-200 bg-white/90 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] sm:p-8 lg:p-10">
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">
+                  {messages.brand.shortName}
+                </p>
+                <h1 className="mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
+                  {copy.title}
+                </h1>
+                <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
+                  {copy.body}
+                </p>
+              </div>
+              <div className="rounded-[1.75rem] border border-sky-100 bg-sky-50 p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+                  {messages.nav.language}
+                </p>
+                <p className="mt-3 text-base leading-7 text-slate-700">
+                  {t("common.secureVoiceNote", { language: languageLabel })}
+                </p>
               </div>
             </div>
 
-            <div>
-              {/* Personal Information Section */}
-              <div className="mb-10">
-                <h2 className="text-2xl font-semibold text-blue-600 mb-6 border-b-2 border-blue-200 pb-2">Personal Information</h2>
-                
-                <InputField label="Full Name" field="name" value={formData.name} placeholder="Enter your full name" mandatory handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <InputField label="Age" field="age" value={formData.age} placeholder="Enter your age" type="number" handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-                  <InputField label="Phone Number" field="phoneNumber" value={formData.phoneNumber} placeholder="+91 98765 43210" type="tel" mandatory handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
+            <form className="mt-10 space-y-10" onSubmit={handleSubmit}>
+              <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/60 p-6">
+                <h2 className="text-2xl font-semibold text-slate-950">{copy.personal}</h2>
+                <div className="mt-6 grid gap-6 md:grid-cols-2">
+                  <InputField
+                    label={copy.fields.name.label}
+                    field="name"
+                    value={formData.name}
+                    placeholder={copy.fields.name.placeholder}
+                    mandatory
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <InputField
+                    label={copy.fields.age.label}
+                    field="age"
+                    value={formData.age}
+                    placeholder={copy.fields.age.placeholder}
+                    type="number"
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <InputField
+                    label={copy.fields.phoneNumber.label}
+                    field="phoneNumber"
+                    value={formData.phoneNumber}
+                    placeholder={copy.fields.phoneNumber.placeholder}
+                    type="tel"
+                    mandatory
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <InputField
+                    label={copy.fields.email.label}
+                    field="email"
+                    value={formData.email}
+                    placeholder={copy.fields.email.placeholder}
+                    type="email"
+                    mandatory
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
                 </div>
-
-                <InputField label="Email Address" field="email" value={formData.email} placeholder="your.email@example.com" type="email" mandatory handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <InputField label="Company Name" field="companyName" value={formData.companyName} placeholder="Enter your company name" handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-gray-700 font-medium mb-2">
-                    Company Logo <span className="text-gray-500 text-sm">(Optional)</span>
-                  </label>
-                  {logoPreview ? (
-                    <div className="relative inline-block">
-                      <img src={logoPreview} alt="Company Logo" className="w-32 h-32 rounded-lg object-cover border-4 border-blue-200" />
-                      <button
-                        type="button"
-                        onClick={removeLogo}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
-                      <div className="text-center">
-                        <Upload className="mx-auto mb-2 text-gray-400" size={32} />
-                        <span className="text-gray-600">Click to upload</span>
+                <div className="mt-6 grid gap-6 md:grid-cols-[1fr_0.9fr]">
+                  <InputField
+                    label={copy.fields.companyName.label}
+                    field="companyName"
+                    value={formData.companyName}
+                    placeholder={copy.fields.companyName.placeholder}
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      {copy.uploadLabel} <span className="text-slate-500">({messages.common.optional})</span>
+                    </span>
+                    {logoPreview ? (
+                      <div className="relative inline-flex rounded-[1.5rem] border border-slate-200 bg-white p-2 shadow-sm">
+                        <img
+                          src={logoPreview}
+                          alt={copy.uploadLabel}
+                          className="h-28 w-28 rounded-[1.25rem] object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeLogo}
+                          className="absolute -right-2 -top-2 rounded-full bg-rose-500 p-1.5 text-white shadow-lg transition hover:bg-rose-600"
+                        >
+                          <X size={16} />
+                        </button>
                       </div>
-                      <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
-                    </label>
-                  )}
+                    ) : (
+                      <label className="flex min-h-32 cursor-pointer items-center justify-center rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-8 text-center transition hover:border-sky-300 hover:bg-sky-50">
+                        <div>
+                          <Upload size={30} className="mx-auto text-slate-400" />
+                          <p className="mt-3 text-sm font-medium text-slate-600">
+                            {messages.common.clickToUpload}
+                          </p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                        />
+                      </label>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </section>
 
-              {/* Job Details Section */}
-              <div className="mb-10">
-                <h2 className="text-2xl font-semibold text-cyan-600 mb-6 border-b-2 border-cyan-200 pb-2">Job Details</h2>
-                
-                <InputField label="Job Title" field="jobTitle" value={formData.jobTitle} placeholder="e.g., Senior Software Engineer, Marketing Manager" mandatory handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-
-                <InputField label="Job Category" field="jobCategory" value={formData.jobCategory} type="select" options={jobCategories} mandatory handleInputChange={handleInputChange}/>
-
-                <InputField label="Job Description" field="jobDescription" value={formData.jobDescription} placeholder="Provide a detailed description of the job role, responsibilities, and expectations..." type="textarea" rows={6} mandatory handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-
-                <InputField label="Required Qualifications" field="requiredQualifications" value={formData.requiredQualifications} placeholder="List education, certifications, and required qualifications" type="textarea" rows={4} handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-
-                <InputField label="Experience Required" field="experienceRequired" value={formData.experienceRequired} placeholder="e.g., 3-5 years in software development" handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <InputField label="Minimum Salary" field="salaryMin" value={formData.salaryMin} placeholder="Enter amount" type="number" handleInputChange={handleInputChange}/>
-                  <InputField label="Maximum Salary" field="salaryMax" value={formData.salaryMax} placeholder="Enter amount" type="number" handleInputChange={handleInputChange}/>
-                  <InputField label="Salary Type" field="salaryType" value={formData.salaryType} type="select" options={salaryTypes} handleInputChange={handleInputChange}/>
+              <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/60 p-6">
+                <h2 className="text-2xl font-semibold text-indigo-700">{copy.details}</h2>
+                <div className="mt-6 space-y-6">
+                  <InputField
+                    label={copy.fields.jobTitle.label}
+                    field="jobTitle"
+                    value={formData.jobTitle}
+                    placeholder={copy.fields.jobTitle.placeholder}
+                    mandatory
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <InputField
+                    label={copy.fields.jobCategory.label}
+                    field="jobCategory"
+                    value={formData.jobCategory}
+                    type="select"
+                    options={jobCategories}
+                    mandatory
+                    handleInputChange={handleInputChange}
+                    selectPrompt={messages.common.selectField({ field: copy.fields.jobCategory.label })}
+                  />
+                  <InputField
+                    label={copy.fields.jobDescription.label}
+                    field="jobDescription"
+                    value={formData.jobDescription}
+                    placeholder={copy.fields.jobDescription.placeholder}
+                    type="textarea"
+                    rows={6}
+                    mandatory
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <InputField
+                    label={copy.fields.requiredQualifications.label}
+                    field="requiredQualifications"
+                    value={formData.requiredQualifications}
+                    placeholder={copy.fields.requiredQualifications.placeholder}
+                    type="textarea"
+                    rows={4}
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <InputField
+                    label={copy.fields.experienceRequired.label}
+                    field="experienceRequired"
+                    value={formData.experienceRequired}
+                    placeholder={copy.fields.experienceRequired.placeholder}
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <div className="grid gap-6 md:grid-cols-3">
+                    <InputField
+                      label={copy.fields.salaryMin.label}
+                      field="salaryMin"
+                      value={formData.salaryMin}
+                      placeholder={copy.fields.salaryMin.placeholder}
+                      type="number"
+                      handleInputChange={handleInputChange}
+                      toggleVoiceInput={toggleVoiceInput}
+                      voiceButtonTitle={messages.voice.speak}
+                    />
+                    <InputField
+                      label={copy.fields.salaryMax.label}
+                      field="salaryMax"
+                      value={formData.salaryMax}
+                      placeholder={copy.fields.salaryMax.placeholder}
+                      type="number"
+                      handleInputChange={handleInputChange}
+                      toggleVoiceInput={toggleVoiceInput}
+                      voiceButtonTitle={messages.voice.speak}
+                    />
+                    <InputField
+                      label={copy.fields.salaryType.label}
+                      field="salaryType"
+                      value={formData.salaryType}
+                      type="select"
+                      options={salaryTypes}
+                      handleInputChange={handleInputChange}
+                      selectPrompt={messages.common.selectField({ field: copy.fields.salaryType.label })}
+                    />
+                  </div>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <InputField
+                      label={copy.fields.jobLocation.label}
+                      field="jobLocation"
+                      value={formData.jobLocation}
+                      placeholder={copy.fields.jobLocation.placeholder}
+                      handleInputChange={handleInputChange}
+                      toggleVoiceInput={toggleVoiceInput}
+                      voiceButtonTitle={messages.voice.speak}
+                    />
+                    <InputField
+                      label={copy.fields.jobType.label}
+                      field="jobType"
+                      value={formData.jobType}
+                      type="select"
+                      options={jobTypes}
+                      handleInputChange={handleInputChange}
+                      selectPrompt={messages.common.selectField({ field: copy.fields.jobType.label })}
+                    />
+                  </div>
+                  <InputField
+                    label={copy.fields.benefits.label}
+                    field="benefits"
+                    value={formData.benefits}
+                    placeholder={copy.fields.benefits.placeholder}
+                    type="textarea"
+                    rows={4}
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <InputField
+                    label={copy.fields.applicationDeadline.label}
+                    field="applicationDeadline"
+                    value={formData.applicationDeadline}
+                    type="date"
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <InputField label="Job Location" field="jobLocation" value={formData.jobLocation} placeholder="e.g., New York, Remote, Bangalore" handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-                  <InputField label="Job Type" field="jobType" value={formData.jobType} type="select" options={jobTypes} handleInputChange={handleInputChange}/>
-                </div>
-
-                <InputField label="Benefits & Perks" field="benefits" value={formData.benefits} placeholder="List benefits such as health insurance, flexible hours, work from home, etc." type="textarea" rows={4} handleInputChange={handleInputChange} toggleVoiceInput={toggleVoiceInput}/>
-
-                <InputField label="Application Deadline" field="applicationDeadline" value={formData.applicationDeadline} type="date" handleInputChange={handleInputChange}/>
-              </div>
+              </section>
 
               <div className="text-center">
                 <button
-                  onClick={handleSubmit}
-                  type="button"
-                  className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-12 py-4 rounded-full font-semibold text-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={voiceState.state !== 'idle' || isSubmitting}
+                  type="submit"
+                  disabled={voiceState.state !== "idle" || isSubmitting}
+                  className="rounded-full bg-slate-950 px-8 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {isSubmitting ? 'Submitting...' : 'Post Job Opening'}
+                  {isSubmitting
+                    ? messages.submission.submitting
+                    : existingData
+                    ? copy.update
+                    : copy.submit}
                 </button>
               </div>
-            </div>
-          </div>
+            </form>
+          </section>
         </div>
-      </div>
+      </main>
     </>
   );
 }

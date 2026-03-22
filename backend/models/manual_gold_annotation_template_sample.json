@@ -1,0 +1,2492 @@
+{
+  "split": "test",
+  "split_path": "backend\\models\\data_splits.json",
+  "sample_users": 5,
+  "records": [
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43aa912169815af8b1007",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Nursing Assistant",
+        "company": "Udaan Tech",
+        "requirements": [
+          "Basic documentation",
+          "Shift communication",
+          "Patient coordination"
+        ],
+        "benefits": [
+          "Women leadership mentorship",
+          "Flexible working hours",
+          "Performance bonus",
+          "Safe transport support",
+          "On-site security support"
+        ],
+        "location": "Surat",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.2324,
+      "care_net_score": 0.0771,
+      "care_net_explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint 'women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Women leadership mentorship'.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43b4612169815af8b121e",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Care Assistant",
+        "company": "Udaan Care",
+        "requirements": [
+          "Hygiene protocols",
+          "Basic documentation",
+          "Patient coordination",
+          "Shift communication"
+        ],
+        "benefits": [
+          "Lactation room and wellness support",
+          "Childcare support",
+          "Paid time off",
+          "Women leadership mentorship",
+          "Upskilling stipend"
+        ],
+        "location": "Nagpur",
+        "job_type": "remote"
+      },
+      "baseline_score": 0.2289,
+      "care_net_score": 0.0801,
+      "care_net_explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint 'women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Women leadership mentorship' and location compatibility is strong for Nagpur.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43b4312169815af8b1212",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Care Assistant",
+        "company": "Shakti Care",
+        "requirements": [
+          "Hygiene protocols",
+          "Patient coordination",
+          "Shift communication"
+        ],
+        "benefits": [
+          "Upskilling stipend",
+          "Health insurance",
+          "Flexible working hours",
+          "On-site security support",
+          "Performance bonus"
+        ],
+        "location": "Bengaluru",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.2239,
+      "care_net_score": 0.0827,
+      "care_net_explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Bengaluru' and location compatibility is strong for Bengaluru.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43aed12169815af8b10ec",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Nursing Assistant",
+        "company": "Sakhi Tech",
+        "requirements": [
+          "Patient coordination",
+          "Hygiene protocols",
+          "Social media posting"
+        ],
+        "benefits": [
+          "Upskilling stipend",
+          "Childcare support",
+          "Safe transport support",
+          "Mental health counseling",
+          "Work from home options"
+        ],
+        "location": "Surat",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2231,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43ae712169815af8b10d8",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Clinic Coordinator",
+        "company": "Shakti Solutions",
+        "requirements": [
+          "Hygiene protocols",
+          "Shift communication",
+          "Patient coordination"
+        ],
+        "benefits": [
+          "On-site security support",
+          "Anti-harassment grievance cell",
+          "Work from home options",
+          "Rejoining support after career break",
+          "Women leadership mentorship"
+        ],
+        "location": "Gurugram",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.2218,
+      "care_net_score": 0.0845,
+      "care_net_explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Gurugram' and location compatibility is strong for Gurugram.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43b3712169815af8b11eb",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Patient Support Associate",
+        "company": "Lotus Services",
+        "requirements": [
+          "Hygiene protocols",
+          "Basic documentation",
+          "Patient coordination",
+          "Shift communication"
+        ],
+        "benefits": [
+          "Performance bonus",
+          "Work from home options",
+          "Women leadership mentorship",
+          "Health insurance",
+          "Maternity leave"
+        ],
+        "location": "Visakhapatnam",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2027,
+      "care_net_score": 0.0872,
+      "care_net_explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Visakhapatnam' and location compatibility is strong for Visakhapatnam.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43a6412169815af8b0f21",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Patient Support Associate",
+        "company": "Rise Works",
+        "requirements": [
+          "Hygiene protocols",
+          "Shift communication",
+          "Patient coordination",
+          "Basic documentation"
+        ],
+        "benefits": [
+          "Performance bonus",
+          "Safe transport support",
+          "Lactation room and wellness support",
+          "Work from home options"
+        ],
+        "location": "Navi Mumbai",
+        "job_type": "hybrid"
+      },
+      "baseline_score": 0.2172,
+      "care_net_score": 0.0842,
+      "care_net_explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Navi Mumbai' and location compatibility is strong for Navi Mumbai.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43b3112169815af8b11da",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Patient Support Associate",
+        "company": "Nari Retail",
+        "requirements": [
+          "Patient coordination",
+          "Shift communication",
+          "Basic documentation",
+          "Hygiene protocols"
+        ],
+        "benefits": [
+          "Mental health counseling",
+          "Upskilling stipend",
+          "Rejoining support after career break",
+          "Performance bonus",
+          "Flexible working hours"
+        ],
+        "location": "Mumbai",
+        "job_type": "full-time"
+      },
+      "baseline_score": 0.2173,
+      "care_net_score": 0.0831,
+      "care_net_explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Mumbai' and location compatibility is strong for Mumbai.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43b4412169815af8b1215",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Spa Therapist",
+        "company": "Prerna Retail",
+        "requirements": [
+          "Salon services",
+          "Client consultation",
+          "Appointment management"
+        ],
+        "benefits": [
+          "Mental health counseling",
+          "Lactation room and wellness support",
+          "Flexible working hours",
+          "On-site security support",
+          "Anti-harassment grievance cell"
+        ],
+        "location": "Navi Mumbai",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2004,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "job_id": "69b43ac112169815af8b105b",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Ananya Shaikh",
+        "skills": [
+          "Vitals Monitoring",
+          "Patient Support",
+          "Empathy",
+          "Decision Making",
+          "Adaptability"
+        ],
+        "constraints": [
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940",
+          "\u0938\u0941\u0930\u0915\u094d\u0937\u093e policy \u0914\u0930 CCTV \u0935\u093e\u0932\u093e workplace \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Nashik"
+      },
+      "job_summary": {
+        "job_title": "Nursing Assistant",
+        "company": "Lotus Enterprises",
+        "requirements": [
+          "Patient coordination",
+          "Shift communication",
+          "Basic documentation"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Rejoining support after career break",
+          "Anti-harassment grievance cell",
+          "Paid time off",
+          "Childcare support"
+        ],
+        "location": "Bengaluru",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2132,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43afe12169815af8b1128",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Tailor",
+        "company": "Nari Services",
+        "requirements": [
+          "Machine operation",
+          "Tailoring and alteration",
+          "Basic quality checks"
+        ],
+        "benefits": [
+          "Lactation room and wellness support",
+          "On-site security support",
+          "Rejoining support after career break",
+          "Performance bonus",
+          "Anti-harassment grievance cell"
+        ],
+        "location": "Mysuru",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.2439,
+      "care_net_score": 0.0772,
+      "care_net_explanation": "Recommended because your Tailoring profile signal aligns with Tailor and the constraint '\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947' is supported by the job feature 'Machine operation'.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43aea12169815af8b10e1",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Tailor",
+        "company": "Nari Care",
+        "requirements": [
+          "Tailoring and alteration",
+          "Basic quality checks",
+          "Machine operation"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Safe transport support",
+          "Maternity leave",
+          "Health insurance",
+          "Mental health counseling"
+        ],
+        "location": "Jaipur",
+        "job_type": "hybrid"
+      },
+      "baseline_score": 0.2398,
+      "care_net_score": 0.0877,
+      "care_net_explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Jaipur' and location compatibility is strong for Jaipur.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43b4312169815af8b1211",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Sampling Tailor",
+        "company": "Udaan Services",
+        "requirements": [
+          "Tailoring and alteration",
+          "Machine operation",
+          "Basic quality checks"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Health insurance",
+          "Paid time off",
+          "Safe transport support",
+          "Performance bonus"
+        ],
+        "location": "Noida",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2375,
+      "care_net_score": 0.0841,
+      "care_net_explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Noida' and location compatibility is strong for Noida.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43af012169815af8b10f8",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Bookkeeper",
+        "company": "Prerna Enterprises",
+        "requirements": [
+          "Invoice processing",
+          "Machine operation",
+          "Basic quality checks",
+          "Tailoring and alteration"
+        ],
+        "benefits": [
+          "Lactation room and wellness support",
+          "Anti-harassment grievance cell",
+          "Upskilling stipend",
+          "Women leadership mentorship",
+          "Health insurance"
+        ],
+        "location": "Mumbai",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.236,
+      "care_net_score": 0.082,
+      "care_net_explanation": "Recommended because your Tailoring profile signal aligns with Tailoring and alteration and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Mumbai' and location compatibility is strong for Mumbai.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43ad212169815af8b108e",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Alteration Specialist",
+        "company": "Bright Works",
+        "requirements": [
+          "Basic quality checks",
+          "Machine operation",
+          "Tailoring and alteration"
+        ],
+        "benefits": [
+          "Mental health counseling",
+          "Maternity leave",
+          "Health insurance",
+          "Safe transport support"
+        ],
+        "location": "Visakhapatnam",
+        "job_type": "hybrid"
+      },
+      "baseline_score": 0.2332,
+      "care_net_score": 0.0851,
+      "care_net_explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Visakhapatnam'.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43b1412169815af8b1178",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Alteration Specialist",
+        "company": "Bright Care",
+        "requirements": [
+          "Tailoring and alteration",
+          "Machine operation",
+          "Basic quality checks"
+        ],
+        "benefits": [
+          "Anti-harassment grievance cell",
+          "Performance bonus",
+          "On-site security support",
+          "Upskilling stipend",
+          "Women leadership mentorship"
+        ],
+        "location": "Chennai",
+        "job_type": "full-time"
+      },
+      "baseline_score": 0.2264,
+      "care_net_score": 0.0885,
+      "care_net_explanation": "Recommended because your Tailoring profile signal aligns with Tailoring and alteration and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Chennai' and location compatibility is strong for Chennai.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43a3d12169815af8b0ea6",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Alteration Specialist",
+        "company": "Rise Care",
+        "requirements": [
+          "Basic quality checks",
+          "Tailoring and alteration",
+          "Machine operation"
+        ],
+        "benefits": [
+          "Upskilling stipend",
+          "On-site security support",
+          "Childcare support",
+          "Flexible working hours",
+          "Performance bonus"
+        ],
+        "location": "Visakhapatnam",
+        "job_type": "remote"
+      },
+      "baseline_score": 0.2184,
+      "care_net_score": 0.0877,
+      "care_net_explanation": "Recommended because your Tailoring profile signal aligns with Tailoring and alteration and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Visakhapatnam' and location compatibility is strong for Visakhapatnam.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43ab912169815af8b103f",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Sampling Tailor",
+        "company": "Lotus Enterprises",
+        "requirements": [
+          "Tailoring and alteration",
+          "Machine operation",
+          "Basic quality checks"
+        ],
+        "benefits": [
+          "Work from home options",
+          "On-site security support",
+          "Women leadership mentorship",
+          "Flexible working hours"
+        ],
+        "location": "Surat",
+        "job_type": "hybrid"
+      },
+      "baseline_score": 0.2266,
+      "care_net_score": 0.0873,
+      "care_net_explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947' is supported by the job feature 'Surat' and location compatibility is strong for Surat.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43aa412169815af8b0ff9",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Alteration Specialist",
+        "company": "Prerna Tech",
+        "requirements": [
+          "Tailoring and alteration",
+          "Basic quality checks",
+          "Accurate body measurements"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Paid time off",
+          "Flexible working hours",
+          "Mental health counseling"
+        ],
+        "location": "Kolkata",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2196,
+      "care_net_score": 0.0867,
+      "care_net_explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Kolkata' and location compatibility is strong for Kolkata.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43b2412169815af8b11aa",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Tailor",
+        "company": "Aarohi Works",
+        "requirements": [
+          "Accurate body measurements",
+          "Basic quality checks",
+          "Machine operation",
+          "Tailoring and alteration"
+        ],
+        "benefits": [
+          "Performance bonus",
+          "Rejoining support after career break",
+          "Childcare support",
+          "Paid time off",
+          "Safe transport support"
+        ],
+        "location": "Indore",
+        "job_type": "hybrid"
+      },
+      "baseline_score": 0.2293,
+      "care_net_score": 0.0864,
+      "care_net_explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Indore' and location compatibility is strong for Indore.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "job_id": "69b43b1c12169815af8b1190",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Sonal Reddy",
+        "skills": [
+          "Tally",
+          "Tailoring",
+          "Bookkeeping",
+          "Problem Solving",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947",
+          "heavy lifting tasks \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940\u0924",
+          "\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940",
+          "\u0915\u094c\u091f\u0941\u0902\u092c\u093f\u0915 \u091c\u092c\u093e\u092c\u0926\u093e\u0931\u094d\u092f\u093e\u0902\u092e\u0941\u0933\u0947 flexible timing \u0939\u0935\u0947"
+        ],
+        "qualification": "Tailoring certificate",
+        "location": "Chennai"
+      },
+      "job_summary": {
+        "job_title": "Boutique Assistant",
+        "company": "Lotus Works",
+        "requirements": [
+          "Accurate body measurements",
+          "Tailoring and alteration",
+          "Basic quality checks",
+          "Machine operation"
+        ],
+        "benefits": [
+          "Performance bonus",
+          "Flexible working hours",
+          "Mental health counseling",
+          "Childcare support"
+        ],
+        "location": "Kolkata",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2088,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43b1412169815af8b1178",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Alteration Specialist",
+        "company": "Bright Care",
+        "requirements": [
+          "Tailoring and alteration",
+          "Machine operation",
+          "Basic quality checks"
+        ],
+        "benefits": [
+          "Anti-harassment grievance cell",
+          "Performance bonus",
+          "On-site security support",
+          "Upskilling stipend",
+          "Women leadership mentorship"
+        ],
+        "location": "Chennai",
+        "job_type": "full-time"
+      },
+      "baseline_score": 0.2105,
+      "care_net_score": 0.0702,
+      "care_net_explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need school-hour-friendly shift' most strongly attends to the job feature 'Flexible working hours'. Caution: Remote-only preference conflicts with an on-site or office-based job setting.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43ad212169815af8b108e",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Alteration Specialist",
+        "company": "Bright Works",
+        "requirements": [
+          "Basic quality checks",
+          "Machine operation",
+          "Tailoring and alteration"
+        ],
+        "benefits": [
+          "Mental health counseling",
+          "Maternity leave",
+          "Health insurance",
+          "Safe transport support"
+        ],
+        "location": "Visakhapatnam",
+        "job_type": "hybrid"
+      },
+      "baseline_score": 0.2076,
+      "care_net_score": 0.082,
+      "care_net_explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need safe transport support for commute' is supported by the job feature 'Safe transport support'.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43ae512169815af8b10d3",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Sampling Tailor",
+        "company": "Sakhi Services",
+        "requirements": [
+          "Tailoring and alteration",
+          "Basic quality checks",
+          "Machine operation"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Safe transport support",
+          "Childcare support",
+          "Anti-harassment grievance cell",
+          "Performance bonus"
+        ],
+        "location": "Noida",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2024,
+      "care_net_score": 0.1125,
+      "care_net_explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need safe transport support for commute' is supported by the job feature 'Safe transport support' and location compatibility is strong for Noida.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43b4312169815af8b1211",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Sampling Tailor",
+        "company": "Udaan Services",
+        "requirements": [
+          "Tailoring and alteration",
+          "Machine operation",
+          "Basic quality checks"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Health insurance",
+          "Paid time off",
+          "Safe transport support",
+          "Performance bonus"
+        ],
+        "location": "Noida",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2014,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43afe12169815af8b1128",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Tailor",
+        "company": "Nari Services",
+        "requirements": [
+          "Machine operation",
+          "Tailoring and alteration",
+          "Basic quality checks"
+        ],
+        "benefits": [
+          "Lactation room and wellness support",
+          "On-site security support",
+          "Rejoining support after career break",
+          "Performance bonus",
+          "Anti-harassment grievance cell"
+        ],
+        "location": "Mysuru",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.1997,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43aea12169815af8b10e1",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Tailor",
+        "company": "Nari Care",
+        "requirements": [
+          "Tailoring and alteration",
+          "Basic quality checks",
+          "Machine operation"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Safe transport support",
+          "Maternity leave",
+          "Health insurance",
+          "Mental health counseling"
+        ],
+        "location": "Jaipur",
+        "job_type": "hybrid"
+      },
+      "baseline_score": 0.1918,
+      "care_net_score": 0.1248,
+      "care_net_explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need safe transport support for commute' is supported by the job feature 'Safe transport support' and location compatibility is strong for Jaipur.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43acc12169815af8b107c",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Sampling Tailor",
+        "company": "Bright Works",
+        "requirements": [
+          "Basic quality checks",
+          "Progress reporting",
+          "Tailoring and alteration"
+        ],
+        "benefits": [
+          "Anti-harassment grievance cell",
+          "Paid time off",
+          "On-site security support",
+          "Safe transport support"
+        ],
+        "location": "Bhopal",
+        "job_type": "remote"
+      },
+      "baseline_score": 0.1878,
+      "care_net_score": 0.1141,
+      "care_net_explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need safe transport support for commute' is supported by the job feature 'Safe transport support' and location compatibility is strong for Bhopal.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43a8212169815af8b0f85",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Alteration Specialist",
+        "company": "Rise Tech",
+        "requirements": [
+          "Accurate body measurements",
+          "Basic quality checks",
+          "Tailoring and alteration"
+        ],
+        "benefits": [
+          "Upskilling stipend",
+          "Maternity leave",
+          "Health insurance",
+          "Paid time off",
+          "Work from home options"
+        ],
+        "location": "Indore",
+        "job_type": "full-time"
+      },
+      "baseline_score": 0.1886,
+      "care_net_score": 0.1063,
+      "care_net_explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need school-hour-friendly shift' is supported by the job feature 'Flexible working hours' and location compatibility is strong for Indore.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43aa412169815af8b0ff9",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Alteration Specialist",
+        "company": "Prerna Tech",
+        "requirements": [
+          "Tailoring and alteration",
+          "Basic quality checks",
+          "Accurate body measurements"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Paid time off",
+          "Flexible working hours",
+          "Mental health counseling"
+        ],
+        "location": "Kolkata",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.1841,
+      "care_net_score": 0.1014,
+      "care_net_explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need school-hour-friendly shift' is supported by the job feature 'Flexible working hours' and location compatibility is strong for Kolkata.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43a8e12169815af8b0faa",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "MIS Assistant",
+        "company": "Prerna Services",
+        "requirements": [
+          "Shift communication",
+          "Basic documentation",
+          "Patient coordination"
+        ],
+        "benefits": [
+          "Maternity leave",
+          "On-site security support",
+          "Performance bonus",
+          "Childcare support",
+          "Flexible working hours"
+        ],
+        "location": "Ahmedabad",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.1863,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "job_id": "69b43a6b12169815af8b0f38",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Arpita Deshmukh",
+        "skills": [
+          "Campaign Coordination",
+          "Alteration",
+          "Content Creation",
+          "Canva",
+          "Quality Checking"
+        ],
+        "constraints": [
+          "Cannot work after 8 PM",
+          "Need safe transport support for commute",
+          "Prefer women-friendly workplace culture",
+          "Need ergonomic seating due to health condition",
+          "Need remote or hybrid option due to commute constraints"
+        ],
+        "qualification": "Any Graduate",
+        "location": "Ahmedabad"
+      },
+      "job_summary": {
+        "job_title": "Test Analyst",
+        "company": "Sakhi Foundation",
+        "requirements": [
+          "Issue resolution",
+          "Monthly reconciliation",
+          "Vendor follow-up"
+        ],
+        "benefits": [
+          "Mental health counseling",
+          "Anti-harassment grievance cell",
+          "Flexible working hours",
+          "Lactation room and wellness support",
+          "Maternity leave"
+        ],
+        "location": "Bhopal",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.1889,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "job_id": "69b43aa912169815af8b1007",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Isha Verma",
+        "skills": [
+          "Empathy",
+          "Basic First Aid",
+          "Record Keeping",
+          "Time Management",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f",
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f",
+          "\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Visakhapatnam"
+      },
+      "job_summary": {
+        "job_title": "Nursing Assistant",
+        "company": "Udaan Tech",
+        "requirements": [
+          "Basic documentation",
+          "Shift communication",
+          "Patient coordination"
+        ],
+        "benefits": [
+          "Women leadership mentorship",
+          "Flexible working hours",
+          "Performance bonus",
+          "Safe transport support",
+          "On-site security support"
+        ],
+        "location": "Surat",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.219,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "job_id": "69b43aca12169815af8b1077",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Isha Verma",
+        "skills": [
+          "Empathy",
+          "Basic First Aid",
+          "Record Keeping",
+          "Time Management",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f",
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f",
+          "\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Visakhapatnam"
+      },
+      "job_summary": {
+        "job_title": "Care Assistant",
+        "company": "Nari Solutions",
+        "requirements": [
+          "Basic documentation",
+          "Patient coordination",
+          "Hygiene protocols",
+          "Shift communication"
+        ],
+        "benefits": [
+          "Flexible working hours",
+          "Rejoining support after career break",
+          "Upskilling stipend",
+          "Performance bonus",
+          "Health insurance"
+        ],
+        "location": "Mumbai",
+        "job_type": "remote"
+      },
+      "baseline_score": 0.2129,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "job_id": "69b43ac112169815af8b105b",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Isha Verma",
+        "skills": [
+          "Empathy",
+          "Basic First Aid",
+          "Record Keeping",
+          "Time Management",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f",
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f",
+          "\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Visakhapatnam"
+      },
+      "job_summary": {
+        "job_title": "Nursing Assistant",
+        "company": "Lotus Enterprises",
+        "requirements": [
+          "Patient coordination",
+          "Shift communication",
+          "Basic documentation"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Rejoining support after career break",
+          "Anti-harassment grievance cell",
+          "Paid time off",
+          "Childcare support"
+        ],
+        "location": "Bengaluru",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2105,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "job_id": "69b43b4312169815af8b1212",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Isha Verma",
+        "skills": [
+          "Empathy",
+          "Basic First Aid",
+          "Record Keeping",
+          "Time Management",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f",
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f",
+          "\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Visakhapatnam"
+      },
+      "job_summary": {
+        "job_title": "Care Assistant",
+        "company": "Shakti Care",
+        "requirements": [
+          "Hygiene protocols",
+          "Patient coordination",
+          "Shift communication"
+        ],
+        "benefits": [
+          "Upskilling stipend",
+          "Health insurance",
+          "Flexible working hours",
+          "On-site security support",
+          "Performance bonus"
+        ],
+        "location": "Bengaluru",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.2096,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "job_id": "69b43b4612169815af8b121e",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Isha Verma",
+        "skills": [
+          "Empathy",
+          "Basic First Aid",
+          "Record Keeping",
+          "Time Management",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f",
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f",
+          "\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Visakhapatnam"
+      },
+      "job_summary": {
+        "job_title": "Care Assistant",
+        "company": "Udaan Care",
+        "requirements": [
+          "Hygiene protocols",
+          "Basic documentation",
+          "Patient coordination",
+          "Shift communication"
+        ],
+        "benefits": [
+          "Lactation room and wellness support",
+          "Childcare support",
+          "Paid time off",
+          "Women leadership mentorship",
+          "Upskilling stipend"
+        ],
+        "location": "Nagpur",
+        "job_type": "remote"
+      },
+      "baseline_score": 0.2092,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "job_id": "69b43a7812169815af8b0f5d",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Isha Verma",
+        "skills": [
+          "Empathy",
+          "Basic First Aid",
+          "Record Keeping",
+          "Time Management",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f",
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f",
+          "\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Visakhapatnam"
+      },
+      "job_summary": {
+        "job_title": "Care Assistant",
+        "company": "Seva Foundation",
+        "requirements": [
+          "Hygiene protocols",
+          "Record maintenance",
+          "Fast and accurate typing",
+          "Shift communication",
+          "Patient coordination"
+        ],
+        "benefits": [
+          "Performance bonus",
+          "Mental health counseling",
+          "Safe transport support",
+          "Paid time off"
+        ],
+        "location": "Bhopal",
+        "job_type": "remote"
+      },
+      "baseline_score": 0.2045,
+      "care_net_score": 0.0844,
+      "care_net_explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint 'remote \u0915\u093e\u092e \u0915\u0947 \u0932\u093f\u090f company-provided laptop \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'remote' and location compatibility is strong for Bhopal.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "job_id": "69b43b4f12169815af8b123c",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Isha Verma",
+        "skills": [
+          "Empathy",
+          "Basic First Aid",
+          "Record Keeping",
+          "Time Management",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f",
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f",
+          "\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Visakhapatnam"
+      },
+      "job_summary": {
+        "job_title": "Nursing Assistant",
+        "company": "Shakti Works",
+        "requirements": [
+          "Record maintenance",
+          "Patient coordination",
+          "Shift communication",
+          "Data validation",
+          "Hygiene protocols"
+        ],
+        "benefits": [
+          "Flexible working hours",
+          "Performance bonus",
+          "Maternity leave",
+          "Childcare support"
+        ],
+        "location": "Aurangabad",
+        "job_type": "full-time"
+      },
+      "baseline_score": 0.1947,
+      "care_net_score": 0.0724,
+      "care_net_explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Aurangabad'.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "job_id": "69b43a2612169815af8b0e5e",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Isha Verma",
+        "skills": [
+          "Empathy",
+          "Basic First Aid",
+          "Record Keeping",
+          "Time Management",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f",
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f",
+          "\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Visakhapatnam"
+      },
+      "job_summary": {
+        "job_title": "Nursing Assistant",
+        "company": "Nari Services",
+        "requirements": [
+          "Basic documentation",
+          "Hygiene protocols",
+          "Patient coordination"
+        ],
+        "benefits": [
+          "Mental health counseling",
+          "Childcare support",
+          "Flexible working hours",
+          "Maternity leave",
+          "Anti-harassment grievance cell"
+        ],
+        "location": "Gurugram",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.1994,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "job_id": "69b43a9f12169815af8b0fe6",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Isha Verma",
+        "skills": [
+          "Empathy",
+          "Basic First Aid",
+          "Record Keeping",
+          "Time Management",
+          "Presentation Skills"
+        ],
+        "constraints": [
+          "women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f",
+          "\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f",
+          "\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f",
+          "\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f",
+          "\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940"
+        ],
+        "qualification": "GNM/ANM",
+        "location": "Visakhapatnam"
+      },
+      "job_summary": {
+        "job_title": "MIS Assistant",
+        "company": "Sakhi Services",
+        "requirements": [
+          "Fast and accurate typing",
+          "Record maintenance",
+          "Basic sales reporting"
+        ],
+        "benefits": [
+          "On-site security support",
+          "Maternity leave",
+          "Work from home options",
+          "Anti-harassment grievance cell",
+          "Paid time off"
+        ],
+        "location": "Pune",
+        "job_type": "full-time"
+      },
+      "baseline_score": 0.2012,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43b4212169815af8b120c",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Test Analyst",
+        "company": "Seva Foundation",
+        "requirements": [
+          "Basic sales reporting",
+          "Issue resolution",
+          "Basic scripting"
+        ],
+        "benefits": [
+          "Women leadership mentorship",
+          "Mental health counseling",
+          "Work from home options",
+          "Health insurance",
+          "Rejoining support after career break"
+        ],
+        "location": "Kolhapur",
+        "job_type": "full-time"
+      },
+      "baseline_score": 0.2446,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43a8b12169815af8b0fa2",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Junior QA Engineer",
+        "company": "Nari Retail",
+        "requirements": [
+          "Test case execution",
+          "Bug tracking",
+          "Basic scripting"
+        ],
+        "benefits": [
+          "Maternity leave",
+          "Lactation room and wellness support",
+          "Performance bonus",
+          "Work from home options",
+          "Upskilling stipend"
+        ],
+        "location": "Bhopal",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.2363,
+      "care_net_score": 0.0818,
+      "care_net_explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need ergonomic seating due to health condition' is supported by the job feature 'Lactation room and wellness support' and location compatibility is strong for Bhopal.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43b1d12169815af8b1193",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Test Analyst",
+        "company": "Udaan Services",
+        "requirements": [
+          "Test case execution",
+          "Bug tracking",
+          "Basic scripting"
+        ],
+        "benefits": [
+          "Anti-harassment grievance cell",
+          "Safe transport support",
+          "Maternity leave",
+          "Childcare support",
+          "Work from home options"
+        ],
+        "location": "Navi Mumbai",
+        "job_type": "remote"
+      },
+      "baseline_score": 0.234,
+      "care_net_score": 0.1021,
+      "care_net_explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell' and location compatibility is strong for Navi Mumbai.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43a3912169815af8b0e9c",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Test Analyst",
+        "company": "Aarohi Care",
+        "requirements": [
+          "Test case execution",
+          "Basic scripting",
+          "Issue resolution",
+          "Bug tracking"
+        ],
+        "benefits": [
+          "Maternity leave",
+          "Paid time off",
+          "Rejoining support after career break",
+          "Lactation room and wellness support"
+        ],
+        "location": "Indore",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.2307,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43a9f12169815af8b0fe6",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "MIS Assistant",
+        "company": "Sakhi Services",
+        "requirements": [
+          "Fast and accurate typing",
+          "Record maintenance",
+          "Basic sales reporting"
+        ],
+        "benefits": [
+          "On-site security support",
+          "Maternity leave",
+          "Work from home options",
+          "Anti-harassment grievance cell",
+          "Paid time off"
+        ],
+        "location": "Pune",
+        "job_type": "full-time"
+      },
+      "baseline_score": 0.2294,
+      "care_net_score": 0.0,
+      "care_net_explanation": "Rejected by CARE-Net skill feasibility filter because the required job skills did not sufficiently align with the user profile.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43ac312169815af8b1063",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Care Assistant",
+        "company": "Prerna Solutions",
+        "requirements": [
+          "Shift communication",
+          "Basic scripting",
+          "Hygiene protocols"
+        ],
+        "benefits": [
+          "Performance bonus",
+          "Upskilling stipend",
+          "Rejoining support after career break",
+          "Childcare support",
+          "Safe transport support"
+        ],
+        "location": "Aurangabad",
+        "job_type": "remote"
+      },
+      "baseline_score": 0.2201,
+      "care_net_score": 0.104,
+      "care_net_explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell' and location compatibility is strong for Aurangabad.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43a6e12169815af8b0f42",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Test Analyst",
+        "company": "Seva Works",
+        "requirements": [
+          "Service hygiene",
+          "Appointment management",
+          "Issue resolution",
+          "Basic scripting"
+        ],
+        "benefits": [
+          "Anti-harassment grievance cell",
+          "Maternity leave",
+          "Lactation room and wellness support",
+          "Work from home options",
+          "Rejoining support after career break"
+        ],
+        "location": "Bhopal",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.2216,
+      "care_net_score": 0.1039,
+      "care_net_explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell' and location compatibility is strong for Bhopal.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43ad612169815af8b109e",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Care Assistant",
+        "company": "Prerna Care",
+        "requirements": [
+          "Appointment management",
+          "Salon services",
+          "Basic documentation",
+          "Client consultation",
+          "Shift communication"
+        ],
+        "benefits": [
+          "Flexible working hours",
+          "Anti-harassment grievance cell",
+          "Health insurance",
+          "Safe transport support",
+          "Maternity leave"
+        ],
+        "location": "Aurangabad",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.2152,
+      "care_net_score": 0.101,
+      "care_net_explanation": "Recommended because your Technical Documentation profile signal aligns with Basic documentation and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell'.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43aff12169815af8b1129",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Software Support Executive",
+        "company": "Lotus Services",
+        "requirements": [
+          "Test case execution",
+          "Basic scripting",
+          "Issue resolution"
+        ],
+        "benefits": [
+          "Work from home options",
+          "Lactation room and wellness support",
+          "Paid time off",
+          "Maternity leave",
+          "Anti-harassment grievance cell"
+        ],
+        "location": "Ahmedabad",
+        "job_type": "contract"
+      },
+      "baseline_score": 0.2284,
+      "care_net_score": 0.1007,
+      "care_net_explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell' and location compatibility is strong for Ahmedabad.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43a7512169815af8b0f56",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Technical Support Associate",
+        "company": "Nari Care",
+        "requirements": [
+          "Bug tracking",
+          "Basic scripting",
+          "Test case execution"
+        ],
+        "benefits": [
+          "Childcare support",
+          "Maternity leave",
+          "Women leadership mentorship",
+          "Work from home options",
+          "Lactation room and wellness support"
+        ],
+        "location": "Nagpur",
+        "job_type": "part-time"
+      },
+      "baseline_score": 0.215,
+      "care_net_score": 0.0846,
+      "care_net_explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need ergonomic seating due to health condition' is supported by the job feature 'Lactation room and wellness support' and location compatibility is strong for Nagpur.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "job_id": "69b43b2812169815af8b11b8",
+      "source": "manual_annotation_template",
+      "user_summary": {
+        "name": "Pranali Sharma",
+        "skills": [
+          "Python",
+          "Automation Testing",
+          "SQL",
+          "Technical Documentation",
+          "Tailoring"
+        ],
+        "constraints": [
+          "Need ergonomic seating due to health condition",
+          "Cannot relocate outside current city",
+          "Need anti-harassment policy and grievance support",
+          "Prefer day shift"
+        ],
+        "qualification": "Basic programming bootcamp",
+        "location": "Nagpur"
+      },
+      "job_summary": {
+        "job_title": "Junior QA Engineer",
+        "company": "Rise Tech",
+        "requirements": [
+          "Test case execution",
+          "Issue resolution",
+          "Bug tracking",
+          "Basic scripting"
+        ],
+        "benefits": [
+          "Health insurance",
+          "Upskilling stipend",
+          "Mental health counseling",
+          "Flexible working hours",
+          "Safe transport support"
+        ],
+        "location": "Bengaluru",
+        "job_type": "remote"
+      },
+      "baseline_score": 0.2256,
+      "care_net_score": 0.0837,
+      "care_net_explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Prefer day shift' is supported by the job feature 'Flexible working hours' and location compatibility is strong for Bengaluru.",
+      "relevance": null,
+      "constraint_violation": null,
+      "notes": ""
+    }
+  ],
+  "annotation_instructions": {
+    "relevance": "Use 0 for not relevant, 1 for relevant, 2 for highly relevant.",
+    "constraint_violation": "Set true if the job clearly violates the user's stated constraints."
+  }
+}

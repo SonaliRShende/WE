@@ -1,0 +1,31 @@
+{
+  "trained_at": "2026-03-16T23:51:36.222263",
+  "num_users": 2015,
+  "num_jobs": 1014,
+  "train_users": 50,
+  "validation_users": 15,
+  "prepare_only": false,
+  "num_pseudo_labels": 1940,
+  "num_validation_pseudo_labels": 563,
+  "num_dynamic_samples": 1940,
+  "dynamic_weight_model": "backend\\models\\quick_debug\\dynamic_weight_model.pt",
+  "graph_model": "backend\\models\\quick_debug\\graph_signal_model.pt",
+  "pseudo_labels": "backend\\models\\quick_debug\\pseudo_labels.json",
+  "validation_pseudo_labels": "backend\\models\\quick_debug\\validation_pseudo_labels.json",
+  "split_file": "backend\\models\\data_splits.json",
+  "candidate_sampling": {
+    "top_candidates": 40,
+    "random_negatives": 15,
+    "seed": 42
+  },
+  "subset_limits": {
+    "max_train_users": 50,
+    "max_validation_users": 15
+  },
+  "training_epochs": {
+    "dynamic_weight": 25,
+    "graph": 30
+  },
+  "dynamic_training_accuracy": 0.842783510684967,
+  "graph_training_accuracy": 0.15721648931503296
+}

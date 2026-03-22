@@ -1,8 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landingpage";
 import Register from "./pages/Registration/Register";
 import Login from "./pages/Login";
-import Home from "./pages/Home";
 import JobSeekerApplication from "./pages/JobSeekerApplication";
 import JobSeekerFormPage from "./pages/JobSeekerFormPage";
 import JobProviderApplication from "./pages/JobProviderApplication";
@@ -17,9 +16,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<Home />} />
         <Route path="/find-job" element={<JobSeekerApplication/>}/>
         <Route path="/job-seeker-form" element={<JobSeekerFormPage/>}/>
         <Route path="/offer-job" element={<JobProviderApplication/>}/>

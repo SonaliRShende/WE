@@ -3,7 +3,6 @@ import traceback
 from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from sentence_transformers import SentenceTransformer
 from datetime import datetime
 
 # Load environment variables
@@ -23,6 +22,8 @@ def get_model():
     """Lazy load the Sentence-BERT model only when needed"""
     global model
     if model is None:
+        from sentence_transformers import SentenceTransformer
+
         print("Loading Sentence-BERT model (all-MiniLM-L6-v2)...")
         model = SentenceTransformer('all-MiniLM-L6-v2')
         print("✅ Model loaded successfully!")
@@ -99,11 +100,15 @@ def embed_specific_job_seeker(user_id):
             "type": "job_seeker",
             "name": app.get('name', ''),
             "email": app.get('email', ''),
+            "skills_text": app.get('skills', ''),
+            "preferences_text": app.get('preferences', ''),
+            "qualification_text": app.get('qualification', ''),
+            "location_text": app.get('location', ''),
             "skills_embeddings": [],
             "constraints_embeddings": [],
             "qualification_embedding": [],
             "location_embedding": {},
-            "created_at": datetime.now()
+            "updated_at": datetime.now()
         }
         
         # Process Skills
@@ -118,6 +123,20 @@ def embed_specific_job_seeker(user_id):
                         "embedding": embedding
                     })
                     print(f"[{datetime.now()}]     - Embedded skill: {skill_name}")
+
+        if not embeddings_data['skills_embeddings']:
+            raw_skills_text = str(app.get('skills', '')).strip()
+            if raw_skills_text:
+                print(f"[{datetime.now()}]   ⚠️  Structured skills empty. Using raw skills text fallback embedding.")
+                fallback_chunks = [chunk.strip() for chunk in raw_skills_text.split('.') if chunk.strip()]
+                if not fallback_chunks:
+                    fallback_chunks = [raw_skills_text]
+                for chunk in fallback_chunks[:5]:
+                    embedding = model_instance.encode(chunk).tolist()
+                    embeddings_data['skills_embeddings'].append({
+                        "skill_name": chunk,
+                        "embedding": embedding
+                    })
         
         # Process Constraints
         if 'structured_constraints' in app and app['structured_constraints']:
@@ -131,6 +150,16 @@ def embed_specific_job_seeker(user_id):
                         "embedding": embedding
                     })
                     print(f"[{datetime.now()}]     - Embedded constraint: {constraint_text}")
+
+        if not embeddings_data['constraints_embeddings']:
+            raw_pref_text = str(app.get('preferences', '')).strip()
+            if raw_pref_text:
+                print(f"[{datetime.now()}]   ⚠️  Structured constraints empty. Using preferences text fallback embedding.")
+                embedding = model_instance.encode(raw_pref_text).tolist()
+                embeddings_data['constraints_embeddings'].append({
+                    "constraint_text": raw_pref_text,
+                    "embedding": embedding
+                })
         
         # Process Qualification
         qualification = app.get('qualification', '')
@@ -155,7 +184,10 @@ def embed_specific_job_seeker(user_id):
         # Store/Update embeddings
         result = js_embeddings_collection.update_one(
             {"user_id": user_id},
-            {"$set": embeddings_data},
+            {
+                "$set": embeddings_data,
+                "$setOnInsert": {"created_at": datetime.now()}
+            },
             upsert=True
         )
         
@@ -209,6 +241,12 @@ def embed_specific_job_posting(user_id):
             "type": "job_posting",
             "jobTitle": posting.get('jobTitle', ''),
             "company": posting.get('companyName', ''),
+            "jobDescription_text": posting.get('jobDescription', ''),
+            "requiredQualifications_text": posting.get('requiredQualifications', ''),
+            "benefits_text": posting.get('benefits', ''),
+            "jobLocation_text": posting.get('jobLocation', ''),
+            "jobType_text": posting.get('jobType', ''),
+            "experienceRequired_text": posting.get('experienceRequired', ''),
             "jobTitle_embedding": [],
             "jobCategory_embedding": [],
             "experienceRequired_embedding": [],
@@ -217,7 +255,7 @@ def embed_specific_job_posting(user_id):
             "qualifications_embeddings": [],
             "job_requirements_embeddings": [],
             "benefits_embeddings": [],
-            "created_at": datetime.now()
+            "updated_at": datetime.now()
         }
         
         # Job Title
@@ -276,6 +314,15 @@ def embed_specific_job_posting(user_id):
                         "embedding": model_instance.encode(qual_text).tolist()
                     })
                     print(f"[{datetime.now()}]     - Embedded qualification: {qual_text}")
+
+        if not embeddings_data['qualifications_embeddings']:
+            raw_qualification = str(posting.get('requiredQualifications', '')).strip()
+            if raw_qualification:
+                print(f"[{datetime.now()}]   ⚠️  Structured qualifications empty. Using raw qualification fallback embedding.")
+                embeddings_data['qualifications_embeddings'].append({
+                    "qualification": raw_qualification,
+                    "embedding": model_instance.encode(raw_qualification).tolist()
+                })
         
         # Job Requirements
         if 'structured_job_requirements' in posting and posting['structured_job_requirements']:
@@ -288,6 +335,19 @@ def embed_specific_job_posting(user_id):
                         "embedding": model_instance.encode(req_text).tolist()
                     })
                     print(f"[{datetime.now()}]     - Embedded requirement: {req_text}")
+
+        if not embeddings_data['job_requirements_embeddings']:
+            raw_job_description = str(posting.get('jobDescription', '')).strip()
+            if raw_job_description:
+                print(f"[{datetime.now()}]   ⚠️  Structured job requirements empty. Using raw job description fallback embedding.")
+                fallback_chunks = [chunk.strip() for chunk in raw_job_description.split('.') if chunk.strip()]
+                if not fallback_chunks:
+                    fallback_chunks = [raw_job_description]
+                for chunk in fallback_chunks[:6]:
+                    embeddings_data['job_requirements_embeddings'].append({
+                        "requirement": chunk,
+                        "embedding": model_instance.encode(chunk).tolist()
+                    })
         
         # Benefits
         if 'structured_benefits' in posting and posting['structured_benefits']:
@@ -300,11 +360,23 @@ def embed_specific_job_posting(user_id):
                         "embedding": model_instance.encode(benefit_text).tolist()
                     })
                     print(f"[{datetime.now()}]     - Embedded benefit: {benefit_text}")
+
+        if not embeddings_data['benefits_embeddings']:
+            raw_benefits = str(posting.get('benefits', '')).strip()
+            if raw_benefits:
+                print(f"[{datetime.now()}]   ⚠️  Structured benefits empty. Using raw benefits fallback embedding.")
+                embeddings_data['benefits_embeddings'].append({
+                    "benefit": raw_benefits,
+                    "embedding": model_instance.encode(raw_benefits).tolist()
+                })
         
         # Store/Update embeddings
         result = jp_embeddings_collection.update_one(
             {"user_id": user_id},
-            {"$set": embeddings_data},
+            {
+                "$set": embeddings_data,
+                "$setOnInsert": {"created_at": datetime.now()}
+            },
             upsert=True
         )
         print(f"[{datetime.now()}]   ✅ Embeddings stored. Matched: {result.matched_count}, Upserted: {result.upserted_id}")
@@ -345,6 +417,10 @@ def embed_job_seeker_data():
             "type": "job_seeker",
             "name": app.get('name', ''),
             "email": app.get('email', ''),
+            "skills_text": app.get('skills', ''),
+            "preferences_text": app.get('preferences', ''),
+            "qualification_text": app.get('qualification', ''),
+            "location_text": app.get('location', ''),
             "skills_embeddings": [],
             "constraints_embeddings": [],
             "qualification_embedding": [],
@@ -435,6 +511,12 @@ def embed_job_posting_data():
             "type": "job_posting",
             "jobTitle": posting.get('jobTitle', ''),
             "company": posting.get('companyName', ''),
+            "jobDescription_text": posting.get('jobDescription', ''),
+            "requiredQualifications_text": posting.get('requiredQualifications', ''),
+            "benefits_text": posting.get('benefits', ''),
+            "jobLocation_text": posting.get('jobLocation', ''),
+            "jobType_text": posting.get('jobType', ''),
+            "experienceRequired_text": posting.get('experienceRequired', ''),
             "jobTitle_embedding": [],
             "jobCategory_embedding": [],
             "experienceRequired_embedding": [],

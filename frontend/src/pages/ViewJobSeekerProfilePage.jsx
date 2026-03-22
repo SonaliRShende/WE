@@ -1,106 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+﻿import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { useLocale } from "../context/LocaleContext";
 
-// Component to view job seeker profile
-function ViewApplicationData({ data, onBack, matchScore }) {
+function InfoField({ label, value, emptyLabel }) {
+  return (
+    <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-slate-100">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className="mt-2 whitespace-pre-wrap text-base text-slate-800">{value || emptyLabel}</p>
+    </div>
+  );
+}
+
+function ViewApplicationData({ data, onBack, messages, copy }) {
   return (
     <div>
-      <button 
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-8 text-gray-600 hover:text-gray-800 font-medium flex items-center text-lg"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
       >
-        <ArrowLeft size={20} className="mr-2" />
-        Back to Job Seekers
+        <ArrowLeft size={18} />
+        {messages.common.backToJobSeekers}
       </button>
 
-      <h2 className="text-3xl font-bold text-gray-800 mb-4">Job Seeker Profile</h2>
-      {matchScore && (
-        <p className="text-lg text-blue-600 font-semibold mb-6">Match Score: {matchScore}%</p>
-      )}
-          {/* Profile photo if available */}
-          {data.profile_pic && (
-            <div className="mb-6 flex items-center">
-              <img src={data.profile_pic} alt="Profile" className="w-28 h-28 rounded-full object-cover border-4 border-pink-200 mr-4" />
-              <div>
-                <h3 className="text-xl font-semibold">{data.name}</h3>
-                <p className="text-gray-600">{data.email}</p>
-              </div>
-            </div>
-          )}
-      
-      <div className="space-y-8">
-        {/* Personal Information */}
-        <section className="bg-gradient-to-r from-pink-50 to-transparent p-6 rounded-xl border-2 border-pink-200">
-          <h3 className="text-2xl font-bold text-pink-600 mb-6">👤 Personal Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InfoField label="Name" value={data.name} />
-            <InfoField label="Email" value={data.email} />
-            <InfoField label="Contact" value={data.contact} />
-            <InfoField label="Location" value={data.location} />
-          </div>
-        </section>
-
-        {/* Education & Experience */}
-        <section className="bg-gradient-to-r from-blue-50 to-transparent p-6 rounded-xl border-2 border-blue-200">
-          <h3 className="text-2xl font-bold text-blue-600 mb-6">🎓 Education & Experience</h3>
-          <div className="space-y-5">
-            <InfoField label="Highest Qualification" value={data.qualification} />
-            <InfoField label="Skills" value={data.skills} />
-            <InfoField label="Previous Job / Internship" value={data.previousJob} />
-            <InfoField label="Roles / Responsibilities" value={data.roles} />
-            <InfoField label="Skills Applied" value={data.skillsApplied} />
-            <InfoField label="Certifications / Achievements" value={data.certifications} />
-            <InfoField label="Portfolio / Resume Link" value={data.portfolio} />
-          </div>
-        </section>
-
-        {/* Preferences */}
-        {data.preferences && (
-          <section className="bg-gradient-to-r from-purple-50 to-transparent p-6 rounded-xl border-2 border-purple-200">
-            <h3 className="text-2xl font-bold text-purple-600 mb-6">⚙️ Preferences & Constraints</h3>
-            <InfoField label="Your Preferences" value={data.preferences} />
-          </section>
+      <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-center">
+        {data.profile_pic && (
+          <img
+            src={data.profile_pic}
+            alt={copy.uploadLabel}
+            className="h-28 w-28 rounded-[1.75rem] object-cover shadow-lg"
+          />
         )}
+        <div>
+          <h2 className="text-3xl font-semibold text-slate-950">{messages.viewPages.seekerTitle}</h2>
+        </div>
+      </div>
+
+      <div className="mt-8 space-y-6">
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.personalInformation}</h3>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <InfoField label={copy.fields.name.label} value={data.name} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.email.label} value={data.email} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.contact.label} value={data.contact} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.location.label} value={data.location} emptyLabel={messages.common.notProvided} />
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.educationExperience}</h3>
+          <div className="mt-5 grid gap-4">
+            <InfoField label={copy.fields.qualification.label} value={data.qualification} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.skills.label} value={data.skills} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.previousJob.label} value={data.previousJob} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.roles.label} value={data.roles} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.skillsApplied.label} value={data.skillsApplied} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.certifications.label} value={data.certifications} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.portfolio.label} value={data.portfolio} emptyLabel={messages.common.notProvided} />
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.preferenceSection}</h3>
+          <div className="mt-5">
+            <InfoField label={copy.fields.preferences.label} value={data.preferences} emptyLabel={messages.common.notProvided} />
+          </div>
+        </section>
       </div>
     </div>
   );
 }
 
-function InfoField({ label, value }) {
+function UnavailableData({ message, onBack, messages }) {
   return (
-    <div className="bg-white p-4 rounded-lg">
-      <label className="text-sm font-semibold text-gray-600 block mb-2">{label}</label>
-      <p className="text-gray-800 text-lg whitespace-pre-wrap">{value || <span className="text-gray-400 italic">Not provided</span>}</p>
-    </div>
-  );
-}
-
-// Component for unavailable data
-function UnavailableData({ message, onBack }) {
-  return (
-    <div>
-      <button 
+    <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+      <h2 className="text-2xl font-semibold text-slate-950">{messages.viewPages.profileNotFound}</h2>
+      <p className="mt-3 text-base text-slate-600">{message}</p>
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-8 text-gray-600 hover:text-gray-800 font-medium flex items-center text-lg"
+        className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-sky-700"
       >
-        <ArrowLeft size={20} className="mr-2" />
-        Back to Job Seekers
+        <ArrowLeft size={18} />
+        {messages.common.backToJobSeekers}
       </button>
-
-      <div className="text-center mt-12 py-16">
-        <div className="text-6xl mb-6">📭</div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">Profile Not Found</h2>
-        <p className="text-lg text-gray-600 mb-8">{message}</p>
-        <button
-          onClick={onBack}
-          className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-lg hover:underline"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Back to Job Seekers
-        </button>
-      </div>
     </div>
   );
 }
@@ -108,73 +93,73 @@ function UnavailableData({ message, onBack }) {
 export default function ViewJobSeekerProfilePage() {
   const navigate = useNavigate();
   const { seekerId } = useParams();
+  const { messages } = useLocale();
+  const copy = messages.jobSeekerForm;
   const [profileData, setProfileData] = useState(null);
-  const [matchScore, setMatchScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchSeekerProfile();
-  }, [seekerId]);
-
-  const fetchSeekerProfile = async () => {
-    try {
-      setLoading(true);
-      // Fetch the seeker's profile using their ID
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/get-job-seeker-application/${seekerId}`
-      );
-      const data = await response.json();
-      
-      if (data.application) {
-        setProfileData(data.application);
-      } else {
-        setError('Could not load this job seeker\'s profile.');
+    const fetchSeekerProfile = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `http://127.0.0.1:5000/api/get-job-seeker-application/${seekerId}`
+        );
+        const data = await response.json();
+        if (data.application) {
+          setProfileData(data.application);
+        } else {
+          setError(messages.viewPages.couldNotLoadProfile);
+        }
+      } catch (fetchError) {
+        console.error("Error fetching seeker profile:", fetchError);
+        setError(messages.viewPages.retryProfile);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching seeker profile:', err);
-      setError('Failed to load profile. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const handleBack = () => {
-    navigate('/job-provider-dashboard');
-  };
+    fetchSeekerProfile();
+  }, [messages.viewPages.couldNotLoadProfile, messages.viewPages.retryProfile, seekerId]);
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-blue-50 to-purple-100 px-6 py-12">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="bg-white shadow-xl rounded-2xl p-8 mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Job Seeker Profile</h1>
-            <p className="text-gray-600">View the complete profile to understand the candidate better</p>
-          </div>
+      <main className="px-4 py-10 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <section className="rounded-[2.25rem] border border-slate-200 bg-white/90 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">
+              {messages.brand.shortName}
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
+              {messages.viewPages.seekerTitle}
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
+              {messages.viewPages.seekerBody}
+            </p>
+          </section>
 
-          {/* Main Content */}
-          <div className="bg-white shadow-xl rounded-2xl p-8">
-            {loading && (
-              <div className="text-center mt-8 text-lg text-gray-600">Loading profile...</div>
-            )}
-            {error && (
-              <UnavailableData 
+          <section className="mt-8 rounded-[2.25rem] border border-slate-200 bg-white/90 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] sm:p-8">
+            {loading && <p className="text-lg text-slate-600">{messages.viewPages.loadingProfile}</p>}
+            {error && !loading && (
+              <UnavailableData
                 message={error}
-                onBack={handleBack}
+                onBack={() => navigate("/job-provider-dashboard")}
+                messages={messages}
               />
             )}
             {profileData && !loading && (
-              <ViewApplicationData 
+              <ViewApplicationData
                 data={profileData}
-                onBack={handleBack}
-                matchScore={matchScore}
+                onBack={() => navigate("/job-provider-dashboard")}
+                messages={messages}
+                copy={copy}
               />
             )}
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
     </>
   );
 }

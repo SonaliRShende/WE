@@ -1,0 +1,940 @@
+{
+  "generated_at": "2026-03-21T23:48:48.930802",
+  "evaluation_protocol": "manual_gold",
+  "note": "Manual-gold evaluation is the preferred final result. Proxy pseudo-label evaluation is useful for development and ablation but should be reported as a proxy metric.",
+  "config": {
+    "split_name": "test",
+    "split_path": "D:\\sonali\\Women Empowerment\\AI-Driven-Job-Recommendation-System\\backend\\models\\data_splits.json",
+    "labels_path": "backend\\models\\manual_gold_annotation_ai_assisted.json",
+    "top_candidates": 100,
+    "random_negatives": 30,
+    "seed": 42,
+    "max_users": null,
+    "k_values": [
+      5,
+      10
+    ]
+  },
+  "dataset": {
+    "requested_users": 303,
+    "evaluated_users": 30,
+    "skipped_users": 273,
+    "num_jobs": 1015
+  },
+  "baseline_cosine": {
+    "num_users": 30,
+    "users_with_relevant_items": 29,
+    "candidate_coverage": 11.233333333333333,
+    "k_metrics": {
+      "5": {
+        "precision": 0.5733333333333334,
+        "recall": 0.3571272246272247,
+        "ndcg": 0.4459572153598839,
+        "map": 0.2839244027577361,
+        "violation_rate": 0.38666666666666666
+      },
+      "10": {
+        "precision": 0.6466666666666666,
+        "recall": 0.8824146224146223,
+        "ndcg": 0.67371847019144,
+        "map": 0.606852474098506,
+        "violation_rate": 0.3133333333333333
+      }
+    },
+    "mrr": 0.6867460317460317
+  },
+  "care_net": {
+    "num_users": 30,
+    "users_with_relevant_items": 29,
+    "candidate_coverage": 11.233333333333333,
+    "k_metrics": {
+      "5": {
+        "precision": 0.7933333333333334,
+        "recall": 0.5822859547859548,
+        "ndcg": 0.7709033233550844,
+        "map": 0.5076550024050024,
+        "violation_rate": 0.18000000000000002
+      },
+      "10": {
+        "precision": 0.6733333333333333,
+        "recall": 0.917070707070707,
+        "ndcg": 0.8411883844436355,
+        "map": 0.7881965679088694,
+        "violation_rate": 0.29
+      }
+    },
+    "mrr": 0.8555555555555556
+  },
+  "sample_rankings": [
+    {
+      "user_id": "69b437049ea63896d191cfda",
+      "baseline_top5": [
+        {
+          "job_id": "69b43aa912169815af8b1007",
+          "score": 0.23236380517482758,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4612169815af8b121e",
+          "score": 0.22886478900909424,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4312169815af8b1212",
+          "score": 0.22390516102313995,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aed12169815af8b10ec",
+          "score": 0.22314853966236115,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ae712169815af8b10d8",
+          "score": 0.2217790186405182,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43b3712169815af8b11eb",
+          "score": 0.5341,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u092a\u0930\u093f\u0935\u093e\u0930 \u0926\u0947\u0916\u092d\u093e\u0932 \u0915\u0947 \u0932\u093f\u090f \u0928\u093f\u0936\u094d\u091a\u093f\u0924 weekly off \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Visakhapatnam' and location compatibility is strong for Visakhapatnam.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4312169815af8b1212",
+          "score": 0.5114,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Bengaluru' and location compatibility is strong for Bengaluru.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ae712169815af8b10d8",
+          "score": 0.5083,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Gurugram' and location compatibility is strong for Gurugram.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b3112169815af8b11da",
+          "score": 0.5076,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0935\u0930\u094d\u0924\u092e\u093e\u0928 \u0936\u0939\u0930 \u0915\u0947 \u092c\u093e\u0939\u0930 relocate \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Mumbai' and location compatibility is strong for Mumbai.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aed12169815af8b10ec",
+          "score": 0.501,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0938\u094d\u0935\u093e\u0938\u094d\u0925\u094d\u092f \u0915\u093e\u0930\u0923\u094b\u0902 \u0938\u0947 ergonomic seating \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Surat' and location compatibility is strong for Surat.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    },
+    {
+      "user_id": "69b437049ea63896d191cf87",
+      "baseline_top5": [
+        {
+          "job_id": "69b43afe12169815af8b1128",
+          "score": 0.24394629895687103,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aea12169815af8b10e1",
+          "score": 0.2397637665271759,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4312169815af8b1211",
+          "score": 0.23745384812355042,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43af012169815af8b10f8",
+          "score": 0.2360067218542099,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ad212169815af8b108e",
+          "score": 0.23321965336799622,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43b1412169815af8b1178",
+          "score": 0.6057,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Tailoring profile signal aligns with Tailoring and alteration and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Chennai' and location compatibility is strong for Chennai.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aa412169815af8b0ff9",
+          "score": 0.5992,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Kolkata' and location compatibility is strong for Kolkata.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4312169815af8b1211",
+          "score": 0.5837,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Noida' and location compatibility is strong for Noida.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aea12169815af8b10e1",
+          "score": 0.5826,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Jaipur' and location compatibility is strong for Jaipur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ab912169815af8b103f",
+          "score": 0.576,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0918\u0930\u0940 shared device \u0905\u0938\u0932\u094d\u092f\u093e\u0928\u0947 async communication \u0939\u0935\u0947' is supported by the job feature 'Surat' and location compatibility is strong for Surat.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    },
+    {
+      "user_id": "69b437049ea63896d191d1bc",
+      "baseline_top5": [
+        {
+          "job_id": "69b43b1412169815af8b1178",
+          "score": 0.2104915976524353,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ad212169815af8b108e",
+          "score": 0.20758363604545593,
+          "relevance": 1,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ae512169815af8b10d3",
+          "score": 0.2023809552192688,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4312169815af8b1211",
+          "score": 0.2013745903968811,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43afe12169815af8b1128",
+          "score": 0.19966112077236176,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43b4312169815af8b1211",
+          "score": 0.7553,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need safe transport support for commute' is supported by the job feature 'Safe transport support' and location compatibility is strong for Noida.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ae512169815af8b10d3",
+          "score": 0.7494,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need safe transport support for commute' is supported by the job feature 'Safe transport support' and location compatibility is strong for Noida.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43acc12169815af8b107c",
+          "score": 0.7473,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need safe transport support for commute' is supported by the job feature 'Safe transport support' and location compatibility is strong for Bhopal.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aea12169815af8b10e1",
+          "score": 0.7472,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need safe transport support for commute' is supported by the job feature 'Safe transport support' and location compatibility is strong for Jaipur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a8212169815af8b0f85",
+          "score": 0.732,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Quality Checking profile signal aligns with Basic quality checks and the constraint 'Need school-hour-friendly shift' is supported by the job feature 'Flexible working hours' and location compatibility is strong for Indore.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    },
+    {
+      "user_id": "69b437049ea63896d191d4a3",
+      "baseline_top5": [
+        {
+          "job_id": "69b43aa912169815af8b1007",
+          "score": 0.21904219686985016,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aca12169815af8b1077",
+          "score": 0.21287456154823303,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ac112169815af8b105b",
+          "score": 0.2104739397764206,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4312169815af8b1212",
+          "score": 0.20959077775478363,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4612169815af8b121e",
+          "score": 0.2092316895723343,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43aca12169815af8b1077",
+          "score": 0.7082,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0906\u0935\u093e\u0917\u092e\u0928 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 remote \u092f\u093e hybrid \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Mumbai' and location compatibility is strong for Mumbai.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4312169815af8b1212",
+          "score": 0.6958,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Bengaluru' and location compatibility is strong for Bengaluru.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a7812169815af8b0f5d",
+          "score": 0.6864,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint 'remote \u0915\u093e\u092e \u0915\u0947 \u0932\u093f\u090f company-provided laptop \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'remote' and location compatibility is strong for Bhopal.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4612169815af8b121e",
+          "score": 0.6862,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint 'women-friendly workplace culture \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Women leadership mentorship' and location compatibility is strong for Nagpur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4f12169815af8b123c",
+          "score": 0.2917,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your GNM/ANM profile signal aligns with GNM/ANM and the constraint '\u0930\u093e\u0924 \u092e\u0947\u0902 \u0905\u0915\u0947\u0932\u0947 \u092f\u093e\u0924\u094d\u0930\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940' is supported by the job feature 'Aurangabad'.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    },
+    {
+      "user_id": "69b437049ea63896d191d044",
+      "baseline_top5": [
+        {
+          "job_id": "69b43b4212169815af8b120c",
+          "score": 0.2446281909942627,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a8b12169815af8b0fa2",
+          "score": 0.2362583875656128,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b1d12169815af8b1193",
+          "score": 0.2340427041053772,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a3912169815af8b0e9c",
+          "score": 0.23068144917488098,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a9f12169815af8b0fe6",
+          "score": 0.22942399978637695,
+          "relevance": 1,
+          "constraint_violation": false,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43ac312169815af8b1063",
+          "score": 0.5731,
+          "relevance": 1,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell' and location compatibility is strong for Aurangabad.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aff12169815af8b1129",
+          "score": 0.5514,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell' and location compatibility is strong for Ahmedabad.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b1d12169815af8b1193",
+          "score": 0.546,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell' and location compatibility is strong for Navi Mumbai.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a6e12169815af8b0f42",
+          "score": 0.5379,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Basic programming bootcamp profile signal aligns with Basic programming bootcamp and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell' and location compatibility is strong for Bhopal.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a3b12169815af8b0ea1",
+          "score": 0.4796,
+          "relevance": 1,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Communication profile signal aligns with Technology and the constraint 'Need anti-harassment policy and grievance support' is supported by the job feature 'Anti-harassment grievance cell' and location compatibility is strong for Mumbai.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    },
+    {
+      "user_id": "69b437049ea63896d191cde0",
+      "baseline_top5": [
+        {
+          "job_id": "69b43a9f12169815af8b0fe6",
+          "score": 0.24685606360435486,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a8e12169815af8b0faa",
+          "score": 0.24535655975341797,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b1f12169815af8b119a",
+          "score": 0.24486461281776428,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "698db1b3da55b84be89315ad",
+          "score": 0.24309183657169342,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a8812169815af8b0f99",
+          "score": 0.24286998808383942,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43ae012169815af8b10c3",
+          "score": 0.7706,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Computer basics certification profile signal aligns with Computer basics certification and the constraint 'Prefer location near Jaipur' is supported by the job feature 'Lucknow' and location compatibility is strong for Lucknow.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b2c12169815af8b11c8",
+          "score": 0.7679,
+          "relevance": 1,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Documentation profile signal aligns with Basic documentation and the constraint 'Prefer location near Jaipur' is supported by the job feature 'Kolhapur' and location compatibility is strong for Kolhapur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a7e12169815af8b0f76",
+          "score": 0.7628,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your Computer basics certification profile signal aligns with Computer basics certification and the constraint 'Prefer location near Jaipur' is supported by the job feature 'Vadodara' and location compatibility is strong for Vadodara.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ac112169815af8b105b",
+          "score": 0.7557,
+          "relevance": 1,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Documentation profile signal aligns with Basic documentation and the constraint 'Prefer location near Jaipur' is supported by the job feature 'Bengaluru' and location compatibility is strong for Bengaluru.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b2f12169815af8b11d5",
+          "score": 0.7486,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Typing profile signal aligns with Fast and accurate typing and the constraint 'Need low-bandwidth friendly remote workflow' is supported by the job feature 'remote' and location compatibility is strong for Indore.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    },
+    {
+      "user_id": "69b437049ea63896d191ce2a",
+      "baseline_top5": [
+        {
+          "job_id": "69b43afe12169815af8b1128",
+          "score": 0.24874727427959442,
+          "relevance": 1,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4312169815af8b1211",
+          "score": 0.24705496430397034,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ad212169815af8b108e",
+          "score": 0.24342381954193115,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aea12169815af8b10e1",
+          "score": 0.2419963777065277,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a8e12169815af8b0fab",
+          "score": 0.23546791076660156,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43aea12169815af8b10e1",
+          "score": 0.5683,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u092a\u094d\u0930\u0935\u093e\u0938\u093e\u0938\u093e\u0920\u0940 \u0938\u0941\u0930\u0915\u094d\u0937\u093f\u0924 transport \u0938\u0941\u0935\u093f\u0927\u093e \u0939\u0935\u0940' is supported by the job feature 'Safe transport support' and location compatibility is strong for Jaipur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b2412169815af8b11aa",
+          "score": 0.5667,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0906\u0930\u094b\u0917\u094d\u092f \u0935\u094d\u092f\u0935\u0938\u094d\u0925\u093e\u092a\u0928\u093e\u0938\u093e\u0920\u0940 short breaks \u0939\u0935\u0947\u0924' is supported by the job feature 'Indore' and location compatibility is strong for Indore.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b4312169815af8b1211",
+          "score": 0.5645,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u092a\u094d\u0930\u0935\u093e\u0938\u093e\u0938\u093e\u0920\u0940 \u0938\u0941\u0930\u0915\u094d\u0937\u093f\u0924 transport \u0938\u0941\u0935\u093f\u0927\u093e \u0939\u0935\u0940' is supported by the job feature 'Safe transport support' and location compatibility is strong for Noida.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ab912169815af8b103f",
+          "score": 0.5634,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u0906\u0930\u094b\u0917\u094d\u092f \u0935\u094d\u092f\u0935\u0938\u094d\u0925\u093e\u092a\u0928\u093e\u0938\u093e\u0920\u0940 short breaks \u0939\u0935\u0947\u0924' is supported by the job feature 'Surat' and location compatibility is strong for Surat.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ab212169815af8b1025",
+          "score": 0.5551,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your Tailoring certificate profile signal aligns with Tailoring certificate and the constraint '\u092a\u094d\u0930\u0935\u093e\u0938\u093e\u0938\u093e\u0920\u0940 \u0938\u0941\u0930\u0915\u094d\u0937\u093f\u0924 transport \u0938\u0941\u0935\u093f\u0927\u093e \u0939\u0935\u0940' is supported by the job feature 'Safe transport support' and location compatibility is strong for Nagpur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    },
+    {
+      "user_id": "69b437049ea63896d191cf74",
+      "baseline_top5": [
+        {
+          "job_id": "69b43ad412169815af8b1097",
+          "score": 0.2587510645389557,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a2d12169815af8b0e77",
+          "score": 0.2571861147880554,
+          "relevance": 1,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b1412169815af8b1177",
+          "score": 0.2571318745613098,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b2a12169815af8b11c1",
+          "score": 0.25520479679107666,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b0812169815af8b1146",
+          "score": 0.2548165023326874,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43ad212169815af8b1090",
+          "score": 0.8386,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Beautician certification profile signal aligns with Beautician certification and the constraint 'Need maternity leave and return-to-work support' is supported by the job feature 'Maternity leave' and location compatibility is strong for Mumbai.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b1412169815af8b1177",
+          "score": 0.8292,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Beautician certification profile signal aligns with Beautician certification and the constraint 'Need maternity leave and return-to-work support' is supported by the job feature 'Maternity leave' and location compatibility is strong for Kolhapur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a4812169815af8b0ecc",
+          "score": 0.8278,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Documentation profile signal aligns with Basic documentation and the constraint 'Need maternity leave and return-to-work support' is supported by the job feature 'Maternity leave' and location compatibility is strong for Kolkata.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a5612169815af8b0ef5",
+          "score": 0.8203,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Hygiene Management profile signal aligns with Service hygiene and the constraint 'Need maternity leave and return-to-work support' is supported by the job feature 'Maternity leave' and location compatibility is strong for Surat.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43aa412169815af8b0ffa",
+          "score": 0.8179,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Beautician certification profile signal aligns with Beautician certification and the constraint 'Need maternity leave and return-to-work support' is supported by the job feature 'Maternity leave' and location compatibility is strong for Gurugram.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    },
+    {
+      "user_id": "69b437049ea63896d191ce18",
+      "baseline_top5": [
+        {
+          "job_id": "69b43a6812169815af8b0f2f",
+          "score": 0.21553736925125122,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a8e12169815af8b0faa",
+          "score": 0.21411088109016418,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a4512169815af8b0ec4",
+          "score": 0.21076086163520813,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b2c12169815af8b11c8",
+          "score": 0.21037811040878296,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ac112169815af8b105b",
+          "score": 0.20978939533233643,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43a5c12169815af8b0f06",
+          "score": 0.7777,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Record Maintenance profile signal aligns with Record maintenance and the constraint 'part-time \u092d\u0942\u092e\u093f\u0915\u093e \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'part-time' and location compatibility is strong for Ahmedabad.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b1612169815af8b117e",
+          "score": 0.775,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your Record Maintenance profile signal aligns with Record maintenance and the constraint 'Thane \u0915\u0947 \u092a\u093e\u0938 \u0915\u093e\u092e \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Mumbai' and location compatibility is strong for Mumbai.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43b3e12169815af8b1200",
+          "score": 0.7662,
+          "relevance": 1,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Record Maintenance profile signal aligns with Record maintenance and the constraint 'remote \u0915\u093e\u092e \u0915\u0947 \u0932\u093f\u090f company-provided laptop \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Delhi' and location compatibility is strong for Delhi.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ae012169815af8b10c3",
+          "score": 0.7576,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Computer basics certification profile signal aligns with Computer basics certification and the constraint 'Thane \u0915\u0947 \u092a\u093e\u0938 \u0915\u093e\u092e \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Lucknow' and location compatibility is strong for Lucknow.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43acb12169815af8b1079",
+          "score": 0.7498,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your Patient Support profile signal aligns with Patient Support Associate and the constraint 'Thane \u0915\u0947 \u092a\u093e\u0938 \u0915\u093e\u092e \u091a\u093e\u0939\u093f\u090f' is supported by the job feature 'Kolhapur' and location compatibility is strong for Kolhapur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    },
+    {
+      "user_id": "69b437049ea63896d191d2ac",
+      "baseline_top5": [
+        {
+          "job_id": "69b43ad912169815af8b10ac",
+          "score": 0.2409941554069519,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a8912169815af8b0f9a",
+          "score": 0.23081271350383759,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a2912169815af8b0e6a",
+          "score": 0.2263185679912567,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a5212169815af8b0ee9",
+          "score": 0.22609484195709229,
+          "relevance": 2,
+          "constraint_violation": false,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a7e12169815af8b0f74",
+          "score": 0.22609484195709229,
+          "relevance": 0,
+          "constraint_violation": true,
+          "sample_type": ""
+        }
+      ],
+      "care_net_top5": [
+        {
+          "job_id": "69b43a7e12169815af8b0f74",
+          "score": 0.5799,
+          "relevance": 0,
+          "constraint_violation": true,
+          "explanation": "Recommended because your Social media certification profile signal aligns with Social media certification and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Visakhapatnam' and location compatibility is strong for Visakhapatnam.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a7d12169815af8b0f71",
+          "score": 0.5763,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Social media certification profile signal aligns with Social media certification and the constraint 'women-friendly workplace culture \u0939\u0935\u0947' is supported by the job feature 'Women leadership mentorship' and location compatibility is strong for Jaipur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a9312169815af8b0fb9",
+          "score": 0.5759,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Social media certification profile signal aligns with Social media certification and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Kolkata' and location compatibility is strong for Kolkata.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43a9212169815af8b0fb5",
+          "score": 0.5494,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Social media certification profile signal aligns with Social media certification and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Kolhapur' and location compatibility is strong for Kolhapur.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        },
+        {
+          "job_id": "69b43ab512169815af8b102e",
+          "score": 0.5484,
+          "relevance": 2,
+          "constraint_violation": false,
+          "explanation": "Recommended because your Social media certification profile signal aligns with Social media certification and the constraint '\u0938\u0927\u094d\u092f\u093e\u091a\u094d\u092f\u093e \u0936\u0939\u0930\u093e\u092c\u093e\u0939\u0947\u0930 relocate \u0936\u0915\u094d\u092f \u0928\u093e\u0939\u0940' is supported by the job feature 'Kolkata' and location compatibility is strong for Kolkata.",
+          "skill_gate_passed": true,
+          "sample_type": ""
+        }
+      ]
+    }
+  ]
+}

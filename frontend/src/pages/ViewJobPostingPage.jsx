@@ -1,57 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+﻿import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { formatOptionLabel } from "../content/locales";
+import { useLocale } from "../context/LocaleContext";
 
-// Component to view job posting details
-function ViewJobPostingDetail({ data, onBack, matchScore }) {
+function InfoField({ label, value, emptyLabel }) {
+  return (
+    <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-slate-100">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className="mt-2 whitespace-pre-wrap text-base text-slate-800">{value || emptyLabel}</p>
+    </div>
+  );
+}
+
+function ViewJobPostingDetail({ data, onBack, matchScore, messages, copy }) {
   return (
     <div>
-      <button 
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-8 text-gray-600 hover:text-gray-800 font-medium flex items-center text-lg"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
       >
-        <ArrowLeft size={20} className="mr-2" />
-        Back to Recommendations
+        <ArrowLeft size={18} />
+        {messages.common.backToRecommendations}
       </button>
 
-      <h2 className="text-3xl font-bold text-gray-800 mb-4">Job Details</h2>
-      {matchScore && (
-        <p className="text-lg text-purple-600 font-semibold mb-6">Match Score: {matchScore}%</p>
-      )}
-
-      <div className="space-y-8">
-        {/* Company logo if present */}
+      <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-center">
         {data.company_logo && (
-          <div className="mb-4">
-            <img src={data.company_logo} alt="Company Logo" className="w-40 h-20 object-contain rounded-lg shadow-sm" />
-          </div>
+          <img
+            src={data.company_logo}
+            alt={copy.uploadLabel}
+            className="h-24 w-24 rounded-[1.75rem] object-cover shadow-lg"
+          />
         )}
+        <div>
+          <h2 className="text-3xl font-semibold text-slate-950">{messages.viewPages.jobTitle}</h2>
+          {matchScore && (
+            <p className="mt-2 text-base font-semibold text-sky-700">
+              {messages.viewPages.matchScore({ score: matchScore })}
+            </p>
+          )}
+        </div>
+      </div>
 
-        {/* Company Information */}
-        <section className="bg-gradient-to-r from-blue-50 to-transparent p-6 rounded-xl border-2 border-blue-200">
-          <h3 className="text-2xl font-bold text-blue-600 mb-6">🏢 Company Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InfoField label="Company Name" value={data.companyName} />
-            <InfoField label="Contact Email" value={data.email} />
-            <InfoField label="Contact Phone" value={data.phoneNumber} />
-            <InfoField label="Contact Name" value={data.name} />
+      <div className="mt-8 space-y-6">
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.companyInformation}</h3>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <InfoField label={copy.fields.companyName.label} value={data.companyName || data.company_name} emptyLabel={messages.common.notProvided} />
+            <InfoField label={messages.viewPages.contactEmail} value={data.email} emptyLabel={messages.common.notProvided} />
+            <InfoField label={messages.viewPages.contactPhone} value={data.phoneNumber || data.phone_number} emptyLabel={messages.common.notProvided} />
+            <InfoField label={messages.viewPages.contactName} value={data.name} emptyLabel={messages.common.notProvided} />
           </div>
         </section>
 
-        {/* Job Details */}
-        <section className="bg-gradient-to-r from-purple-50 to-transparent p-6 rounded-xl border-2 border-purple-200">
-          <h3 className="text-2xl font-bold text-purple-600 mb-6">💼 Job Details</h3>
-          <div className="space-y-5">
-            <InfoField label="Job Title" value={data.jobTitle} />
-            <InfoField label="Job Category" value={data.jobCategory} />
-            <InfoField label="Job Type" value={data.jobType} />
-            <InfoField label="Location" value={data.jobLocation} />
-            <InfoField label="Description" value={data.jobDescription} />
-            <InfoField label="Experience Required" value={data.experienceRequired} />
-            <InfoField label="Salary Range" value={`${data.salaryMin} - ${data.salaryMax} (${data.salaryType})`} />
-            <InfoField label="Benefits" value={data.benefits} />
-            <InfoField label="Required Qualifications" value={data.requiredQualifications} />
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.jobDetailsSection}</h3>
+          <div className="mt-5 grid gap-4">
+            <InfoField label={copy.fields.jobTitle.label} value={data.jobTitle || data.job_title} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.jobCategory.label} value={formatOptionLabel(messages, "jobCategories", data.jobCategory || data.job_category)} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.jobType.label} value={formatOptionLabel(messages, "jobTypes", data.jobType || data.job_type)} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.jobLocation.label} value={data.jobLocation || data.job_location} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.jobDescription.label} value={data.jobDescription || data.job_description} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.experienceRequired.label} value={data.experienceRequired || data.experience_required} emptyLabel={messages.common.notProvided} />
+            <InfoField
+              label={messages.viewPages.salaryRange}
+              value={`${data.salaryMin || data.salary_min || ""} - ${data.salaryMax || data.salary_max || ""} (${formatOptionLabel(messages, "salaryTypes", data.salaryType || data.salary_type)})`}
+              emptyLabel={messages.common.notProvided}
+            />
+            <InfoField label={copy.fields.benefits.label} value={data.benefits} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.requiredQualifications.label} value={data.requiredQualifications || data.required_qualifications} emptyLabel={messages.common.notProvided} />
           </div>
         </section>
       </div>
@@ -59,117 +78,130 @@ function ViewJobPostingDetail({ data, onBack, matchScore }) {
   );
 }
 
-function InfoField({ label, value }) {
+function UnavailableData({ message, onBack, messages }) {
   return (
-    <div className="bg-white p-4 rounded-lg">
-      <label className="text-sm font-semibold text-gray-600 block mb-2">{label}</label>
-      <p className="text-gray-800 text-lg whitespace-pre-wrap">{value || <span className="text-gray-400 italic">Not provided</span>}</p>
-    </div>
-  );
-}
-
-// Component for unavailable data
-function UnavailableData({ message, onBack }) {
-  return (
-    <div>
-      <button 
+    <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+      <h2 className="text-2xl font-semibold text-slate-950">{messages.viewPages.jobNotFound}</h2>
+      <p className="mt-3 text-base text-slate-600">{message}</p>
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-8 text-gray-600 hover:text-gray-800 font-medium flex items-center text-lg"
+        className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-sky-700"
       >
-        <ArrowLeft size={20} className="mr-2" />
-        Back to Recommendations
+        <ArrowLeft size={18} />
+        {messages.common.backToRecommendations}
       </button>
-
-      <div className="text-center mt-12 py-16">
-        <div className="text-6xl mb-6">📭</div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">Job Not Found</h2>
-        <p className="text-lg text-gray-600 mb-8">{message}</p>
-        <button
-          onClick={onBack}
-          className="inline-flex items-center text-pink-600 hover:text-pink-700 font-medium text-lg hover:underline"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Back to Recommendations
-        </button>
-      </div>
     </div>
   );
 }
 
 export default function ViewJobPostingPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { jobId } = useParams();
+  const { messages } = useLocale();
+  const copy = messages.jobProviderForm;
   const [postingData, setPostingData] = useState(null);
-  const [matchScore, setMatchScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const matchScore = location.state?.matchScore ?? null;
+  const candidateIds = [...new Set([jobId, location.state?.postingId, location.state?.jobId].filter(Boolean))];
+  const candidateIdsKey = candidateIds.join("|");
+
   useEffect(() => {
-    fetchJobPosting();
-    // Get match score from location state if available
-    const state = navigate.location?.state;
-    if (state?.matchScore) {
-      setMatchScore(state.matchScore);
-    }
-  }, [jobId]);
+    let isActive = true;
 
-  const fetchJobPosting = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/get-job-posting-by-id/${jobId}`
-      );
-      const data = await response.json();
-      
-      if (data.posting) {
-        setPostingData(data.posting);
-      } else {
-        setError('Could not load this job posting details.');
+    const fetchJobPosting = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        setPostingData(null);
+
+        for (const candidateId of candidateIds) {
+          const response = await fetch(
+            `http://127.0.0.1:5000/api/get-job-posting-by-id/${candidateId}`
+          );
+
+          if (!response.ok) {
+            continue;
+          }
+
+          const data = await response.json();
+          if (data.posting) {
+            if (isActive) {
+              setPostingData(data.posting);
+            }
+            return;
+          }
+        }
+
+        if (isActive) {
+          setError(messages.viewPages.couldNotLoadJob);
+        }
+      } catch (fetchError) {
+        console.error("Error fetching job posting:", fetchError);
+        if (isActive) {
+          setError(messages.viewPages.retryJob);
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
       }
-    } catch (err) {
-      console.error('Error fetching job posting:', err);
-      setError('Failed to load job details. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const handleBack = () => {
-    navigate('/job-seeker-dashboard');
-  };
+    if (!candidateIds.length) {
+      setLoading(false);
+      setError(messages.viewPages.couldNotLoadJob);
+      return undefined;
+    }
+
+    fetchJobPosting();
+
+    return () => {
+      isActive = false;
+    };
+  }, [candidateIdsKey, messages.viewPages.couldNotLoadJob, messages.viewPages.retryJob]);
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-blue-50 to-purple-100 px-6 py-12">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="bg-white shadow-xl rounded-2xl p-8 mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Job Posting Details</h1>
-            <p className="text-gray-600">Review this job opportunity that matches your profile</p>
-          </div>
+      <main className="px-4 py-10 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <section className="rounded-[2.25rem] border border-slate-200 bg-white/90 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">
+              {messages.brand.shortName}
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
+              {messages.viewPages.jobTitle}
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
+              {messages.viewPages.jobBody}
+            </p>
+          </section>
 
-          {/* Main Content */}
-          <div className="bg-white shadow-xl rounded-2xl p-8">
-            {loading && (
-              <div className="text-center mt-8 text-lg text-gray-600">Loading job details...</div>
-            )}
-            {error && (
-              <UnavailableData 
+          <section className="mt-8 rounded-[2.25rem] border border-slate-200 bg-white/90 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] sm:p-8">
+            {loading && <p className="text-lg text-slate-600">{messages.viewPages.loadingJob}</p>}
+            {error && !loading && (
+              <UnavailableData
                 message={error}
-                onBack={handleBack}
+                onBack={() => navigate("/job-seeker-dashboard")}
+                messages={messages}
               />
             )}
             {postingData && !loading && (
-              <ViewJobPostingDetail 
+              <ViewJobPostingDetail
                 data={postingData}
-                onBack={handleBack}
+                onBack={() => navigate("/job-seeker-dashboard")}
                 matchScore={matchScore}
+                messages={messages}
+                copy={copy}
               />
             )}
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
     </>
   );
 }

@@ -1,235 +1,269 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Eye, Plus } from 'lucide-react';
+﻿import { useEffect, useState } from "react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import JobSeekerApplication from './JobSeekerApplication';
+import { useLocale } from "../context/LocaleContext";
 
-// Component to view existing application
-function ViewApplicationData({ data, onBack }) {
+function InfoField({ label, value, emptyLabel }) {
+  return (
+    <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-slate-100">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className="mt-2 whitespace-pre-wrap text-base text-slate-800">{value || emptyLabel}</p>
+    </div>
+  );
+}
+
+function ViewApplicationData({ data, onBack, copy, messages }) {
   return (
     <div>
-      <button 
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-8 text-gray-600 hover:text-gray-800 font-medium flex items-center text-lg"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
       >
-        <ArrowLeft size={20} className="mr-2" />
-        Back to Options
+        <ArrowLeft size={18} />
+        {messages.common.backToOptions}
       </button>
 
-      <h2 className="text-3xl font-bold text-gray-800 mb-8">Your Job Seeker Profile</h2>
-          {/* Profile photo if available */}
-          {data.profile_pic && (
-            <div className="mb-6 flex items-center">
-              <img src={data.profile_pic} alt="Profile" className="w-28 h-28 rounded-full object-cover border-4 border-pink-200 mr-4" />
-              <div>
-                <h3 className="text-xl font-semibold">{data.name}</h3>
-                <p className="text-gray-600">{data.email}</p>
-              </div>
-            </div>
-          )}
-      
-      <div className="space-y-8">
-        {/* Personal Information */}
-        <section className="bg-gradient-to-r from-pink-50 to-transparent p-6 rounded-xl border-2 border-pink-200">
-          <h3 className="text-2xl font-bold text-pink-600 mb-6">👤 Personal Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InfoField label="Name" value={data.name} />
-            <InfoField label="Email" value={data.email} />
-            <InfoField label="Contact" value={data.contact} />
-            <InfoField label="Location" value={data.location} />
-          </div>
-        </section>
-
-        {/* Education & Experience */}
-        <section className="bg-gradient-to-r from-blue-50 to-transparent p-6 rounded-xl border-2 border-blue-200">
-          <h3 className="text-2xl font-bold text-blue-600 mb-6">🎓 Education & Experience</h3>
-          <div className="space-y-5">
-            <InfoField label="Highest Qualification" value={data.qualification} />
-            <InfoField label="Skills" value={data.skills} />
-            <InfoField label="Previous Job / Internship" value={data.previousJob} />
-            <InfoField label="Roles / Responsibilities" value={data.roles} />
-            <InfoField label="Skills Applied" value={data.skillsApplied} />
-            <InfoField label="Certifications / Achievements" value={data.certifications} />
-            <InfoField label="Portfolio / Resume Link" value={data.portfolio} />
-          </div>
-        </section>
-
-        {/* Preferences */}
-        {data.preferences && (
-          <section className="bg-gradient-to-r from-purple-50 to-transparent p-6 rounded-xl border-2 border-purple-200">
-            <h3 className="text-2xl font-bold text-purple-600 mb-6">⚙️ Preferences & Constraints</h3>
-            <InfoField label="Your Preferences" value={data.preferences} />
-          </section>
+      <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-center">
+        {data.profile_pic && (
+          <img
+            src={data.profile_pic}
+            alt={copy.uploadLabel}
+            className="h-28 w-28 rounded-[1.75rem] object-cover shadow-lg"
+          />
         )}
+        <div>
+          <h2 className="text-3xl font-semibold text-slate-950">{messages.viewPages.seekerTitle}</h2>
+          <p className="mt-2 text-base text-slate-600">{messages.jobSeekerDashboard.viewBody}</p>
+        </div>
+      </div>
+
+      <div className="mt-8 space-y-6">
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.personalInformation}</h3>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <InfoField label={copy.fields.name.label} value={data.name} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.email.label} value={data.email} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.contact.label} value={data.contact} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.location.label} value={data.location} emptyLabel={messages.common.notProvided} />
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.educationExperience}</h3>
+          <div className="mt-5 grid gap-4">
+            <InfoField label={copy.fields.qualification.label} value={data.qualification} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.skills.label} value={data.skills} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.previousJob.label} value={data.previousJob} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.roles.label} value={data.roles} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.skillsApplied.label} value={data.skillsApplied} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.certifications.label} value={data.certifications} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.portfolio.label} value={data.portfolio} emptyLabel={messages.common.notProvided} />
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.preferenceSection}</h3>
+          <div className="mt-5">
+            <InfoField label={copy.fields.preferences.label} value={data.preferences} emptyLabel={messages.common.notProvided} />
+          </div>
+        </section>
       </div>
     </div>
   );
 }
 
-function InfoField({ label, value }) {
+function UnavailableData({ message, onBack, messages }) {
   return (
-    <div className="bg-white p-4 rounded-lg">
-      <label className="text-sm font-semibold text-gray-600 block mb-2">{label}</label>
-      <p className="text-gray-800 text-lg whitespace-pre-wrap">{value || <span className="text-gray-400 italic">Not provided</span>}</p>
-    </div>
-  );
-}
-
-// Component for unavailable data
-function UnavailableData({ message, onBack }) {
-  return (
-    <div>
-      <button 
+    <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+      <h2 className="text-2xl font-semibold text-slate-950">{messages.viewPages.profileNotFound}</h2>
+      <p className="mt-3 text-base text-slate-600">{message}</p>
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-8 text-gray-600 hover:text-gray-800 font-medium flex items-center text-lg"
+        className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-sky-700"
       >
-        <ArrowLeft size={20} className="mr-2" />
-        Back to Options
+        <ArrowLeft size={18} />
+        {messages.common.backToOptions}
       </button>
-
-      <div className="text-center mt-12 py-16">
-        <div className="text-6xl mb-6">📭</div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">Data Not Available</h2>
-        <p className="text-lg text-gray-600 mb-8">{message}</p>
-        <button
-          onClick={onBack}
-          className="inline-flex items-center text-pink-600 hover:text-pink-700 font-medium text-lg hover:underline"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Back to Options
-        </button>
-      </div>
     </div>
   );
 }
 
-// Component to view job recommendations
-function ViewJobRecommendations({ userId, onBack, hasApplicationData }) {
+function ViewJobRecommendations({ userId, onBack, messages }) {
   const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
-  const perPage = 10;
-
+  const perPage = 6;
 
   useEffect(() => {
-    fetchJobRecommendations();
-  }, [userId]);
-
-  const fetchJobRecommendations = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/job-recommendations/${userId}`
-      );
-      const data = await response.json();
-      
-      if (data.ranked_jobs) {
-        setRecommendations(data.ranked_jobs);
-      } else {
-        setRecommendations([]);
+    const fetchJobRecommendations = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://127.0.0.1:5000/api/job-recommendations/${userId}`);
+        const data = await response.json();
+        setRecommendations(data.ranked_jobs || []);
+      } catch (fetchError) {
+        console.error("Error fetching recommendations:", fetchError);
+        setError(messages.jobSeekerDashboard.couldNotLoadRecommendations);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching recommendations:', err);
-      setError('Could not load recommendations. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const handleJobClick = (jobId, matchScore) => {
-    navigate(`/view-job/${jobId}`, { state: { matchScore: (matchScore * 100).toFixed(0) } });
-  };
+    fetchJobRecommendations();
+  }, [messages.jobSeekerDashboard.couldNotLoadRecommendations, userId]);
 
-  if (loading) return <div className="text-center mt-8 text-lg text-gray-600">🔄 Loading recommendations...</div>;
-  if (error) return <div className="text-center mt-8 text-lg text-red-600">❌ {error}</div>;
-  if (!recommendations.length) return (
-    <div className="text-center mt-12">
-      <p className="text-lg text-gray-600 mb-6">No job matches found yet.</p>
-      <p className="text-gray-500 mb-8">Try filling out your profile with more details to get better matches!</p>
-      <button
-        onClick={onBack}
-        className="inline-flex items-center text-pink-600 hover:text-pink-700 font-medium text-lg"
-      >
-        <ArrowLeft size={20} className="mr-2" />
-        Back to Options
-      </button>
-    </div>
-  );
+  const currentItems = recommendations.slice(page * perPage, (page + 1) * perPage);
+
+  if (loading) {
+    return <p className="text-lg text-slate-600">{messages.jobSeekerDashboard.loadingRecommendations}</p>;
+  }
+
+  if (error) {
+    return <p className="text-lg text-rose-600">{error}</p>;
+  }
+
+  if (!recommendations.length) {
+    return (
+      <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+        <h2 className="text-2xl font-semibold text-slate-950">
+          {messages.jobSeekerDashboard.noMatchesTitle}
+        </h2>
+        <p className="mt-3 text-base text-slate-600">
+          {messages.jobSeekerDashboard.noMatchesBody}
+        </p>
+        <button
+          type="button"
+          onClick={onBack}
+          className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-sky-700"
+        >
+          <ArrowLeft size={18} />
+          {messages.common.backToOptions}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <button 
+      <button
+        type="button"
         onClick={onBack}
-        className="mb-8 text-gray-600 hover:text-gray-800 font-medium flex items-center text-lg"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
       >
-        <ArrowLeft size={20} className="mr-2" />
-        Back to Options
+        <ArrowLeft size={18} />
+        {messages.common.backToOptions}
       </button>
 
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">🎯 Your Matched Job Opportunities</h2>
-      <p className="text-gray-600 mb-8 text-lg">Found {recommendations.length} job(s) matching your profile</p>
-      
-      <div className="space-y-5">
-        {recommendations.slice(page * perPage, (page + 1) * perPage).map((job, idx) => (
-          <div 
-            key={idx} 
-            onClick={() => handleJobClick(job.job_id, job.job_score)}
-            className="border-3 border-gradient rounded-xl overflow-hidden hover:shadow-lg transition bg-white cursor-pointer hover:border-purple-400"
-          >
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 border-b-3 border-purple-200">
-              <div className="flex justify-between items-start mb-3">
+      <h2 className="mt-6 text-3xl font-semibold text-slate-950">
+        {messages.jobSeekerDashboard.recommendationTitle}
+      </h2>
+      <p className="mt-2 text-base text-slate-600">
+        {messages.jobSeekerDashboard.recommendationCount({ count: recommendations.length })}
+      </p>
+
+      <div className="mt-8 space-y-5">
+        {currentItems.map((job) => {
+          const routeJobId = job.posting_id || job.job_id;
+
+          return (
+            <button
+              key={routeJobId || job.job_title}
+              type="button"
+              disabled={!routeJobId}
+              onClick={() =>
+                navigate(`/view-job/${routeJobId}`, {
+                  state: {
+                    matchScore: (job.job_score * 100).toFixed(0),
+                    jobId: job.job_id,
+                    postingId: job.posting_id,
+                  },
+                })
+              }
+              className="w-full rounded-[1.75rem] border border-slate-200 bg-white p-6 text-left shadow-[0_24px_60px_-40px_rgba(15,23,42,0.35)] transition hover:-translate-y-0.5 hover:border-sky-200 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-800">{job.job_title}</h3>
-                  <p className="text-lg text-gray-600 mt-1">🏢 {job.company}</p>
+                  <h3 className="text-2xl font-semibold text-slate-950">{job.job_title}</h3>
+                  <p className="mt-2 text-base text-slate-600">{job.company}</p>
                 </div>
-                <div className="text-right">
-                  <div className="text-4xl font-bold text-purple-600">{(job.job_score * 100).toFixed(0)}%</div>
-                  <p className="text-sm text-gray-600 mt-1">Overall Match</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                  <p className="text-sm font-semibold text-blue-600 mb-2">Skills Match</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-blue-600">{(job.skill_score * 100).toFixed(0)}%</span>
-                  </div>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
-                  <p className="text-sm font-semibold text-green-600 mb-2">Constraints Match</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-green-600">{(job.constraint_score * 100).toFixed(0)}%</span>
-                  </div>
+                <div className="rounded-2xl bg-sky-50 px-4 py-3 text-right text-sky-700">
+                  <p className="text-3xl font-semibold">{(job.job_score * 100).toFixed(0)}%</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+                    {messages.jobSeekerDashboard.overallMatch}
+                  </p>
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
+
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <div className="rounded-[1.25rem] bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    {messages.jobSeekerDashboard.skillsMatch}
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">
+                    {(job.skill_score * 100).toFixed(0)}%
+                  </p>
+                </div>
+                <div className="rounded-[1.25rem] bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    {messages.jobSeekerDashboard.constraintsMatch}
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">
+                    {(job.constraint_score * 100).toFixed(0)}%
+                  </p>
+                </div>
+              </div>
+
+              {job.explanation && (
+                <div className="mt-5 rounded-[1.25rem] bg-amber-50 p-4 text-slate-700">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
+                    {messages.jobSeekerDashboard.explanation}
+                  </p>
+                  <p className="mt-2 leading-7">{job.explanation}</p>
+                </div>
+              )}
+
+              <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
+                {messages.jobSeekerDashboard.matchesTitle}
+                <ChevronRight size={16} />
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Pagination Controls */}
       {recommendations.length > perPage && (
-        <div className="mt-8 flex items-center justify-center gap-4">
+        <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            type="button"
+            onClick={() => setPage((current) => Math.max(0, current - 1))}
             disabled={page === 0}
-            className={`px-4 py-2 rounded-lg border ${page === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
-            Previous
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {messages.common.previous}
           </button>
-
-          <div className="text-sm text-gray-600">
-            Showing {(page * perPage) + 1} - {Math.min((page + 1) * perPage, recommendations.length)} of {recommendations.length}
-          </div>
-
+          <p className="text-sm text-slate-500">
+            {messages.common.showingRange({
+              start: page * perPage + 1,
+              end: Math.min((page + 1) * perPage, recommendations.length),
+              total: recommendations.length,
+            })}
+          </p>
           <button
-            onClick={() => setPage((p) => Math.min(Math.floor((recommendations.length - 1) / perPage), p + 1))}
+            type="button"
+            onClick={() =>
+              setPage((current) =>
+                Math.min(Math.floor((recommendations.length - 1) / perPage), current + 1)
+              )
+            }
             disabled={(page + 1) * perPage >= recommendations.length}
-            className={`px-4 py-2 rounded-lg border ${(page + 1) * perPage >= recommendations.length ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
-            Next
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {messages.common.next}
           </button>
         </div>
       )}
@@ -239,156 +273,155 @@ function ViewJobRecommendations({ userId, onBack, hasApplicationData }) {
 
 export default function JobSeekerDashboard() {
   const navigate = useNavigate();
+  const { messages } = useLocale();
+  const copy = messages.jobSeekerForm;
   const [applicationData, setApplicationData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('options'); // 'options', 'form', 'results', 'view'
+  const [activeTab, setActiveTab] = useState("options");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Get user from localStorage
-    const userFromStorage = JSON.parse(localStorage.getItem('user'));
+    const userFromStorage = JSON.parse(localStorage.getItem("user"));
     if (!userFromStorage?.id) {
-      alert('User session not found. Please login again.');
-      navigate('/login');
+      alert(messages.common.sessionMissing);
+      navigate("/login");
       return;
     }
+
     setUser(userFromStorage);
-    
-    // Fetch user's existing job seeker application if any
-    fetchApplicationData(userFromStorage.id);
-  }, [navigate]);
 
-  const fetchApplicationData = async (userId) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:5000/api/get-job-seeker-application/${userId}`);
-      const result = await response.json();
-      if (result.application) {
-        setApplicationData(result.application);
+    const fetchApplicationData = async () => {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:5000/api/get-job-seeker-application/${userFromStorage.id}`
+        );
+        const result = await response.json();
+        if (result.application) {
+          setApplicationData(result.application);
+        }
+      } catch (error) {
+        console.error("Error fetching application:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching application:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  if (loading) return (
-    <>
-      <Navbar />
-      <div className="text-center mt-20 text-lg text-gray-600">Loading...</div>
-    </>
-  );
+    fetchApplicationData();
+  }, [messages.common.sessionMissing, navigate]);
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="px-4 py-16 text-center text-lg text-slate-600">{messages.common.loading}</div>
+      </>
+    );
+  }
+
+  const actionCards = [
+    {
+      title: applicationData
+        ? messages.jobSeekerDashboard.updateTitle
+        : messages.jobSeekerDashboard.fillTitle,
+      body: applicationData
+        ? messages.jobSeekerDashboard.updateBody
+        : messages.jobSeekerDashboard.fillBody,
+      action: () => navigate("/job-seeker-form"),
+    },
+    {
+      title: messages.jobSeekerDashboard.viewTitle,
+      body: messages.jobSeekerDashboard.viewBody,
+      action: () => setActiveTab("view"),
+    },
+    {
+      title: messages.jobSeekerDashboard.matchesTitle,
+      body: messages.jobSeekerDashboard.matchesBody,
+      action: () => setActiveTab("results"),
+    },
+  ];
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-blue-50 to-purple-100 px-6 py-12">
-        <div className="max-w-4xl mx-auto">
-          
-          {/* Back Button */}
-          <div className="mb-8">
-            <button 
-              onClick={() => navigate('/home')}
-              className="inline-flex items-center text-pink-600 hover:text-pink-700 font-medium"
-            >
-              <ArrowLeft size={20} className="mr-2" />
-              Back to Home
-            </button>
-          </div>
+      <main className="px-4 py-10 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+          >
+            <ArrowLeft size={18} />
+            {messages.common.backToHome}
+          </button>
 
-          {/* Header */}
-          <div className="bg-white shadow-xl rounded-2xl p-8 mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Job Seeker Profile</h1>
-            <p className="text-gray-600">Manage your job applications and explore opportunities</p>
-          </div>
+          <section className="mt-6 rounded-[2.25rem] border border-slate-200 bg-white/90 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">
+              {messages.brand.shortName}
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
+              {messages.jobSeekerDashboard.title}
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">
+              {messages.jobSeekerDashboard.body}
+            </p>
+          </section>
 
-          {/* Main Content */}
-          <div className="bg-white shadow-xl rounded-2xl p-8">
-            
-            {/* Tab Navigation */}
-            {activeTab === 'options' && (
-              <div className="space-y-6">
-                <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Job Seeker Hub</h2>
-                
-                <div className="space-y-5">
-                  {!applicationData ? (
-                    <p className="text-gray-600 text-center text-lg mb-8">Welcome! Choose what you'd like to do:</p>
-                  ) : (
-                    <p className="text-gray-600 text-center text-lg mb-8">Welcome back! Choose what you'd like to do:</p>
-                  )}
-                  
-                  {/* Fill/Update Profile Button */}
-                  <button
-                    onClick={() => navigate('/job-seeker-form')}
-                    className="w-full p-7 border-3 border-pink-400 rounded-xl hover:bg-pink-50 hover:border-pink-600 transition flex items-center justify-between group bg-gradient-to-r from-pink-50 to-transparent"
-                  >
-                    <div className="text-left">
-                      <h3 className="text-2xl font-bold text-gray-800 group-hover:text-pink-600 mb-2">
-                        {applicationData ? ' Update Your Profile' : ' Fill Your Job Seeker Profile'}
-                      </h3>
-                      <p className="text-gray-600">
-                        {applicationData ? 'Edit and improve your job seeker profile' : 'Create your profile with your skills, experience, and preferences'}
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* View Profile Button */}
-                  <button
-                    onClick={() => setActiveTab('view')}
-                    className="w-full p-7 border-3 border-green-400 rounded-xl hover:bg-green-50 hover:border-green-600 transition flex items-center justify-between group bg-gradient-to-r from-green-50 to-transparent"
-                  >
-                    <div className="text-left">
-                      <h3 className="text-2xl font-bold text-gray-800 group-hover:text-green-600 mb-2">
-                        View Your Profile
-                      </h3>
-                      <p className="text-gray-600">Review your saved job seeker profile</p>
-                    </div>
-                  </button>
-
-                  {/* View Matched Jobs Button */}
-                  <button
-                    onClick={() => setActiveTab('results')}
-                    className="w-full p-7 border-3 border-purple-400 rounded-xl hover:bg-purple-50 hover:border-purple-600 transition flex items-center justify-between group bg-gradient-to-r from-purple-50 to-transparent"
-                  >
-                    <div className="text-left">
-                      <h3 className="text-2xl font-bold text-gray-800 group-hover:text-purple-600 mb-2">
-                        View Matched Jobs
-                      </h3>
-                      <p className="text-gray-600">See jobs recommended based on your profile</p>
-                    </div>
-                  </button>
+          <section className="mt-8 rounded-[2.25rem] border border-slate-200 bg-white/90 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] sm:p-8">
+            {activeTab === "options" && (
+              <div>
+                <h2 className="text-3xl font-semibold text-slate-950">
+                  {messages.jobSeekerDashboard.hubTitle}
+                </h2>
+                <p className="mt-3 text-base text-slate-600">
+                  {applicationData
+                    ? messages.jobSeekerDashboard.welcomeBack
+                    : messages.jobSeekerDashboard.welcomeNew}
+                </p>
+                <div className="mt-8 grid gap-5">
+                  {actionCards.map((card) => (
+                    <button
+                      key={card.title}
+                      type="button"
+                      onClick={card.action}
+                      className="flex w-full items-center justify-between rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6 text-left transition hover:border-sky-200 hover:bg-sky-50/70"
+                    >
+                      <div>
+                        <h3 className="text-2xl font-semibold text-slate-950">{card.title}</h3>
+                        <p className="mt-2 text-base text-slate-600">{card.body}</p>
+                      </div>
+                      <ChevronRight className="hidden text-sky-700 sm:block" />
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* Form View - Removed, opens in separate page */}
-
-            {/* View Existing Application */}
-            {activeTab === 'view' && (
-              applicationData ? (
-                <ViewApplicationData 
+            {activeTab === "view" &&
+              (applicationData ? (
+                <ViewApplicationData
                   data={applicationData}
-                  onBack={() => setActiveTab('options')}
+                  onBack={() => setActiveTab("options")}
+                  copy={copy}
+                  messages={messages}
                 />
               ) : (
-                <UnavailableData 
-                  message="You haven't filled out your profile yet. Please fill it first to view your information."
-                  onBack={() => setActiveTab('options')}
+                <UnavailableData
+                  message={messages.jobSeekerDashboard.noProfile}
+                  onBack={() => setActiveTab("options")}
+                  messages={messages}
                 />
-              )
-            )}
+              ))}
 
-            {/* Results View */}
-            {activeTab === 'results' && user && (
-              <ViewJobRecommendations 
+            {activeTab === "results" && user && (
+              <ViewJobRecommendations
                 userId={user.id}
-                onBack={() => setActiveTab('options')}
-                hasApplicationData={!!applicationData}
+                onBack={() => setActiveTab("options")}
+                messages={messages}
               />
             )}
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
     </>
   );
 }

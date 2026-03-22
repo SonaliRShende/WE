@@ -1,5 +1,6 @@
 import os
 import re
+import importlib
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
 from dotenv import load_dotenv
@@ -461,16 +462,17 @@ def submit_job_application():
         )
         
         message = "Application created successfully!" if result.upserted_id else "Application updated successfully!"
+        invalidate_job_seeker_recommendations(user_id)
         
         # Trigger embedding service in background to update embeddings after saving
         try:
-            import embedding_service
             import traceback
             from datetime import datetime
 
             def run_seeker_embeddings():
                 try:
                     print(f"[{datetime.now()}] Starting seeker embedding for user_id: {user_id}")
+                    embedding_service = importlib.import_module("embedding_service")
                     result = embedding_service.embed_specific_job_seeker(user_id)
                     print(f"[{datetime.now()}] Seeker embedding completed. Result: {result}")
                     if result:
@@ -482,8 +484,7 @@ def submit_job_application():
                     print(f"[{datetime.now()}] ❌ Background seeker embedding error: {ee}")
                     traceback.print_exc()
 
-            # Use non-daemon thread to ensure completion
-            embedding_thread = threading.Thread(target=run_seeker_embeddings, daemon=False)
+            embedding_thread = threading.Thread(target=run_seeker_embeddings, daemon=True)
             embedding_thread.start()
             print(f"[{datetime.now()}] Seeker embedding thread started for user: {user_id}")
         except Exception as e:
@@ -544,6 +545,23 @@ def invalidate_all_job_seeker_recommendations():
         print(f"⚠️  Error invalidating cache: {e}")
 
 
+def invalidate_job_seeker_recommendations(user_id):
+    """
+    Clear cached recommendations for a specific job seeker.
+    Called when that seeker's profile changes.
+    """
+    try:
+        from bson import ObjectId
+
+        db_instance = mongo_client['skill_constraint_db']
+        job_scores_collection = db_instance['job_scores']
+        user_id_obj = ObjectId(user_id) if isinstance(user_id, str) else user_id
+        result = job_scores_collection.delete_many({"user_id": user_id_obj})
+        print(f"Cache invalidated for seeker {user_id}: Deleted {result.deleted_count} recommendation(s)")
+    except Exception as e:
+        print(f"Error invalidating seeker cache: {e}")
+
+
 def invalidate_job_provider_recommendations(user_id):
     """
     Clear cached recommendations for a specific job provider
@@ -559,6 +577,41 @@ def invalidate_job_provider_recommendations(user_id):
         print(f"⚠️  Error invalidating provider cache: {e}")
 
 
+def get_latest_recommendation_source_timestamp():
+    """
+    Return the newest timestamp from embedding collections.
+    If this is newer than a cached recommendation, the cache should be regenerated.
+    
+    NOTE:
+    Recommendations are computed from embedding collections (JS_embeddings/JP_embeddings),
+    so freshness must be based on embedding update timestamps rather than raw profile/posting
+    timestamps. This avoids regenerating recommendations with stale embeddings.
+    """
+    try:
+        db_instance = mongo_client['skill_constraint_db']
+        timestamp_sources = [
+            ("JS_embeddings", ("updated_at", "created_at")),
+            ("JP_embeddings", ("updated_at", "created_at")),
+        ]
+        timestamps = []
+
+        for collection_name, field_names in timestamp_sources:
+            for field_name in field_names:
+                latest_doc = db_instance[collection_name].find_one(
+                    {field_name: {"$exists": True}},
+                    sort=[(field_name, -1)],
+                    projection={field_name: 1},
+                )
+                latest_value = latest_doc.get(field_name) if latest_doc else None
+                if latest_value is not None:
+                    timestamps.append(latest_value)
+
+        return max(timestamps) if timestamps else None
+    except Exception as e:
+        print(f"Error checking recommendation freshness: {e}")
+        return None
+
+
 @app.route('/api/job-recommendations/<user_id>', methods=['GET'])
 def get_job_recommendations(user_id):
     """
@@ -566,7 +619,7 @@ def get_job_recommendations(user_id):
     """
     try:
         from bson import ObjectId
-        from job_score_calculation import generate_job_recommendations
+        from care_net_service import generate_job_recommendations
         
         # Check if recommendations exist and are recent (less than 24 hours old)
         from datetime import datetime, timedelta
@@ -593,19 +646,35 @@ def get_job_recommendations(user_id):
             generated_at = existing_result.get('generated_at')
             if generated_at:
                 age = datetime.now() - generated_at
-                if age < timedelta(hours=24):
+                latest_source_timestamp = get_latest_recommendation_source_timestamp()
+                source_is_stale = (
+                    latest_source_timestamp is not None and latest_source_timestamp > generated_at
+                )
+                if age < timedelta(hours=24) and not source_is_stale:
                     should_regenerate = False
                     result = existing_result
         
         if should_regenerate:
             # Generate fresh recommendations (pass string user_id, function will convert)
             ranked_jobs = generate_job_recommendations(user_id)
-            result = {
-                "user_id": str(user_id_obj),
-                "ranked_jobs": ranked_jobs,
-                "generated_at": datetime.now(),
-                "total_jobs_evaluated": len(ranked_jobs)
-            }
+            if 'job_scores_collection' in locals():
+                refreshed_result = job_scores_collection.find_one({"user_id": user_id_obj})
+                if refreshed_result:
+                    result = refreshed_result
+                else:
+                    result = {
+                        "user_id": str(user_id_obj),
+                        "ranked_jobs": ranked_jobs,
+                        "generated_at": datetime.now(),
+                        "total_jobs_evaluated": len(ranked_jobs)
+                    }
+            else:
+                result = {
+                    "user_id": str(user_id_obj),
+                    "ranked_jobs": ranked_jobs,
+                    "generated_at": datetime.now(),
+                    "total_jobs_evaluated": len(ranked_jobs)
+                }
         
         if result:
             # Convert everything to JSON-serializable format
@@ -639,6 +708,15 @@ def get_job_recommendations(user_id):
             # Handle total_jobs_evaluated
             if 'total_jobs_evaluated' in result:
                 response_data['total_jobs_evaluated'] = result['total_jobs_evaluated']
+
+            if 'algorithm' in result:
+                response_data['algorithm'] = result['algorithm']
+
+            if 'recommended_jobs' in result:
+                response_data['recommended_jobs'] = result['recommended_jobs']
+
+            if 'rejected_by_skill_gate' in result:
+                response_data['rejected_by_skill_gate'] = result['rejected_by_skill_gate']
             
             return jsonify(response_data), 200
         else:
@@ -661,15 +739,10 @@ def generate_embeddings_for_user(user_id):
         from bson import ObjectId
         from datetime import datetime
 
-        try:
-            import embedding_service
-        except Exception as e:
-            print(f"Failed to import embedding_service: {e}")
-            return jsonify({"error": "Embedding service not available"}), 500
-
         # Run embedding_service in a background thread to avoid blocking the request
         def run_embeddings():
             try:
+                embedding_service = importlib.import_module("embedding_service")
                 embedding_service.embed_specific_job_seeker(user_id)
             except Exception as ee:
                 print(f"Background embedding error: {ee}")
@@ -783,16 +856,17 @@ def submit_job_posting():
         )
         
         message = "Job posting created!" if result.upserted_id else "Job posting updated!"
+        embedding_refreshed = False
         
-        # Trigger embedding service in background to update posting embeddings
+        # Refresh posting embeddings immediately when possible, then fall back to a background retry.
         try:
-            import embedding_service
             import traceback
             from datetime import datetime
 
             def run_posting_embeddings():
                 try:
                     print(f"[{datetime.now()}] Starting job posting embedding for user_id: {user_id}")
+                    embedding_service = importlib.import_module("embedding_service")
                     result = embedding_service.embed_specific_job_posting(user_id)
                     print(f"[{datetime.now()}] Job posting embedding completed. Result: {result}")
                     if result:
@@ -804,8 +878,7 @@ def submit_job_posting():
                     print(f"[{datetime.now()}] ❌ Background posting embedding error: {ee}")
                     traceback.print_exc()
 
-            # Use non-daemon thread to ensure completion
-            embedding_thread = threading.Thread(target=run_posting_embeddings, daemon=False)
+            embedding_thread = threading.Thread(target=run_posting_embeddings, daemon=True)
             embedding_thread.start()
             print(f"[{datetime.now()}] Job posting embedding thread started for user: {user_id}")
         except Exception as e:
@@ -820,7 +893,8 @@ def submit_job_posting():
             "extracted_benefits": parsed_benefits,
             "job_description_reprocessed": job_desc_changed,
             "qualifications_reprocessed": qualif_changed,
-            "benefits_reprocessed": benefits_changed
+            "benefits_reprocessed": benefits_changed,
+            "posting_embedding_refreshed": embedding_refreshed
         }), 200
         
     except Exception as e:
@@ -861,28 +935,53 @@ def get_job_posting_by_id(job_id):
         
         db_instance = mongo_client['skill_constraint_db']
         jp_embeddings_collection = db_instance['JP_embeddings']
-        
-        # Try to find by _id in JP_embeddings where job postings are stored
+        job_postings_collection = db_instance['job_postings']
+
         try:
-            posting = jp_embeddings_collection.find_one({"_id": ObjectId(job_id)})
-        except:
-            posting = None
-        
-        if not posting:
-            # If not found in JP_embeddings, try job_postings collection as fallback
-            job_postings_collection = db_instance['job_postings']
-            try:
-                posting = job_postings_collection.find_one({"_id": ObjectId(job_id)})
-            except:
-                posting = None
-        
-        if not posting:
+            object_id = ObjectId(job_id)
+        except Exception:
+            object_id = None
+
+        def serialize_posting(document):
+            serialized = dict(document)
+            for field in ('_id', 'user_id', 'posting_id', 'application_id'):
+                if field in serialized and serialized[field] is not None:
+                    serialized[field] = str(serialized[field])
+            return serialized
+
+        embedding_posting = None
+        direct_posting = None
+
+        if object_id:
+            embedding_posting = jp_embeddings_collection.find_one({"_id": object_id})
+            if not embedding_posting:
+                embedding_posting = jp_embeddings_collection.find_one({"posting_id": object_id})
+
+            direct_posting = job_postings_collection.find_one({"_id": object_id})
+
+        if not embedding_posting:
+            embedding_posting = jp_embeddings_collection.find_one({"posting_id": job_id})
+
+        if direct_posting:
+            return jsonify({"posting": serialize_posting(direct_posting)}), 200
+
+        if not embedding_posting:
             return jsonify({"posting": None}), 200
-        
-        posting['_id'] = str(posting['_id'])
-        posting['user_id'] = str(posting['user_id'])
-        
-        return jsonify({"posting": posting}), 200
+
+        linked_posting = None
+        linked_posting_id = embedding_posting.get('posting_id')
+
+        if isinstance(linked_posting_id, ObjectId):
+            linked_posting = job_postings_collection.find_one({"_id": linked_posting_id})
+        elif isinstance(linked_posting_id, str):
+            try:
+                linked_posting = job_postings_collection.find_one({"_id": ObjectId(linked_posting_id)})
+            except Exception:
+                linked_posting = None
+
+        resolved_posting = linked_posting or embedding_posting
+
+        return jsonify({"posting": serialize_posting(resolved_posting)}), 200
     except Exception as e:
         print(f"Error fetching job posting by ID: {e}")
         import traceback
@@ -899,7 +998,6 @@ def get_matching_job_seekers(user_id):
     try:
         from bson import ObjectId
         import numpy as np
-        from sklearn.metrics.pairwise import cosine_similarity
         
         db_instance = mongo_client['skill_constraint_db']
         jp_embeddings_collection = db_instance['JP_embeddings']
@@ -910,8 +1008,16 @@ def get_matching_job_seekers(user_id):
         if not posting:
             return jsonify({"error": "Job posting not found"}), 404
         
-        # Get all job seekers with embeddings
-        all_seekers = list(js_embeddings_collection.find())
+        # Get only job seeker embeddings
+        all_seekers = list(js_embeddings_collection.find(
+            {"type": "job_seeker"},
+            projection={
+                "user_id": 1,
+                "name": 1,
+                "email": 1,
+                "skills_embeddings": 1,
+            },
+        ))
         
         if not all_seekers:
             return jsonify({
@@ -922,46 +1028,73 @@ def get_matching_job_seekers(user_id):
             }), 200
         
         matches = []
+        skill_match_threshold = 0.45
+        coverage_threshold = 0.30
         
         # Extract job requirements embeddings (from JP_embeddings)
         job_requirements = posting.get('job_requirements_embeddings', [])
         job_qualifications = posting.get('qualifications_embeddings', [])
+
+        job_requirement_vectors = []
+        for req in job_requirements:
+            req_vec = req.get('embedding')
+            if req_vec:
+                job_requirement_vectors.append(np.array(req_vec, dtype=float))
+
+        if not job_requirement_vectors:
+            return jsonify({
+                "job_title": posting.get('jobTitle'),
+                "company": posting.get('company'),
+                "total_matches": 0,
+                "matches": []
+            }), 200
+
+        job_matrix = np.vstack(job_requirement_vectors)
+        job_norms = np.linalg.norm(job_matrix, axis=1, keepdims=True)
+        job_matrix = job_matrix / np.clip(job_norms, 1e-8, None)
         
         # Calculate match score for each seeker
         for seeker in all_seekers:
             seeker_skills = seeker.get('skills_embeddings', [])
             
-            if not seeker_skills or not job_requirements:
+            if not seeker_skills:
                 continue
-            
-            # Calculate skill match using cosine similarity
-            skill_scores = []
+
+            seeker_vectors = []
             for seeker_skill in seeker_skills:
                 seeker_embedding = seeker_skill.get('embedding')
-                if not seeker_embedding:
-                    continue
-                
-                for job_req in job_requirements:
-                    job_embedding = job_req.get('embedding')
-                    if not job_embedding:
-                        continue
-                    
-                    # Calculate cosine similarity
-                    similarity = cosine_similarity(
-                        np.array([seeker_embedding]),
-                        np.array([job_embedding])
-                    )[0][0]
-                    skill_scores.append(similarity)
-            
-            # Average skill match
-            avg_skill_match = np.mean(skill_scores) if skill_scores else 0
+                if seeker_embedding:
+                    seeker_vectors.append(np.array(seeker_embedding, dtype=float))
+
+            if not seeker_vectors:
+                continue
+
+            seeker_matrix = np.vstack(seeker_vectors)
+            seeker_norms = np.linalg.norm(seeker_matrix, axis=1, keepdims=True)
+            seeker_matrix = seeker_matrix / np.clip(seeker_norms, 1e-8, None)
+
+            similarity_matrix = np.matmul(job_matrix, seeker_matrix.T)
+            best_scores_per_requirement = np.max(similarity_matrix, axis=1).tolist()
+
+            if not best_scores_per_requirement:
+                continue
+
+            matched_requirements = [
+                score for score in best_scores_per_requirement if score >= skill_match_threshold
+            ]
+            coverage = len(matched_requirements) / len(best_scores_per_requirement)
+            if coverage < coverage_threshold:
+                continue
+
+            avg_skill_match = np.mean(best_scores_per_requirement)
             
             matches.append({
                 "seeker_id": str(seeker.get('user_id')),
                 "seeker_name": seeker.get('name'),
                 "seeker_email": seeker.get('email'),
                 "match_score": round(float(avg_skill_match) * 100, 2),
-                "skills_count": len(seeker_skills)
+                "skills_count": len(seeker_skills),
+                "skill_coverage": round(float(coverage) * 100, 2)
             })
         
         # Sort by match score descending
@@ -1056,4 +1189,6 @@ def check_embeddings_status(user_id):
 
 if __name__ == '__main__':
     # Run the Flask server on port 5000
-    app.run(debug=True, port=5000)
+    debug_mode = os.getenv("FLASK_DEBUG", "1").lower() in {"1", "true", "yes", "on"}
+    use_reloader = os.getenv("FLASK_USE_RELOADER", "0").lower() in {"1", "true", "yes", "on"}
+    app.run(debug=debug_mode, use_reloader=use_reloader, port=5000)
