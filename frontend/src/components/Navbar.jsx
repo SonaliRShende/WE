@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Bell,
   LogIn,
   LogOut,
   Menu,
@@ -10,6 +11,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import BrandLogo from "./BrandLogo";
 import LanguageSelector from "./LanguageSelector";
 import { useLocale } from "../context/LocaleContext";
+import { buildApiUrl } from "../config/api";
 
 const getInitials = (name) => {
   if (!name) {
@@ -30,21 +32,66 @@ export default function Navbar() {
   const { messages } = useLocale();
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
-    setUser(stored ? JSON.parse(stored) : null);
+    const parsedUser = stored ? JSON.parse(stored) : null;
+    setUser(parsedUser);
     setShowDropdown(false);
+    setShowNotifications(false);
     setMobileOpen(false);
+
+    const fetchNotifications = async () => {
+      if (!parsedUser?.id) {
+        setNotifications([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(buildApiUrl(`/api/notifications/${parsedUser.id}`));
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to load notifications");
+        }
+        setNotifications((data.notifications || []).slice(0, 8));
+      } catch (error) {
+        console.error("Navbar notifications error:", error);
+        setNotifications([]);
+      }
+    };
+
+    fetchNotifications();
   }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
     setShowDropdown(false);
+    setShowNotifications(false);
     setMobileOpen(false);
     navigate("/");
+  };
+
+  const unreadCount = notifications.filter((item) => !item.is_read).length;
+
+  const markAllNotificationsRead = async () => {
+    if (!user?.id || !notifications.some((item) => !item.is_read)) {
+      return;
+    }
+
+    try {
+      await fetch(buildApiUrl(`/api/notifications/${user.id}/mark-read`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      setNotifications((previous) => previous.map((item) => ({ ...item, is_read: true })));
+    } catch (error) {
+      console.error("Failed to mark notifications as read:", error);
+    }
   };
 
   const guestLinks = [
@@ -88,11 +135,63 @@ export default function Navbar() {
           <LanguageSelector />
           {user ? (
             <>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNotifications((current) => !current);
+                    setShowDropdown(false);
+                  }}
+                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+                  title="Notifications"
+                >
+                  <Bell size={18} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+                {showNotifications && (
+                  <div className="absolute right-0 mt-3 w-80 rounded-3xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-900/10">
+                    <div className="mb-2 flex items-center justify-between px-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                        Notifications
+                      </p>
+                      <button
+                        type="button"
+                        onClick={markAllNotificationsRead}
+                        className="text-xs font-semibold text-sky-700 transition hover:text-sky-800"
+                      >
+                        Mark all read
+                      </button>
+                    </div>
+                    {!notifications.length ? (
+                      <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">No notifications yet.</div>
+                    ) : (
+                      <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+                        {notifications.map((item) => (
+                          <div key={item.id} className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">
+                              {String(item.type || "notification").replaceAll("_", " ")}
+                            </p>
+                            {!item.is_read && <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">Unread</p>}
+                            <p className="mt-1 text-sm text-slate-800">{item.message}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <div className="relative">
                 <button
                   type="button"
-                  onClick={() => setShowDropdown((current) => !current)}
+                  onClick={() => {
+                    setShowDropdown((current) => !current);
+                    setShowNotifications(false);
+                  }}
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-sky-200"
                   title={user.name}
                 >
@@ -176,6 +275,54 @@ export default function Navbar() {
 
             {user ? (
               <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNotifications((current) => !current);
+                    setShowDropdown(false);
+                  }}
+                  className="inline-flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-800"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Bell size={16} />
+                    Notifications
+                  </span>
+                  {unreadCount > 0 && (
+                    <span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold text-white">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Notifications</p>
+                      <button
+                        type="button"
+                        onClick={markAllNotificationsRead}
+                        className="text-xs font-semibold text-sky-700"
+                      >
+                        Mark all read
+                      </button>
+                    </div>
+                    {!notifications.length ? (
+                      <p className="text-sm text-slate-600">No notifications yet.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {notifications.slice(0, 5).map((item) => (
+                          <div key={item.id} className="rounded-xl bg-slate-50 p-2">
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">
+                              {String(item.type || "notification").replaceAll("_", " ")}
+                            </p>
+                            {!item.is_read && <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">Unread</p>}
+                            <p className="mt-1 text-sm text-slate-800">{item.message}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="rounded-2xl bg-slate-50 px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">

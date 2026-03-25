@@ -92,13 +92,56 @@ function UnavailableData({ message, onBack, messages }) {
   );
 }
 
-function ViewJobApplications({ userId, onBack, hasJobPosting, messages }) {
+function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, messages }) {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
+  const [selectingCandidateIds, setSelectingCandidateIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const perPage = 6;
+
+  const handleSelectCandidate = async (candidate) => {
+    if (!candidate?.seeker_id || !candidate?.posting_id) {
+      alert("Missing candidate or posting id.");
+      return;
+    }
+
+    const key = `${candidate.seeker_id}:${candidate.posting_id}`;
+
+    try {
+      setSelectingCandidateIds((previous) => [...previous, key]);
+      const response = await fetch(buildApiUrl("/api/select-applied-candidate"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider_user_id: userId,
+          seeker_user_id: candidate.seeker_id,
+          posting_id: candidate.posting_id,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to select candidate.");
+      }
+
+      setApplications((previous) =>
+        previous.map((item) =>
+          item.seeker_id === candidate.seeker_id && item.posting_id === candidate.posting_id
+            ? { ...item, status: "selected" }
+            : item
+        )
+      );
+
+      alert(result.message || "Candidate selected successfully.");
+    } catch (selectionError) {
+      console.error("Error selecting candidate:", selectionError);
+      alert(selectionError.message || "Could not select candidate.");
+    } finally {
+      setSelectingCandidateIds((previous) => previous.filter((id) => id !== key));
+    }
+  };
 
   useEffect(() => {
     if (!hasJobPosting) {
@@ -109,7 +152,8 @@ function ViewJobApplications({ userId, onBack, hasJobPosting, messages }) {
     const fetchApplications = async () => {
       try {
         setLoading(true);
-        const response = await fetch(buildApiUrl(`/api/matching-job-seekers/${userId}`));
+        const query = postingId ? `?posting_id=${encodeURIComponent(postingId)}` : "";
+        const response = await fetch(buildApiUrl(`/api/matching-job-seekers/${userId}${query}`));
         const data = await response.json();
         setApplications(data.matches || []);
       } catch (fetchError) {
@@ -121,7 +165,7 @@ function ViewJobApplications({ userId, onBack, hasJobPosting, messages }) {
     };
 
     fetchApplications();
-  }, [hasJobPosting, messages.jobProviderDashboard.couldNotLoadCandidates, userId]);
+  }, [hasJobPosting, messages.jobProviderDashboard.couldNotLoadCandidates, postingId, userId]);
 
   if (!hasJobPosting) {
     return (
@@ -172,32 +216,61 @@ function ViewJobApplications({ userId, onBack, hasJobPosting, messages }) {
         {messages.common.backToOptions}
       </button>
 
-      <h2 className="mt-6 text-3xl font-semibold text-slate-950">
-        {messages.jobProviderDashboard.candidatesTitle}
-      </h2>
+      <h2 className="mt-6 text-3xl font-semibold text-slate-950">Applied candidates</h2>
       <p className="mt-2 text-base text-slate-600">
-        {messages.jobProviderDashboard.candidatesCount({ count: applications.length })}
+        {applications.length} candidate(s) applied and are ranked for this role.
       </p>
 
       <div className="mt-8 space-y-5">
         {currentItems.map((seeker) => (
-          <button
+          <div
             key={seeker.seeker_id}
-            type="button"
-            onClick={() => navigate(`/view-seeker/${seeker.seeker_id}`)}
-            className="w-full rounded-[1.75rem] border border-slate-200 bg-white p-6 text-left shadow-[0_24px_60px_-40px_rgba(15,23,42,0.35)] transition hover:-translate-y-0.5 hover:border-sky-200"
+            className="w-full rounded-[1.75rem] border border-slate-200 bg-white p-6 text-left shadow-[0_24px_60px_-40px_rgba(15,23,42,0.35)]"
           >
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h3 className="text-2xl font-semibold text-slate-950">{seeker.seeker_name}</h3>
                 <p className="mt-2 text-base text-slate-600">{seeker.seeker_email}</p>
+                {seeker.status && (
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                    Status: {String(seeker.status).charAt(0).toUpperCase() + String(seeker.status).slice(1)}
+                  </p>
+                )}
               </div>
               <ChevronRight className="hidden text-sky-700 sm:block" />
             </div>
-            <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
-              {messages.jobProviderDashboard.clickProfile}
-            </p>
-          </button>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    `/view-seeker/${seeker.seeker_id}?provider_user_id=${encodeURIComponent(userId)}&posting_id=${encodeURIComponent(seeker.posting_id || "")}`
+                  )
+                }
+                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:border-sky-300"
+              >
+                {messages.jobProviderDashboard.clickProfile}
+              </button>
+
+              <button
+                type="button"
+                disabled={
+                  seeker.status === "selected" ||
+                  !seeker.posting_id ||
+                  selectingCandidateIds.includes(`${seeker.seeker_id}:${seeker.posting_id}`)
+                }
+                onClick={() => handleSelectCandidate(seeker)}
+                className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {seeker.status === "selected"
+                  ? "Selected"
+                  : selectingCandidateIds.includes(`${seeker.seeker_id}:${seeker.posting_id}`)
+                    ? "Selecting..."
+                    : "Select Candidate"}
+              </button>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -378,11 +451,13 @@ export default function JobProviderDashboard() {
             {activeTab === "applications" && user && (
               <ViewJobApplications
                 userId={user.id}
+                postingId={jobPostingData?._id}
                 onBack={() => setActiveTab("options")}
                 hasJobPosting={!!jobPostingData}
                 messages={messages}
               />
             )}
+
           </section>
         </div>
       </main>
