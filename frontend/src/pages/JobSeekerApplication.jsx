@@ -482,7 +482,14 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
                   {copy.body}
                 </p>
               </div>
-
+              <div className="rounded-[1.75rem] border border-sky-100 bg-sky-50 p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+                  {messages.nav.language}
+                </p>
+                <p className="mt-3 text-base leading-7 text-slate-700">
+                  {t("common.secureVoiceNote", { language: languageLabel })}
+                </p>
+              </div>
             </div>
 
             <form className="mt-10 space-y-10" onSubmit={handleSubmit}>

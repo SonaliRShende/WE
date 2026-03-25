@@ -95,57 +95,10 @@ function UnavailableData({ message, onBack, messages }) {
 function ViewJobRecommendations({ userId, onBack, messages }) {
   const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState([]);
-  const [appliedPostingIds, setAppliedPostingIds] = useState([]);
-  const [applicationStatusByPosting, setApplicationStatusByPosting] = useState({});
-  const [applyingPostingIds, setApplyingPostingIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const perPage = 6;
-
-  const handleApply = async ({ postingId, jobId }) => {
-    if (!postingId) {
-      alert("Unable to apply because this recommendation has no posting id.");
-      return;
-    }
-
-    if (appliedPostingIds.includes(postingId)) {
-      return;
-    }
-
-    try {
-      setApplyingPostingIds((previous) => [...previous, postingId]);
-
-      const response = await fetch(buildApiUrl("/api/apply-recommended-job"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          posting_id: postingId,
-          job_id: jobId,
-        }),
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to apply for this job.");
-      }
-
-      setAppliedPostingIds((previous) =>
-        previous.includes(postingId) ? previous : [...previous, postingId]
-      );
-      setApplicationStatusByPosting((previous) => ({
-        ...previous,
-        [postingId]: previous[postingId] || "applied",
-      }));
-      alert(result.message || "Application submitted successfully.");
-    } catch (applyError) {
-      console.error("Error applying to recommended job:", applyError);
-      alert(applyError.message || "Could not submit your application.");
-    } finally {
-      setApplyingPostingIds((previous) => previous.filter((id) => id !== postingId));
-    }
-  };
 
   useEffect(() => {
     const fetchJobRecommendations = async () => {
@@ -154,8 +107,6 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
         const response = await fetch(buildApiUrl(`/api/job-recommendations/${userId}`));
         const data = await response.json();
         setRecommendations(data.ranked_jobs || []);
-        setAppliedPostingIds(data.applied_posting_ids || []);
-        setApplicationStatusByPosting(data.application_status_by_posting || {});
       } catch (fetchError) {
         console.error("Error fetching recommendations:", fetchError);
         setError(messages.jobSeekerDashboard.couldNotLoadRecommendations);
@@ -219,31 +170,27 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
       <div className="mt-8 space-y-5">
         {currentItems.map((job) => {
           const routeJobId = job.posting_id || job.job_id;
-          const postingId = job.posting_id;
-          const applicationStatus = postingId ? applicationStatusByPosting[postingId] : null;
-          const alreadyApplied =
-            postingId
-              ? applicationStatus === "applied" ||
-                applicationStatus === "selected" ||
-                appliedPostingIds.includes(postingId)
-              : false;
-          const isSelected = applicationStatus === "selected";
-          const isApplying = postingId ? applyingPostingIds.includes(postingId) : false;
 
           return (
-            <div
+            <button
               key={routeJobId || job.job_title}
-              className="w-full rounded-[1.75rem] border border-slate-200 bg-white p-6 text-left shadow-[0_24px_60px_-40px_rgba(15,23,42,0.35)]"
+              type="button"
+              disabled={!routeJobId}
+              onClick={() =>
+                navigate(`/view-job/${routeJobId}`, {
+                  state: {
+                    matchScore: (job.job_score * 100).toFixed(0),
+                    jobId: job.job_id,
+                    postingId: job.posting_id,
+                  },
+                })
+              }
+              className="w-full rounded-[1.75rem] border border-slate-200 bg-white p-6 text-left shadow-[0_24px_60px_-40px_rgba(15,23,42,0.35)] transition hover:-translate-y-0.5 hover:border-sky-200 disabled:cursor-not-allowed disabled:opacity-70"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <h3 className="text-2xl font-semibold text-slate-950">{job.job_title}</h3>
                   <p className="mt-2 text-base text-slate-600">{job.company}</p>
-                  {applicationStatus && (
-                    <span className="mt-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                      {applicationStatus}
-                    </span>
-                  )}
                 </div>
                 <div className="rounded-2xl bg-sky-50 px-4 py-3 text-right text-sky-700">
                   <p className="text-3xl font-semibold">{(job.job_score * 100).toFixed(0)}%</p>
@@ -282,34 +229,10 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
               )}
 
               <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">
-                <button
-                  type="button"
-                  disabled={!routeJobId}
-                  onClick={() =>
-                    navigate(`/view-job/${routeJobId}`, {
-                      state: {
-                        matchScore: (job.job_score * 100).toFixed(0),
-                        jobId: job.job_id,
-                        postingId: job.posting_id,
-                      },
-                    })
-                  }
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:border-sky-300 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {messages.jobSeekerDashboard.matchesTitle}
-                  <ChevronRight size={16} />
-                </button>
-
-                <button
-                  type="button"
-                  disabled={!postingId || alreadyApplied || isApplying}
-                  onClick={() => handleApply({ postingId, jobId: job.job_id })}
-                  className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSelected ? "Selected" : alreadyApplied ? "Applied" : isApplying ? "Applying..." : "Apply"}
-                </button>
+                {messages.jobSeekerDashboard.matchesTitle}
+                <ChevronRight size={16} />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -497,7 +420,6 @@ export default function JobSeekerDashboard() {
                 messages={messages}
               />
             )}
-
           </section>
         </div>
       </main>

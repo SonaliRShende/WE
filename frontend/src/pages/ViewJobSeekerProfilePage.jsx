@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
 import { buildApiUrl } from "../config/api";
@@ -45,6 +45,7 @@ function ViewApplicationData({ data, onBack, messages, copy }) {
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <InfoField label={copy.fields.name.label} value={data.name} emptyLabel={messages.common.notProvided} />
             <InfoField label={copy.fields.email.label} value={data.email} emptyLabel={messages.common.notProvided} />
+            <InfoField label={copy.fields.contact.label} value={data.contact} emptyLabel={messages.common.notProvided} />
             <InfoField label={copy.fields.location.label} value={data.location} emptyLabel={messages.common.notProvided} />
           </div>
         </section>
@@ -59,6 +60,13 @@ function ViewApplicationData({ data, onBack, messages, copy }) {
             <InfoField label={copy.fields.skillsApplied.label} value={data.skillsApplied} emptyLabel={messages.common.notProvided} />
             <InfoField label={copy.fields.certifications.label} value={data.certifications} emptyLabel={messages.common.notProvided} />
             <InfoField label={copy.fields.portfolio.label} value={data.portfolio} emptyLabel={messages.common.notProvided} />
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
+          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.preferenceSection}</h3>
+          <div className="mt-5">
+            <InfoField label={copy.fields.preferences.label} value={data.preferences} emptyLabel={messages.common.notProvided} />
           </div>
         </section>
       </div>
@@ -85,7 +93,6 @@ function UnavailableData({ message, onBack, messages }) {
 
 export default function ViewJobSeekerProfilePage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { seekerId } = useParams();
   const { messages } = useLocale();
   const copy = messages.jobSeekerForm;
@@ -97,22 +104,8 @@ export default function ViewJobSeekerProfilePage() {
     const fetchSeekerProfile = async () => {
       try {
         setLoading(true);
-
-        const queryParams = new URLSearchParams(location.search);
-        const providerUserId =
-          queryParams.get("provider_user_id") || JSON.parse(localStorage.getItem("user") || "{}").id;
-        const postingId = queryParams.get("posting_id") || "";
-
-        if (!providerUserId) {
-          setError(messages.common.sessionMissing);
-          return;
-        }
-
-        const endpoint = buildApiUrl(
-          `/api/provider-seeker-profile?provider_user_id=${encodeURIComponent(providerUserId)}&seeker_user_id=${encodeURIComponent(seekerId)}${postingId ? `&posting_id=${encodeURIComponent(postingId)}` : ""}`
-        );
         const response = await fetch(
-          endpoint
+          buildApiUrl(`/api/get-job-seeker-application/${seekerId}`)
         );
         const data = await response.json();
         if (data.application) {
@@ -129,7 +122,7 @@ export default function ViewJobSeekerProfilePage() {
     };
 
     fetchSeekerProfile();
-  }, [location.search, messages.common.sessionMissing, messages.viewPages.couldNotLoadProfile, messages.viewPages.retryProfile, seekerId]);
+  }, [messages.viewPages.couldNotLoadProfile, messages.viewPages.retryProfile, seekerId]);
 
   return (
     <>
