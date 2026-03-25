@@ -1,6 +1,7 @@
 import os
 import re
 import importlib
+import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
 from dotenv import load_dotenv
@@ -10,9 +11,16 @@ from pymongo.server_api import ServerApi
 from deep_translator import GoogleTranslator
 from openai import OpenAI
 import threading
+from datetime import datetime
 
 # Load environment variables for security
 load_dotenv()
+
+logging.basicConfig(
+    level=getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO),
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
+logger = logging.getLogger("backend.app")
 
 # --- Initialization ---
 app = Flask(__name__)
@@ -48,13 +56,15 @@ if not MONGO_URI:
 try:
     mongo_client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
     mongo_client.admin.command('ping')
-    print("✅ Connected to MongoDB Atlas!")
+    logger.info("Connected to MongoDB Atlas")
 except Exception as e:
-    print("❌ MongoDB Connection failed:", e)
+    logger.exception("MongoDB Connection failed: %s", e)
     
 db = mongo_client['skill_constraint_db']
 applications_collection = db['job_applications']
 users_collection = db['users']
+recommendation_applications_collection = db['recommended_job_applications']
+notifications_collection = db['notifications']
 
 
 # Connect to OpenAI/OpenRouter
@@ -67,6 +77,9 @@ llm_client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=OPENROUTER_API_KEY, 
 )
+
+_recommendation_jobs_lock = threading.Lock()
+_recommendation_jobs = {}
 
 
 def normalize_text(text):
@@ -496,10 +509,8 @@ def submit_job_application():
                     result = embedding_service.embed_specific_job_seeker(user_id)
                     print(f"[{datetime.now()}] Seeker embedding completed. Result: {result}")
                     if result:
-                        # AFTER embedding is done, invalidate all job seeker recommendations
-                        # so they see updated matching jobs in their next query
-                        invalidate_all_job_seeker_recommendations()
-                        print(f"[{datetime.now()}] Invalidated recommendations for updated seeker")
+                        invalidate_job_seeker_recommendations(user_id)
+                        print(f"[{datetime.now()}] Marked recommendations stale for updated seeker")
                 except Exception as ee:
                     print(f"[{datetime.now()}] ❌ Background seeker embedding error: {ee}")
                     traceback.print_exc()
@@ -551,23 +562,81 @@ def get_job_seeker_application(user_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/provider-seeker-profile', methods=['GET'])
+def get_provider_safe_seeker_profile():
+    try:
+        provider_user_id = request.args.get("provider_user_id")
+        seeker_user_id = request.args.get("seeker_user_id")
+        posting_id = request.args.get("posting_id")
+
+        if not provider_user_id or not seeker_user_id:
+            return jsonify({"error": "provider_user_id and seeker_user_id are required"}), 400
+
+        provider_id_obj = _object_id_from_value(provider_user_id, "provider_user_id")
+        seeker_id_obj = _object_id_from_value(seeker_user_id, "seeker_user_id")
+
+        relation_query = {
+            "provider_user_id": provider_id_obj,
+            "seeker_user_id": seeker_id_obj,
+            "status": {"$in": ["applied", "selected"]},
+        }
+
+        if posting_id:
+            relation_query["posting_id"] = _object_id_from_value(posting_id, "posting_id")
+
+        relation = recommendation_applications_collection.find_one(relation_query)
+        if not relation:
+            return jsonify({"error": "This seeker has not applied to your posting"}), 403
+
+        projection = {
+            "name": 1,
+            "email": 1,
+            "location": 1,
+            "profile_pic": 1,
+            "qualification": 1,
+            "skills": 1,
+            "previousJob": 1,
+            "roles": 1,
+            "skillsApplied": 1,
+            "certifications": 1,
+            "portfolio": 1,
+            "user_id": 1,
+        }
+
+        application = applications_collection.find_one({"user_id": seeker_id_obj}, projection=projection)
+        if not application:
+            return jsonify({"application": None}), 200
+
+        if "_id" in application:
+            application["_id"] = str(application["_id"])
+        if "user_id" in application:
+            application["user_id"] = str(application["user_id"])
+
+        return jsonify({"application": application}), 200
+    except ValueError as validation_error:
+        return jsonify({"error": str(validation_error)}), 400
+    except Exception as e:
+        logger.exception("Error fetching provider-safe seeker profile: %s", e)
+        return jsonify({"error": "Failed to fetch seeker profile"}), 500
+
+
 def invalidate_all_job_seeker_recommendations():
     """
-    Clear all cached recommendations in job_scores collection
-    Called when a new job posting is added/updated to force recalculation for all job seekers
+    Mark all cached recommendations stale.
+    Keeps existing recommendations available while background refresh catches up.
     """
     try:
         db_instance = mongo_client['skill_constraint_db']
         job_scores_collection = db_instance['job_scores']
-        result = job_scores_collection.delete_many({})
-        print(f"✅ Cache invalidated: Deleted {result.deleted_count} recommendation(s)")
+        result = job_scores_collection.update_many({}, {"$set": {"stale": True}})
+        logger.info("Marked %s recommendation(s) stale", result.modified_count)
     except Exception as e:
-        print(f"⚠️  Error invalidating cache: {e}")
+        logger.exception("Error marking all recommendations stale: %s", e)
 
 
 def invalidate_job_seeker_recommendations(user_id):
     """
-    Clear cached recommendations for a specific job seeker.
+    Mark cached recommendations stale for a specific job seeker.
     Called when that seeker's profile changes.
     """
     try:
@@ -576,10 +645,13 @@ def invalidate_job_seeker_recommendations(user_id):
         db_instance = mongo_client['skill_constraint_db']
         job_scores_collection = db_instance['job_scores']
         user_id_obj = ObjectId(user_id) if isinstance(user_id, str) else user_id
-        result = job_scores_collection.delete_many({"user_id": user_id_obj})
-        print(f"Cache invalidated for seeker {user_id}: Deleted {result.deleted_count} recommendation(s)")
+        result = job_scores_collection.update_many(
+            {"user_id": user_id_obj},
+            {"$set": {"stale": True}},
+        )
+        logger.info("Marked %s recommendation doc(s) stale for seeker %s", result.modified_count, user_id)
     except Exception as e:
-        print(f"Error invalidating seeker cache: {e}")
+        logger.exception("Error marking seeker cache stale for %s: %s", user_id, e)
 
 
 def invalidate_job_provider_recommendations(user_id):
@@ -628,8 +700,171 @@ def get_latest_recommendation_source_timestamp():
 
         return max(timestamps) if timestamps else None
     except Exception as e:
-        print(f"Error checking recommendation freshness: {e}")
+        logger.exception("Error checking recommendation freshness: %s", e)
         return None
+
+
+def _serialize_recommendation_doc(result):
+    response_data = {
+        "ranked_jobs": [],
+    }
+
+    if not result:
+        return response_data
+
+    if 'user_id' in result:
+        response_data['user_id'] = str(result['user_id'])
+    if '_id' in result:
+        response_data['_id'] = str(result['_id'])
+
+    ranked_jobs = result.get('ranked_jobs', [])
+    response_data['ranked_jobs'] = ranked_jobs if isinstance(ranked_jobs, list) else []
+
+    if 'generated_at' in result and result['generated_at']:
+        value = result['generated_at']
+        response_data['generated_at'] = value.isoformat() if hasattr(value, 'isoformat') else str(value)
+
+    passthrough_fields = [
+        'algorithm',
+        'total_jobs_evaluated',
+        'recommended_jobs',
+        'rejected_by_skill_gate',
+        'low_skill_confidence',
+        'prefiltered_jobs',
+        'stale',
+    ]
+    for field in passthrough_fields:
+        if field in result:
+            response_data[field] = result[field]
+
+    return response_data
+
+
+def _object_id_from_value(value, field_name):
+    from bson import ObjectId
+
+    try:
+        return ObjectId(value)
+    except Exception:
+        raise ValueError(f"Invalid {field_name} format")
+
+
+def _coerce_object_id(value):
+    from bson import ObjectId
+
+    if isinstance(value, ObjectId):
+        return value
+    if isinstance(value, str):
+        try:
+            return ObjectId(value)
+        except Exception:
+            return None
+    return None
+
+
+def _create_notification(user_id_obj, notification_type, message, metadata=None):
+    notifications_collection.insert_one(
+        {
+            "user_id": user_id_obj,
+            "type": notification_type,
+            "message": message,
+            "metadata": metadata or {},
+            "created_at": datetime.now(),
+            "is_read": False,
+        }
+    )
+
+
+def _get_applied_posting_ids_for_seeker(user_id_obj):
+    applied_docs = recommendation_applications_collection.find(
+        {
+            "seeker_user_id": user_id_obj,
+            "status": {"$in": ["applied", "selected"]},
+        },
+        {"posting_id": 1},
+    )
+    posting_ids = []
+    for doc in applied_docs:
+        posting_id = doc.get("posting_id")
+        if posting_id is not None:
+            posting_ids.append(str(posting_id))
+    return list(dict.fromkeys(posting_ids))
+
+
+def _get_application_status_by_posting_for_seeker(user_id_obj):
+    docs = recommendation_applications_collection.find(
+        {"seeker_user_id": user_id_obj},
+        {"posting_id": 1, "status": 1},
+    )
+    status_by_posting = {}
+    for doc in docs:
+        posting_id = doc.get("posting_id")
+        status = doc.get("status")
+        if posting_id is None or not status:
+            continue
+        status_by_posting[str(posting_id)] = status
+    return status_by_posting
+
+
+def _set_recommendation_job_status(user_id, **kwargs):
+    with _recommendation_jobs_lock:
+        existing = _recommendation_jobs.get(user_id, {})
+        existing.update(kwargs)
+        _recommendation_jobs[user_id] = existing
+
+
+def _run_recommendation_job(user_id, reason="manual"):
+    from datetime import datetime
+
+    _set_recommendation_job_status(
+        user_id,
+        status="running",
+        reason=reason,
+        started_at=datetime.now().isoformat(),
+        finished_at=None,
+        error=None,
+    )
+    logger.info("Ranking started for user_id=%s reason=%s", user_id, reason)
+
+    try:
+        from care_net_service import generate_job_recommendations
+
+        ranked_jobs = generate_job_recommendations(user_id)
+        _set_recommendation_job_status(
+            user_id,
+            status="completed",
+            finished_at=datetime.now().isoformat(),
+            result_count=len(ranked_jobs),
+            error=None,
+        )
+        logger.info("Ranking completed for user_id=%s recommendations=%s", user_id, len(ranked_jobs))
+    except Exception as exc:
+        _set_recommendation_job_status(
+            user_id,
+            status="failed",
+            finished_at=datetime.now().isoformat(),
+            error=str(exc),
+        )
+        logger.exception("Recommendation background job failed for user_id=%s: %s", user_id, exc)
+
+
+def queue_recommendation_generation(user_id, reason="requested"):
+    with _recommendation_jobs_lock:
+        existing = _recommendation_jobs.get(user_id, {})
+        if existing.get("status") == "running":
+            return False, existing
+
+        _recommendation_jobs[user_id] = {
+            "status": "queued",
+            "reason": reason,
+            "queued_at": datetime.now().isoformat(),
+            "error": None,
+        }
+
+    worker = threading.Thread(target=_run_recommendation_job, args=(user_id, reason), daemon=True)
+    worker.start()
+    logger.info("Recommendation generation queued for user_id=%s reason=%s", user_id, reason)
+    return True, _recommendation_jobs.get(user_id, {})
 
 
 @app.route('/api/job-recommendations/<user_id>', methods=['GET'])
@@ -639,11 +874,7 @@ def get_job_recommendations(user_id):
     """
     try:
         from bson import ObjectId
-        from care_net_service import generate_job_recommendations
-        
-        # Check if recommendations exist and are recent (less than 24 hours old)
         from datetime import datetime, timedelta
-        result = None
         
         # Convert string user_id to ObjectId for DB lookups
         try:
@@ -651,101 +882,92 @@ def get_job_recommendations(user_id):
         except Exception as e:
             return jsonify({"error": f"Invalid user_id format: {user_id}"}), 400
         
-        existing_result = None
-        try:
-            # Try to get existing recommendations
-            db_instance = mongo_client['skill_constraint_db']
-            job_scores_collection = db_instance['job_scores']
-            existing_result = job_scores_collection.find_one({"user_id": user_id_obj})
-        except:
-            pass
-        
-        # Check if we should regenerate (if not exists or too old)
-        should_regenerate = True
+        db_instance = mongo_client['skill_constraint_db']
+        job_scores_collection = db_instance['job_scores']
+        existing_result = job_scores_collection.find_one({"user_id": user_id_obj})
+
+        latest_source_timestamp = get_latest_recommendation_source_timestamp()
+        should_refresh = True
+        stale_reason = "missing"
+
         if existing_result:
             generated_at = existing_result.get('generated_at')
+            is_marked_stale = bool(existing_result.get('stale', False))
             if generated_at:
                 age = datetime.now() - generated_at
-                latest_source_timestamp = get_latest_recommendation_source_timestamp()
                 source_is_stale = (
                     latest_source_timestamp is not None and latest_source_timestamp > generated_at
                 )
-                if age < timedelta(hours=24) and not source_is_stale:
-                    should_regenerate = False
-                    result = existing_result
-        
-        if should_regenerate:
-            # Generate fresh recommendations (pass string user_id, function will convert)
-            ranked_jobs = generate_job_recommendations(user_id)
-            if 'job_scores_collection' in locals():
-                refreshed_result = job_scores_collection.find_one({"user_id": user_id_obj})
-                if refreshed_result:
-                    result = refreshed_result
-                else:
-                    result = {
-                        "user_id": str(user_id_obj),
-                        "ranked_jobs": ranked_jobs,
-                        "generated_at": datetime.now(),
-                        "total_jobs_evaluated": len(ranked_jobs)
-                    }
+                stale_reason = "stale" if (is_marked_stale or source_is_stale or age >= timedelta(hours=24)) else "fresh"
+                should_refresh = stale_reason != "fresh"
             else:
-                result = {
-                    "user_id": str(user_id_obj),
-                    "ranked_jobs": ranked_jobs,
-                    "generated_at": datetime.now(),
-                    "total_jobs_evaluated": len(ranked_jobs)
-                }
-        
-        if result:
-            # Convert everything to JSON-serializable format
-            response_data = {}
-            
-            # Handle user_id
-            if 'user_id' in result:
-                response_data['user_id'] = str(result['user_id'])
-            
-            # Handle _id
-            if '_id' in result:
-                response_data['_id'] = str(result['_id'])
-            
-            # Handle ranked_jobs
-            if 'ranked_jobs' in result:
-                ranked_jobs = result['ranked_jobs']
-                if isinstance(ranked_jobs, list):
-                    response_data['ranked_jobs'] = ranked_jobs
-                else:
-                    response_data['ranked_jobs'] = []
-            else:
-                response_data['ranked_jobs'] = []
-            
-            # Handle generated_at
-            if 'generated_at' in result and result['generated_at']:
-                if hasattr(result['generated_at'], 'isoformat'):
-                    response_data['generated_at'] = result['generated_at'].isoformat()
-                else:
-                    response_data['generated_at'] = str(result['generated_at'])
-            
-            # Handle total_jobs_evaluated
-            if 'total_jobs_evaluated' in result:
-                response_data['total_jobs_evaluated'] = result['total_jobs_evaluated']
+                stale_reason = "missing_timestamp"
+                should_refresh = True
 
-            if 'algorithm' in result:
-                response_data['algorithm'] = result['algorithm']
+        queued_now = False
+        if should_refresh:
+            queued_now, _ = queue_recommendation_generation(user_id, reason=stale_reason)
 
-            if 'recommended_jobs' in result:
-                response_data['recommended_jobs'] = result['recommended_jobs']
+        with _recommendation_jobs_lock:
+            job_state = _recommendation_jobs.get(user_id, {})
 
-            if 'rejected_by_skill_gate' in result:
-                response_data['rejected_by_skill_gate'] = result['rejected_by_skill_gate']
-            
+        applied_posting_ids = _get_applied_posting_ids_for_seeker(user_id_obj)
+        application_status_by_posting = _get_application_status_by_posting_for_seeker(user_id_obj)
+
+        if existing_result:
+            response_data = _serialize_recommendation_doc(existing_result)
+            response_data["status"] = "regenerating" if should_refresh else "ready"
+            response_data["job_state"] = job_state
+            response_data["applied_posting_ids"] = applied_posting_ids
+            response_data["application_status_by_posting"] = application_status_by_posting
+            logger.info(
+                "Response returned for recommendations user_id=%s status=%s jobs=%s",
+                user_id,
+                response_data["status"],
+                len(response_data.get("ranked_jobs", [])),
+            )
             return jsonify(response_data), 200
-        else:
-            return jsonify({"ranked_jobs": [], "message": "No recommendations available yet"}), 200
+
+        status_code = 202
+        logger.info("Response returned for recommendations user_id=%s status=queued", user_id)
+        return jsonify({
+            "user_id": user_id,
+            "status": "queued" if queued_now else job_state.get("status", "queued"),
+            "message": "Recommendation generation is running in background. Poll this endpoint to fetch results.",
+            "ranked_jobs": [],
+            "applied_posting_ids": applied_posting_ids,
+            "application_status_by_posting": application_status_by_posting,
+            "job_state": job_state,
+        }), status_code
             
     except Exception as e:
-        print(f"Error fetching recommendations: {e}")
+        logger.exception("Error fetching recommendations for user_id=%s: %s", user_id, e)
         import traceback
         traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/job-recommendations/<user_id>/generate', methods=['POST'])
+def trigger_job_recommendations(user_id):
+    """Queue recommendation generation in a background thread and return immediately."""
+    try:
+        from bson import ObjectId
+        try:
+            ObjectId(user_id)
+        except Exception:
+            return jsonify({"error": f"Invalid user_id format: {user_id}"}), 400
+
+        queued_now, state = queue_recommendation_generation(user_id, reason="manual_post")
+        status_code = 202 if queued_now else 200
+        logger.info("Response returned for trigger endpoint user_id=%s queued=%s", user_id, queued_now)
+        return jsonify({
+            "user_id": user_id,
+            "status": "queued" if queued_now else "already_running",
+            "job_state": state,
+            "message": "Background recommendation job queued" if queued_now else "Recommendation job already running",
+        }), status_code
+    except Exception as e:
+        logger.exception("Error triggering recommendations for user_id=%s: %s", user_id, e)
         return jsonify({"error": str(e)}), 500
 
 
@@ -1012,126 +1234,342 @@ def get_job_posting_by_id(job_id):
 @app.route('/api/matching-job-seekers/<user_id>', methods=['GET'])
 def get_matching_job_seekers(user_id):
     """
-    Find all job seekers matching this job posting
-    Uses embeddings to calculate match scores
+    Return applicants for a provider posting (no recommendation scoring).
     """
     try:
         from bson import ObjectId
-        import numpy as np
-        
+
         db_instance = mongo_client['skill_constraint_db']
-        jp_embeddings_collection = db_instance['JP_embeddings']
-        js_embeddings_collection = db_instance['JS_embeddings']
-        
-        # Get the job posting embeddings (contains job_requirements_embeddings, qualifications_embeddings, etc.)
-        posting = jp_embeddings_collection.find_one({"user_id": ObjectId(user_id)})
+        job_postings_collection = db_instance['job_postings']
+
+        provider_id_obj = ObjectId(user_id)
+        requested_posting_id = request.args.get("posting_id")
+
+        posting = None
+        posting_id_obj = None
+
+        if requested_posting_id:
+            try:
+                posting_id_obj = ObjectId(requested_posting_id)
+            except Exception:
+                return jsonify({"error": "Invalid posting_id format"}), 400
+
+            posting = job_postings_collection.find_one(
+                {
+                    "_id": posting_id_obj,
+                    "$or": [{"user_id": provider_id_obj}, {"user_id": str(provider_id_obj)}],
+                },
+                {"_id": 1, "jobTitle": 1, "companyName": 1, "company": 1},
+            )
+
         if not posting:
+            posting = job_postings_collection.find_one(
+                {"$or": [{"user_id": provider_id_obj}, {"user_id": str(provider_id_obj)}]},
+                {"_id": 1, "jobTitle": 1, "companyName": 1, "company": 1},
+                sort=[("updated_at", -1)],
+            )
+            if posting:
+                posting_id_obj = posting.get("_id")
+
+        if not posting or not posting_id_obj:
             return jsonify({"error": "Job posting not found"}), 404
-        
-        # Get only job seeker embeddings
-        all_seekers = list(js_embeddings_collection.find(
-            {"type": "job_seeker"},
-            projection={
-                "user_id": 1,
-                "name": 1,
-                "email": 1,
-                "skills_embeddings": 1,
-            },
-        ))
-        
-        if not all_seekers:
-            return jsonify({
-                "job_title": posting.get('jobTitle'),
-                "company": posting.get('company'),
-                "total_matches": 0,
-                "matches": []
-            }), 200
-        
+
+        applied_candidates = list(
+            recommendation_applications_collection.find(
+                {
+                    "$and": [
+                        {"$or": [{"provider_user_id": provider_id_obj}, {"provider_user_id": str(provider_id_obj)}]},
+                        {"$or": [{"posting_id": posting_id_obj}, {"posting_id": str(posting_id_obj)}]},
+                    ]
+                },
+                {"seeker_user_id": 1, "status": 1, "posting_id": 1, "updated_at": 1, "created_at": 1},
+            ).sort("updated_at", -1)
+        )
+
+        if not applied_candidates:
+            return jsonify(
+                {
+                    "job_title": posting.get("jobTitle"),
+                    "company": posting.get("company") or posting.get("companyName"),
+                    "total_matches": 0,
+                    "matches": [],
+                }
+            ), 200
+
+        seeker_ids = [item.get("seeker_user_id") for item in applied_candidates if item.get("seeker_user_id")]
+        seeker_users = {
+            str(user_doc.get("_id")): user_doc
+            for user_doc in users_collection.find(
+                {"_id": {"$in": seeker_ids}},
+                {"name": 1, "email": 1},
+            )
+        }
+
         matches = []
-        skill_match_threshold = 0.45
-        coverage_threshold = 0.30
-        
-        # Extract job requirements embeddings (from JP_embeddings)
-        job_requirements = posting.get('job_requirements_embeddings', [])
-        job_qualifications = posting.get('qualifications_embeddings', [])
-
-        job_requirement_vectors = []
-        for req in job_requirements:
-            req_vec = req.get('embedding')
-            if req_vec:
-                job_requirement_vectors.append(np.array(req_vec, dtype=float))
-
-        if not job_requirement_vectors:
-            return jsonify({
-                "job_title": posting.get('jobTitle'),
-                "company": posting.get('company'),
-                "total_matches": 0,
-                "matches": []
-            }), 200
-
-        job_matrix = np.vstack(job_requirement_vectors)
-        job_norms = np.linalg.norm(job_matrix, axis=1, keepdims=True)
-        job_matrix = job_matrix / np.clip(job_norms, 1e-8, None)
-        
-        # Calculate match score for each seeker
-        for seeker in all_seekers:
-            seeker_skills = seeker.get('skills_embeddings', [])
-            
-            if not seeker_skills:
+        seen = set()
+        for item in applied_candidates:
+            seeker_id = item.get("seeker_user_id")
+            if not seeker_id:
                 continue
 
-            seeker_vectors = []
-            for seeker_skill in seeker_skills:
-                seeker_embedding = seeker_skill.get('embedding')
-                if seeker_embedding:
-                    seeker_vectors.append(np.array(seeker_embedding, dtype=float))
-
-            if not seeker_vectors:
+            seeker_id_text = str(seeker_id)
+            if seeker_id_text in seen:
                 continue
+            seen.add(seeker_id_text)
 
-            seeker_matrix = np.vstack(seeker_vectors)
-            seeker_norms = np.linalg.norm(seeker_matrix, axis=1, keepdims=True)
-            seeker_matrix = seeker_matrix / np.clip(seeker_norms, 1e-8, None)
+            seeker_user = seeker_users.get(seeker_id_text, {})
+            status_value = item.get("status", "applied")
 
-            similarity_matrix = np.matmul(job_matrix, seeker_matrix.T)
-            best_scores_per_requirement = np.max(similarity_matrix, axis=1).tolist()
+            matches.append(
+                {
+                    "seeker_id": seeker_id_text,
+                    "seeker_name": seeker_user.get("name", "Candidate"),
+                    "seeker_email": seeker_user.get("email", ""),
+                    "posting_id": str(item.get("posting_id") or posting_id_obj),
+                    "status": status_value,
+                    "applied_at": (
+                        item.get("created_at").isoformat()
+                        if hasattr(item.get("created_at"), "isoformat")
+                        else str(item.get("created_at") or "")
+                    ),
+                }
+            )
 
-            if not best_scores_per_requirement:
-                continue
-
-            matched_requirements = [
-                score for score in best_scores_per_requirement if score >= skill_match_threshold
-            ]
-            coverage = len(matched_requirements) / len(best_scores_per_requirement)
-            if coverage < coverage_threshold:
-                continue
-
-            avg_skill_match = np.mean(best_scores_per_requirement)
-            
-            matches.append({
-                "seeker_id": str(seeker.get('user_id')),
-                "seeker_name": seeker.get('name'),
-                "seeker_email": seeker.get('email'),
-                "match_score": round(float(avg_skill_match) * 100, 2),
-                "skills_count": len(seeker_skills),
-                "skill_coverage": round(float(coverage) * 100, 2)
-            })
-        
-        # Sort by match score descending
-        matches = sorted(matches, key=lambda x: x['match_score'], reverse=True)
-        
-        return jsonify({
-            "job_title": posting.get('jobTitle'),
-            "company": posting.get('company'),
-            "total_matches": len(matches),
-            "matches": matches
-        }), 200
+        return jsonify(
+            {
+                "job_title": posting.get("jobTitle"),
+                "company": posting.get("company") or posting.get("companyName"),
+                "total_matches": len(matches),
+                "matches": matches,
+            }
+        ), 200
         
     except Exception as e:
         print(f"Error finding matching seekers: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/apply-recommended-job', methods=['POST'])
+def apply_recommended_job():
+    try:
+        data = request.get_json() or {}
+        seeker_user_id = data.get("user_id")
+        posting_id = data.get("posting_id")
+        job_id = data.get("job_id")
+
+        if not seeker_user_id or not posting_id:
+            return jsonify({"error": "user_id and posting_id are required"}), 400
+
+        seeker_id_obj = _object_id_from_value(seeker_user_id, "user_id")
+        posting_id_obj = _object_id_from_value(posting_id, "posting_id")
+
+        db_instance = mongo_client['skill_constraint_db']
+        job_postings_collection = db_instance['job_postings']
+
+        posting_doc = job_postings_collection.find_one({"_id": posting_id_obj})
+        if not posting_doc:
+            posting_doc = db_instance['JP_embeddings'].find_one(
+                {"$or": [{"posting_id": posting_id_obj}, {"_id": posting_id_obj}]}
+            )
+
+        if not posting_doc:
+            return jsonify({"error": "Job posting not found"}), 404
+
+        provider_user_id = _coerce_object_id(posting_doc.get("user_id"))
+        if not provider_user_id:
+            return jsonify({"error": "Job posting is missing provider linkage"}), 422
+
+        provider_user = users_collection.find_one({"_id": provider_user_id}, {"name": 1, "email": 1})
+        seeker_user = users_collection.find_one({"_id": seeker_id_obj}, {"name": 1, "email": 1})
+
+        existing_doc = recommendation_applications_collection.find_one(
+            {
+                "seeker_user_id": seeker_id_obj,
+                "posting_id": posting_id_obj,
+            }
+        )
+        existing_status = (existing_doc or {}).get("status")
+
+        update_payload = {
+            "seeker_user_id": seeker_id_obj,
+            "provider_user_id": provider_user_id,
+            "posting_id": posting_id_obj,
+            "job_id": job_id,
+            "status": "selected" if existing_status == "selected" else "applied",
+            "updated_at": datetime.now(),
+        }
+
+        recommendation_applications_collection.update_one(
+            {
+                "seeker_user_id": seeker_id_obj,
+                "posting_id": posting_id_obj,
+            },
+            {
+                "$set": update_payload,
+                "$setOnInsert": {"created_at": datetime.now(), "applied_at": datetime.now(), "status": "applied"},
+            },
+            upsert=True,
+        )
+
+        if not existing_doc:
+            _create_notification(
+                provider_user_id,
+                "job_application",
+                f"{(seeker_user or {}).get('name', 'A candidate')} applied to your role.",
+                {
+                    "posting_id": str(posting_id_obj),
+                    "seeker_user_id": str(seeker_id_obj),
+                    "provider_name": (provider_user or {}).get("name"),
+                },
+            )
+
+        return jsonify(
+            {
+                "message": "Application submitted successfully.",
+                "status": update_payload.get("status", "applied"),
+                "posting_id": str(posting_id_obj),
+            }
+        ), 200
+    except ValueError as validation_error:
+        return jsonify({"error": str(validation_error)}), 400
+    except Exception as e:
+        logger.exception("Error applying to recommended job: %s", e)
+        return jsonify({"error": "Failed to apply for job"}), 500
+
+
+@app.route('/api/select-applied-candidate', methods=['POST'])
+def select_applied_candidate():
+    try:
+        data = request.get_json() or {}
+        provider_user_id = data.get("provider_user_id")
+        seeker_user_id = data.get("seeker_user_id")
+        posting_id = data.get("posting_id")
+
+        if not provider_user_id or not seeker_user_id or not posting_id:
+            return jsonify({"error": "provider_user_id, seeker_user_id, and posting_id are required"}), 400
+
+        provider_id_obj = _object_id_from_value(provider_user_id, "provider_user_id")
+        seeker_id_obj = _object_id_from_value(seeker_user_id, "seeker_user_id")
+        posting_id_obj = _object_id_from_value(posting_id, "posting_id")
+
+        record = recommendation_applications_collection.find_one(
+            {
+                "provider_user_id": provider_id_obj,
+                "seeker_user_id": seeker_id_obj,
+                "posting_id": posting_id_obj,
+            }
+        )
+
+        if not record:
+            record = recommendation_applications_collection.find_one(
+                {
+                    "provider_user_id": str(provider_id_obj),
+                    "seeker_user_id": seeker_id_obj,
+                    "posting_id": posting_id_obj,
+                }
+            )
+
+        if not record:
+            return jsonify({"error": "Candidate has not applied to this job posting"}), 404
+
+        recommendation_applications_collection.update_one(
+            {"_id": record["_id"]},
+            {
+                "$set": {
+                    "status": "selected",
+                    "selected_at": datetime.now(),
+                    "updated_at": datetime.now(),
+                }
+            },
+        )
+
+        provider_user = users_collection.find_one({"_id": provider_id_obj}, {"name": 1})
+        _create_notification(
+            seeker_id_obj,
+            "candidate_selected",
+            f"You have been selected by {(provider_user or {}).get('name', 'the employer')} for the next step.",
+            {
+                "posting_id": str(posting_id_obj),
+                "provider_user_id": str(provider_id_obj),
+                "seeker_user_id": str(seeker_id_obj),
+            },
+        )
+
+        return jsonify({"message": "Candidate selected successfully."}), 200
+    except ValueError as validation_error:
+        return jsonify({"error": str(validation_error)}), 400
+    except Exception as e:
+        logger.exception("Error selecting applied candidate: %s", e)
+        return jsonify({"error": "Failed to select candidate"}), 500
+
+
+@app.route('/api/notifications/<user_id>', methods=['GET'])
+def get_notifications(user_id):
+    try:
+        user_id_obj = _object_id_from_value(user_id, "user_id")
+        docs = list(
+            notifications_collection.find({"$or": [{"user_id": user_id_obj}, {"user_id": str(user_id_obj)}]})
+            .sort("created_at", -1)
+            .limit(100)
+        )
+
+        notifications = []
+        for doc in docs:
+            created_at = doc.get("created_at")
+            notifications.append(
+                {
+                    "id": str(doc.get("_id")),
+                    "type": doc.get("type", "notification"),
+                    "message": doc.get("message", ""),
+                    "created_at": created_at.isoformat() if hasattr(created_at, "isoformat") else str(created_at),
+                    "metadata": doc.get("metadata", {}),
+                    "is_read": bool(doc.get("is_read", False)),
+                }
+            )
+
+        return jsonify({"notifications": notifications}), 200
+    except ValueError as validation_error:
+        return jsonify({"error": str(validation_error)}), 400
+    except Exception as e:
+        logger.exception("Error fetching notifications: %s", e)
+        return jsonify({"error": "Failed to fetch notifications"}), 500
+
+
+@app.route('/api/notifications/<user_id>/mark-read', methods=['POST'])
+def mark_notifications_read(user_id):
+    try:
+        user_id_obj = _object_id_from_value(user_id, "user_id")
+        payload = request.get_json(silent=True) or {}
+        notification_id = payload.get("notification_id")
+
+        owner_query = {"$or": [{"user_id": user_id_obj}, {"user_id": str(user_id_obj)}]}
+
+        if notification_id:
+            from bson import ObjectId
+
+            try:
+                notification_obj = ObjectId(notification_id)
+            except Exception:
+                return jsonify({"error": "Invalid notification_id format"}), 400
+
+            result = notifications_collection.update_one(
+                {**owner_query, "_id": notification_obj},
+                {"$set": {"is_read": True, "read_at": datetime.now()}},
+            )
+            return jsonify({"updated": result.modified_count}), 200
+
+        result = notifications_collection.update_many(
+            owner_query,
+            {"$set": {"is_read": True, "read_at": datetime.now()}},
+        )
+        return jsonify({"updated": result.modified_count}), 200
+    except ValueError as validation_error:
+        return jsonify({"error": str(validation_error)}), 400
+    except Exception as e:
+        logger.exception("Error marking notifications read: %s", e)
+        return jsonify({"error": "Failed to mark notifications read"}), 500
 
 
 @app.route('/api/check-embeddings/<user_id>', methods=['GET'])

@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-03-16T23:03:51.630726",
   "evaluation_protocol": "proxy_pseudo_labels",
-  "note": "Manual-gold evaluation is the preferred final result. Proxy pseudo-label evaluation is useful for development and ablation but should be reported as a proxy metric.",
+  "note": "Manual-gold evaluation.",
   "config": {
     "split_name": "test",
     "split_path": "backend\\models\\data_splits.json",

@@ -1,5 +1,7 @@
 import os
 import traceback
+import threading
+import logging
 from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -10,6 +12,7 @@ load_dotenv()
 
 # Global variables for lazy loading
 model = None
+model_lock = threading.Lock()
 mongo_client = None
 db = None
 applications_collection = None
@@ -17,16 +20,20 @@ job_postings_collection = None
 js_embeddings_collection = None
 jp_embeddings_collection = None
 
+logger = logging.getLogger("backend.embedding_service")
+
 
 def get_model():
     """Lazy load the Sentence-BERT model only when needed"""
     global model
     if model is None:
-        from sentence_transformers import SentenceTransformer
+        with model_lock:
+            if model is None:
+                from sentence_transformers import SentenceTransformer
 
-        print("Loading Sentence-BERT model (all-MiniLM-L6-v2)...")
-        model = SentenceTransformer('all-MiniLM-L6-v2')
-        print("✅ Model loaded successfully!")
+                logger.info("Loading Sentence-BERT model (all-MiniLM-L6-v2)")
+                model = SentenceTransformer('all-MiniLM-L6-v2')
+                logger.info("Sentence-BERT model loaded successfully")
     return model
 
 

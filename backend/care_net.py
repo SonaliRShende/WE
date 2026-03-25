@@ -122,9 +122,24 @@ class CARENetRanker:
     def rank_jobs(self, user_doc: Dict[str, Any], job_docs: Sequence[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
         ranked: List[Dict[str, Any]] = []
         low_skill_confidence = 0
+        user_skill_nodes = self._extract_user_skill_nodes(user_doc)
+        constraint_nodes = self._extract_constraint_nodes(user_doc)
+
+        prune_threshold = max(0.0, self.config.skill_gate_threshold - 0.20)
+        max_pruned = max(10, int(len(job_docs) * 0.40))
+        pruned_count = 0
 
         for job_doc in job_docs:
-            result = self.score_job(user_doc, job_doc)
+            if pruned_count < max_pruned and user_skill_nodes and self._should_prune_job(user_skill_nodes, job_doc, prune_threshold):
+                pruned_count += 1
+                continue
+
+            result = self.score_job(
+                user_doc,
+                job_doc,
+                user_skill_nodes=user_skill_nodes,
+                constraint_nodes=constraint_nodes,
+            )
             ranked.append(result)
             if not result["skill_gate_passed"]:
                 low_skill_confidence += 1
@@ -132,9 +147,15 @@ class CARENetRanker:
         ranked.sort(key=lambda item: item["job_score"], reverse=True)
         return ranked, {"rejected_by_skill_gate": 0, "low_skill_confidence": low_skill_confidence}
 
-    def score_job(self, user_doc: Dict[str, Any], job_doc: Dict[str, Any]) -> Dict[str, Any]:
-        user_skill_nodes = self._extract_user_skill_nodes(user_doc)
-        constraint_nodes = self._extract_constraint_nodes(user_doc)
+    def score_job(
+        self,
+        user_doc: Dict[str, Any],
+        job_doc: Dict[str, Any],
+        user_skill_nodes: Optional[Sequence[Dict[str, Any]]] = None,
+        constraint_nodes: Optional[Sequence[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
+        user_skill_nodes = list(user_skill_nodes) if user_skill_nodes is not None else self._extract_user_skill_nodes(user_doc)
+        constraint_nodes = list(constraint_nodes) if constraint_nodes is not None else self._extract_constraint_nodes(user_doc)
         job_skill_nodes = self._extract_job_skill_nodes(job_doc)
         job_constraint_nodes = self._extract_job_constraint_nodes(job_doc)
 
@@ -157,10 +178,28 @@ class CARENetRanker:
         attention_score, attention_focus, constraint_score = self._compute_constraint_attention(
             constraint_nodes, job_constraint_nodes
         )
+
+
         location_score = self._compute_location_score(user_doc, job_doc, constraint_nodes)
+        user_location = str(user_doc.get("location_embedding", {}).get("location", "")).lower()
+        job_location = str(job_doc.get("jobLocation_embedding", {}).get("jobLocation", "")).lower()
+        constraint_text_all = " ".join([c["text"].lower() for c in constraint_nodes])
+        
+        if any(word in constraint_text_all for word in ['close to home','near home' , 'within commuting distance','neary by','near me']):
+            if user_location and job_location and user_location not in job_location:
+                conflict_penalty += 0.6
+                conflict_reasons.append("Job is not near user's preferred location.")                           
         dynamic_weights = self._generate_dynamic_weights(user_doc, constraint_nodes)
         conflict_penalty, conflict_reasons = self._detect_conflicts(constraint_nodes, job_doc, job_constraint_nodes)
+        conflict_penalty = min(conflict_penalty, 0.85)
+        underutil_penalty = self._detect_underutilization(user_skill_nodes, job_skill_nodes)
 
+        if underutil_penalty > 0.0:
+            conflict_penalty += underutil_penalty
+            conflict_reasons.append("The job may underutilize your skills, which could lead to dissatisfaction.")
+        if conflict_penalty> 0.2:
+            constraint_score = constraint_score * (1.0 - conflict_penalty)
+            constraint_score = max(constraint_score, 0.0)
         graph_signal = self._resolve_graph_signal(user_doc, job_doc)
         weighted_core = (
             dynamic_weights["w_skill"] * skill_score
@@ -169,14 +208,22 @@ class CARENetRanker:
         )
         weighted_core = self._clip01(weighted_core)
 
-        support_factor = 0.85 + (0.15 * attention_score)
-        conflict_factor = 1.0 - (0.35 * conflict_penalty)
-        match_synergy = 0.10 * min(skill_score, constraint_score)
+        support_factor = 0.95 + (0.05 * attention_score)
+        conflict_factor = 1.0 - (0.55 * conflict_penalty)
+        match_synergy = 0.20 * (skill_score * constraint_score)
 
         raw_score = (weighted_core * support_factor * conflict_factor) + match_synergy + (0.03 * graph_signal)
         raw_score = self._clip01(raw_score)
-        probability = self._sigmoid(self.config.sigmoid_scale * (raw_score - self.config.sigmoid_bias))
+        
 
+
+        if conflict_penalty > 0.5:
+            raw_score = raw_score * 0.5
+
+        if skill_score > 0.7 and constraint_score > 0.7 and location_score > 0.9:
+            raw_score = min(raw_score + 0.2, 1.0)
+        
+        probability = raw_score
         explanation = self._build_explanation(
             skill_links=skill_links,
             attention_focus=attention_focus,
@@ -218,6 +265,35 @@ class CARENetRanker:
             )
 
         return result
+
+    def _should_prune_job(
+        self,
+        user_skill_nodes: Sequence[Dict[str, Any]],
+        job_doc: Dict[str, Any],
+        threshold: float,
+    ) -> bool:
+        quick_nodes: List[Dict[str, Any]] = []
+
+        title = job_doc.get("jobTitle_embedding")
+        if isinstance(title, dict):
+            node = self._make_node(title, "jobTitle", "job_title")
+            if node:
+                quick_nodes.append(node)
+
+        category = job_doc.get("jobCategory_embedding")
+        if isinstance(category, dict):
+            node = self._make_node(category, "jobCategory", "job_category")
+            if node:
+                quick_nodes.append(node)
+
+        if not quick_nodes:
+            return False
+
+        user_matrix = np.vstack([node["embedding"] for node in user_skill_nodes])
+        quick_matrix = np.vstack([node["embedding"] for node in quick_nodes])
+        similarity = np.matmul(user_matrix, quick_matrix.T)
+        best_score = float(np.max(similarity)) if similarity.size else 0.0
+        return best_score < threshold
 
     def _extract_user_skill_nodes(self, user_doc: Dict[str, Any]) -> List[Dict[str, Any]]:
         nodes: List[Dict[str, Any]] = []
@@ -331,6 +407,10 @@ class CARENetRanker:
         if not user_skill_nodes or not job_skill_nodes:
             return 0.0, 0.0, []
 
+        user_matrix = np.vstack([node["embedding"] for node in user_skill_nodes])
+        job_matrix = np.vstack([node["embedding"] for node in job_skill_nodes])
+        similarity_matrix = np.matmul(user_matrix, job_matrix.T)
+
         match_rows: List[Dict[str, Any]] = []
         core_scores: List[float] = []
         auxiliary_scores: List[float] = []
@@ -338,15 +418,13 @@ class CARENetRanker:
         core_feature_types = {"job_requirement", "qualification"}
         auxiliary_feature_types = {"job_title", "job_category"}
 
-        for job_node in job_skill_nodes:
-            best_similarity = 0.0
-            best_user_node: Optional[Dict[str, Any]] = None
+        best_user_indices = np.argmax(similarity_matrix, axis=0)
+        best_job_scores = np.max(similarity_matrix, axis=0)
 
-            for user_node in user_skill_nodes:
-                similarity = self._cosine_similarity(user_node["embedding"], job_node["embedding"])
-                if similarity > best_similarity:
-                    best_similarity = similarity
-                    best_user_node = user_node
+        for job_idx, job_node in enumerate(job_skill_nodes):
+            best_similarity = float(best_job_scores[job_idx]) if len(best_job_scores) else 0.0
+            best_user_idx = int(best_user_indices[job_idx]) if len(best_user_indices) else 0
+            best_user_node: Optional[Dict[str, Any]] = user_skill_nodes[best_user_idx] if user_skill_nodes else None
 
             feature_type = job_node.get("feature_type", "")
             if feature_type in core_feature_types:
@@ -376,17 +454,18 @@ class CARENetRanker:
         core_score = float(np.mean(core_scores)) if core_scores else 0.0
         focused_core_score = float(np.mean(focused_core_scores)) if focused_core_scores else core_score
         auxiliary_score = float(np.mean(auxiliary_scores)) if auxiliary_scores else core_score
-        user_to_job_best_scores: List[float] = []
-        for user_node in user_skill_nodes:
-            best_to_job = 0.0
-            for job_node in job_skill_nodes:
-                similarity = self._cosine_similarity(user_node["embedding"], job_node["embedding"])
-                if similarity > best_to_job:
-                    best_to_job = similarity
-            user_to_job_best_scores.append(best_to_job)
+        user_to_job_best_scores = np.max(similarity_matrix, axis=1) if similarity_matrix.size else np.array([])
+        user_to_job_score = float(np.mean(user_to_job_best_scores)) if user_to_job_best_scores.size else core_score
+        score = float((0.9 * focused_core_score) + (0.1 * core_score))
+        
+        if score > 0.5:
+            score = min(score * 1.4 , 1.0)
+        
+        max_similarity = float(np.max(similarity_matrix))
 
-        user_to_job_score = float(np.mean(user_to_job_best_scores)) if user_to_job_best_scores else core_score
-        score = float((0.60 * focused_core_score) + (0.25 * core_score) + (0.10 * user_to_job_score) + (0.05 * auxiliary_score))
+        if max_similarity > 0.6:
+            score = min(score + 0.15 , 1.0)
+
 
         relaxed_threshold = max(0.32, self.config.skill_gate_threshold - 0.08)
         coverage = (
@@ -418,10 +497,18 @@ class CARENetRanker:
         constraint_max = np.max(support_matrix, axis=1)
 
         attention_score = self._clip01(float(np.mean(attended_support)))
-        compatibility_score = self._clip01(float(np.mean((0.55 * attended_support) + (0.45 * constraint_max))))
+        compatibility_score = float(np.mean(constraint_max))
 
+        # BOOST
+        compatibility_score = min(compatibility_score * 1.3, 1.0)
         focus_rows: List[Dict[str, Any]] = []
         for row_index, constraint in enumerate(constraint_nodes):
+            constraint_text = constraint["text"].lower()
+            if any(word in constraint_text for word in ['close to home', 'near home', 'nearby', 'near my home','near me', 'close by']):
+                for j , feature in enumerate(job_feature_nodes):
+                    if feature["feature_type"] == "job_location":
+                        support_matrix[row_index,j] = 1.0
+                compatibility_score = max(compatibility_score, 0.85)
             top_feature_index = int(np.argmax(attention_weights[row_index]))
             focus_rows.append(
                 {
@@ -526,10 +613,33 @@ class CARENetRanker:
         logits = np.matmul(context_vector, hypernetwork_weights)
         weights = self._softmax(logits)
 
+        w_skill = float(weights[0])       
+        w_constraint = float( weights[1])  
+        w_location = float(weights[2])
+
+        skills_count = len(user_doc.get("skills_embeddings", []))
+        constraints_count = len(user_doc.get("constraints_embeddings", []))
+
+        skill_density = min(skills_count / 8.0, 1.0)
+        constraint_density = min(constraints_count / 5.0, 1.0)
+
+        if skill_density > 0.6:
+            w_skill += 0.15 
+
+        if constraint_density > 0.6:
+            w_constraint += 0.05  
+
+        if skill_density >0.7:
+            w_skill = max(w_skill, 0.55)
+        w_constraint = min(w_constraint, 0.4)
+        w_skill = max(w_skill, 0.4)   
+        
+        total = w_skill + w_constraint + w_location
+        
         return {
-            "w_skill": float(weights[0]),
-            "w_constraint": float(weights[1]),
-            "w_location": float(weights[2]),
+            "w_skill": w_skill / total,
+            "w_constraint": w_constraint / total,
+            "w_location": w_location / total,
         }
 
     def _resolve_graph_signal(self, user_doc: Dict[str, Any], job_doc: Dict[str, Any]) -> float:
@@ -568,6 +678,25 @@ class CARENetRanker:
             text = self._normalized_text(constraint["text"])
             embedding = constraint["embedding"]
 
+            constraint_text = text
+            job_text = full_job_text.lower()
+
+            # detect if constraint talks about time restriction
+            time_words = ["night", "evening", "late", "after"]
+            negative_words = ["cannot", "cant", "no", "not"]
+
+            is_time_constraint = any(word in constraint_text for word in time_words)
+            is_negative = any(word in constraint_text for word in negative_words)
+
+            # detect job has night/late shift
+            job_has_night = any(word in job_text for word in ["night", "overnight", "pm", "late", "am"])
+                    
+            if is_time_constraint and is_negative and job_has_night:
+                penalties.append(0.85)
+                reasons.append("Time constraint conflict: user cannot work late but job requires night shift.")
+            if self._contains_any(text, {"part time", "part-time"}) and "full-time" in full_job_text:
+                penalties.append(0.1)
+                reasons.append("User prefers part-time but job is full-time.")
             if self._contains_any(text, REMOTE_KEYWORDS) and job_is_onsite and not job_is_remote:
                 penalties.append(self._semantic_penalty(0.35, embedding, job_feature_nodes))
                 reasons.append("Remote-only preference conflicts with an on-site or office-based job setting.")
@@ -581,7 +710,7 @@ class CARENetRanker:
                 reasons.append("Daytime availability conflicts with evening, night, or shift-based work.")
 
             if self._mentions_cannot_travel(text) and job_has_travel:
-                penalties.append(self._semantic_penalty(0.25, embedding, job_feature_nodes))
+                penalties.append(self._semantic_penalty(0.35, embedding, job_feature_nodes))
                 reasons.append("Travel or relocation requirements conflict with limited mobility or travel constraints.")
 
             if self._contains_any(text, ACCESSIBILITY_KEYWORDS) and job_has_physical_demands:
@@ -589,7 +718,8 @@ class CARENetRanker:
                 reasons.append("Accessibility-related needs may conflict with physically demanding job duties.")
 
             time_penalty, time_reason = self._detect_time_conflict(text, embedding, job_feature_nodes, full_job_text)
-            if time_penalty > 0.0 and time_reason:
+
+            if time_penalty not in  reasons:
                 penalties.append(time_penalty)
                 reasons.append(time_reason)
 
@@ -610,7 +740,9 @@ class CARENetRanker:
 
         if max_end is not None:
             for start_hour, end_hour in shift_windows:
-                if end_hour > max_end or start_hour > max_end:
+                if end_hour < start_hour:
+                    end_hour += 24
+                if end_hour > max_end + 0.5 and start_hour >= 12:
                     penalty = self._semantic_penalty(0.35, constraint_embedding, job_feature_nodes)
                     return penalty, (
                         f"Time restriction after {self._format_hour(max_end)} conflicts with a job shift ending around "
@@ -647,7 +779,26 @@ class CARENetRanker:
         semantic_strength = max(similarities) if similarities else 0.0
         boosted_penalty = base_penalty + (0.20 * semantic_strength)
         return self._clip01(boosted_penalty)
+    def _detect_underutilization(self, user_skill_nodes, job_skill_nodes):
+        if not user_skill_nodes or not job_skill_nodes:
+            return 0.0
 
+        user_matrix = np.vstack([n["embedding"] for n in user_skill_nodes])
+        job_matrix = np.vstack([n["embedding"] for n in job_skill_nodes])
+
+        sim_matrix = np.matmul(user_matrix, job_matrix.T)
+
+        # how well job uses user skills
+        job_best = np.max(sim_matrix, axis=1)   # for each user skill
+
+        avg_utilization = float(np.mean(job_best))
+
+        # 🔥 KEY LOGIC
+        if avg_utilization < 0.45:
+            return 0.3
+        elif avg_utilization < 0.6:
+            return 0.15
+        return 0.0
     def _build_explanation(
         self,
         skill_links: Sequence[Dict[str, Any]],
@@ -755,6 +906,8 @@ class CARENetRanker:
             r"(?:cannot|cant|can not|not available|unable to)\s+work\s+after\s+(\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?))",
             r"after\s+(\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?))",
         ]
+        if "night" in text:
+            return 21.0   # assume 8 PM cutoff
         for pattern in patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
