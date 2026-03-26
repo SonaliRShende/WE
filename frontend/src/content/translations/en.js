@@ -327,6 +327,7 @@ const en = {
     couldNotLoadCandidates: "Could not load matching candidates. Please try again.",
     clickProfile: "Open candidate profile"
   },
+  //check
   viewPages: {
     seekerTitle: "Job seeker profile",
     seekerBody: "Review the full candidate profile before moving forward.",
