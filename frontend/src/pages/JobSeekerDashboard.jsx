@@ -245,12 +245,7 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
                     </span>
                   )}
                 </div>
-                <div className="rounded-2xl bg-sky-50 px-4 py-3 text-right text-sky-700">
-                  <p className="text-3xl font-semibold">{(job.job_score * 100).toFixed(0)}%</p>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-                    {messages.jobSeekerDashboard.overallMatch}
-                  </p>
-                </div>
+
               </div>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">

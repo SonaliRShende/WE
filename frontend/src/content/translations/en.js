@@ -291,7 +291,7 @@ const en = {
     updateBody: "Review and improve your saved profile details.",
     viewTitle: "View your profile",
     viewBody: "See the details currently saved in your job seeker profile.",
-    matchesTitle: "Recommended jobs",
+    matchesTitle: "View job",
     matchesBody: "Review jobs recommended for your profile.",
     noProfile: "You have not filled out your profile yet. Please create it first.",
     recommendationTitle: "Recommended jobs",

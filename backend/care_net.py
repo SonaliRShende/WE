@@ -90,7 +90,7 @@ TRAVEL_KEYWORDS = {
 
 @dataclass
 class CARENetConfig:
-    skill_gate_threshold: float = 0.45
+    skill_gate_threshold: float = 0.35
     skill_gate_coverage_threshold: float = 0.30
     attention_temperature: float = 0.35
     sigmoid_scale: float = 5.0
@@ -121,6 +121,7 @@ class CARENetRanker:
 
     def rank_jobs(self, user_doc: Dict[str, Any], job_docs: Sequence[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
         ranked: List[Dict[str, Any]] = []
+        rejected_by_skill_gate = 0
         low_skill_confidence = 0
         user_skill_nodes = self._extract_user_skill_nodes(user_doc)
         constraint_nodes = self._extract_constraint_nodes(user_doc)
@@ -140,12 +141,14 @@ class CARENetRanker:
                 user_skill_nodes=user_skill_nodes,
                 constraint_nodes=constraint_nodes,
             )
-            ranked.append(result)
-            if not result["skill_gate_passed"]:
+            if result["skill_gate_passed"]:
+                ranked.append(result)
+            else:
+                rejected_by_skill_gate += 1
                 low_skill_confidence += 1
 
         ranked.sort(key=lambda item: item["job_score"], reverse=True)
-        return ranked, {"rejected_by_skill_gate": 0, "low_skill_confidence": low_skill_confidence}
+        return ranked, {"rejected_by_skill_gate": rejected_by_skill_gate, "low_skill_confidence": low_skill_confidence}
 
     def score_job(
         self,
@@ -162,18 +165,7 @@ class CARENetRanker:
         skill_score, skill_coverage, skill_links = self._compute_skill_match(user_skill_nodes, job_skill_nodes)
         skill_gate_score = (0.75 * skill_score) + (0.25 * skill_coverage)
 
-        strong_semantic_match = skill_score >= (self.config.skill_gate_threshold + 0.03)
-        balanced_match = (
-            skill_score >= (self.config.skill_gate_threshold - 0.03)
-            and skill_coverage >= (self.config.skill_gate_coverage_threshold - 0.05)
-        )
-        aggregate_pass = skill_gate_score >= self.config.skill_gate_threshold
-        skill_gate_passed = bool(
-            (skill_score >= self.config.skill_gate_threshold and skill_coverage >= self.config.skill_gate_coverage_threshold)
-            or strong_semantic_match
-            or balanced_match
-            or aggregate_pass
-        )
+        skill_gate_passed = bool(skill_score > self.config.skill_gate_threshold)
 
         attention_score, attention_focus, constraint_score = self._compute_constraint_attention(
             constraint_nodes, job_constraint_nodes
@@ -822,7 +814,7 @@ class CARENetRanker:
                 f"the constraint '{top_focus['constraint']}' {focus_phrase} the job feature '{top_focus['focused_feature']}'"
             )
 
-        if location_score >= 0.75:
+        if location_score >= 0.95:
             job_location = (job_doc.get("jobLocation_embedding") or {}).get("jobLocation", "the job location")
             evidence_parts.append(f"location compatibility is strong for {job_location}")
 
