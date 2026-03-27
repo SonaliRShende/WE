@@ -1,4 +1,5 @@
 import os
+import hashlib
 import traceback
 import threading
 import logging
@@ -6,6 +7,7 @@ from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from datetime import datetime
+import numpy as np
 
 # Load environment variables
 load_dotenv()
@@ -23,17 +25,43 @@ jp_embeddings_collection = None
 logger = logging.getLogger("backend.embedding_service")
 
 
+def _is_demo_mode() -> bool:
+    return os.getenv("DEMO_MODE", "0").strip().lower() in {"1", "true", "yes", "on"}
+
+
+class DeterministicEmbeddingModel:
+    """Lightweight demo embedding backend with deterministic 384-d vectors."""
+
+    def __init__(self, dimension: int = 384):
+        self.dimension = int(dimension)
+
+    def encode(self, text: str):
+        text = str(text or "")
+        digest = hashlib.sha256(text.encode("utf-8")).digest()
+        seed = int.from_bytes(digest[:8], byteorder="big", signed=False)
+        rng = np.random.default_rng(seed)
+        vector = rng.standard_normal(self.dimension)
+        norm = float(np.linalg.norm(vector))
+        if norm > 0.0:
+            vector = vector / norm
+        return vector
+
+
 def get_model():
     """Lazy load the Sentence-BERT model only when needed"""
     global model
     if model is None:
         with model_lock:
             if model is None:
-                from sentence_transformers import SentenceTransformer
+                if _is_demo_mode():
+                    logger.info("DEMO_MODE is enabled. Using deterministic hash embeddings (384d).")
+                    model = DeterministicEmbeddingModel(dimension=384)
+                else:
+                    from sentence_transformers import SentenceTransformer
 
-                logger.info("Loading Sentence-BERT model (all-MiniLM-L6-v2)")
-                model = SentenceTransformer('all-MiniLM-L6-v2')
-                logger.info("Sentence-BERT model loaded successfully")
+                    logger.info("Loading Sentence-BERT model (all-MiniLM-L6-v2)")
+                    model = SentenceTransformer('all-MiniLM-L6-v2')
+                    logger.info("Sentence-BERT model loaded successfully")
     return model
 
 
@@ -68,6 +96,38 @@ def get_db():
     }
 
 
+def _normalized_text(value) -> str:
+    return " ".join(str(value or "").split()).strip().lower()
+
+
+def _embedding_list(value):
+    if isinstance(value, list) and value:
+        return value
+    if hasattr(value, "tolist"):
+        try:
+            converted = value.tolist()
+            if isinstance(converted, list) and converted:
+                return converted
+        except Exception:
+            return None
+    return None
+
+
+def _build_existing_item_embedding_map(items, text_key):
+    mapping = {}
+    if not isinstance(items, list):
+        return mapping
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        text_value = item.get(text_key, "")
+        key = _normalized_text(text_value)
+        embedding = _embedding_list(item.get("embedding"))
+        if key and embedding:
+            mapping[key] = embedding
+    return mapping
+
+
 def embed_specific_job_seeker(user_id):
     """
     Generate embeddings for a SPECIFIC job seeker only.
@@ -82,9 +142,15 @@ def embed_specific_job_seeker(user_id):
         print(f"[{datetime.now()}] embed_specific_job_seeker START - user_id: {user_id}")
         
         collections = get_db()
-        model_instance = get_model()
         applications_collection = collections['applications']
         js_embeddings_collection = collections['js_embeddings']
+        model_instance = None
+
+        def encode_text(text):
+            nonlocal model_instance
+            if model_instance is None:
+                model_instance = get_model()
+            return model_instance.encode(text).tolist()
         
         # Convert string to ObjectId if needed
         if isinstance(user_id, str):
@@ -100,6 +166,9 @@ def embed_specific_job_seeker(user_id):
         
         app_id = app['_id']
         print(f"[{datetime.now()}] [SELECTIVE] Embedding job seeker: {user_id}, app_id: {app_id}")
+        existing_embedding_doc = js_embeddings_collection.find_one({"user_id": user_id}) or {}
+        existing_skill_map = _build_existing_item_embedding_map(existing_embedding_doc.get("skills_embeddings", []), "skill_name")
+        existing_constraint_map = _build_existing_item_embedding_map(existing_embedding_doc.get("constraints_embeddings", []), "constraint_text")
         
         embeddings_data = {
             "application_id": app_id,
@@ -124,7 +193,10 @@ def embed_specific_job_seeker(user_id):
             for skill in app['structured_skills']:
                 skill_name = skill.get('skill_name', '')
                 if skill_name:
-                    embedding = model_instance.encode(skill_name).tolist()
+                    normalized_name = _normalized_text(skill_name)
+                    embedding = existing_skill_map.get(normalized_name)
+                    if embedding is None:
+                        embedding = encode_text(skill_name)
                     embeddings_data['skills_embeddings'].append({
                         "skill_name": skill_name,
                         "embedding": embedding
@@ -139,7 +211,10 @@ def embed_specific_job_seeker(user_id):
                 if not fallback_chunks:
                     fallback_chunks = [raw_skills_text]
                 for chunk in fallback_chunks[:5]:
-                    embedding = model_instance.encode(chunk).tolist()
+                    normalized_chunk = _normalized_text(chunk)
+                    embedding = existing_skill_map.get(normalized_chunk)
+                    if embedding is None:
+                        embedding = encode_text(chunk)
                     embeddings_data['skills_embeddings'].append({
                         "skill_name": chunk,
                         "embedding": embedding
@@ -151,7 +226,10 @@ def embed_specific_job_seeker(user_id):
             for constraint in app['structured_constraints']:
                 constraint_text = constraint.get('constraint_text', '')
                 if constraint_text:
-                    embedding = model_instance.encode(constraint_text).tolist()
+                    normalized_constraint = _normalized_text(constraint_text)
+                    embedding = existing_constraint_map.get(normalized_constraint)
+                    if embedding is None:
+                        embedding = encode_text(constraint_text)
                     embeddings_data['constraints_embeddings'].append({
                         "constraint_text": constraint_text,
                         "embedding": embedding
@@ -162,7 +240,10 @@ def embed_specific_job_seeker(user_id):
             raw_pref_text = str(app.get('preferences', '')).strip()
             if raw_pref_text:
                 print(f"[{datetime.now()}]   ⚠️  Structured constraints empty. Using preferences text fallback embedding.")
-                embedding = model_instance.encode(raw_pref_text).tolist()
+                normalized_pref = _normalized_text(raw_pref_text)
+                embedding = existing_constraint_map.get(normalized_pref)
+                if embedding is None:
+                    embedding = encode_text(raw_pref_text)
                 embeddings_data['constraints_embeddings'].append({
                     "constraint_text": raw_pref_text,
                     "embedding": embedding
@@ -172,7 +253,14 @@ def embed_specific_job_seeker(user_id):
         qualification = app.get('qualification', '')
         if qualification:
             print(f"[{datetime.now()}]   ✓ Embedding qualification: {qualification}")
-            embedding = model_instance.encode(qualification).tolist()
+            existing_qualification = existing_embedding_doc.get("qualification_embedding")
+            existing_qualification_embedding = None
+            if (
+                isinstance(existing_qualification, dict)
+                and _normalized_text(existing_embedding_doc.get("qualification_text", "")) == _normalized_text(qualification)
+            ):
+                existing_qualification_embedding = _embedding_list(existing_qualification.get("embedding"))
+            embedding = existing_qualification_embedding or encode_text(qualification)
             embeddings_data['qualification_embedding'] = {
                 "qualification": qualification,
                 "embedding": embedding
@@ -182,7 +270,14 @@ def embed_specific_job_seeker(user_id):
         location = app.get('location', '')
         if location:
             print(f"[{datetime.now()}]   ✓ Embedding location: {location}")
-            embedding = model_instance.encode(location).tolist()
+            existing_location = existing_embedding_doc.get("location_embedding")
+            existing_location_embedding = None
+            if (
+                isinstance(existing_location, dict)
+                and _normalized_text(existing_embedding_doc.get("location_text", "")) == _normalized_text(location)
+            ):
+                existing_location_embedding = _embedding_list(existing_location.get("embedding"))
+            embedding = existing_location_embedding or encode_text(location)
             embeddings_data['location_embedding'] = {
                 "location": location,
                 "embedding": embedding
@@ -223,9 +318,15 @@ def embed_specific_job_posting(user_id):
         print(f"[{datetime.now()}] embed_specific_job_posting START - user_id: {user_id}")
         
         collections = get_db()
-        model_instance = get_model()
         job_postings_collection = collections['postings']
         jp_embeddings_collection = collections['jp_embeddings']
+        model_instance = None
+
+        def encode_text(text):
+            nonlocal model_instance
+            if model_instance is None:
+                model_instance = get_model()
+            return model_instance.encode(text).tolist()
         
         # Convert string to ObjectId if needed
         if isinstance(user_id, str):
@@ -241,6 +342,16 @@ def embed_specific_job_posting(user_id):
         
         posting_id = posting['_id']
         print(f"[{datetime.now()}] [SELECTIVE] Embedding job posting: {user_id}, posting_id: {posting_id}")
+        existing_embedding_doc = jp_embeddings_collection.find_one({"user_id": user_id}) or {}
+        existing_qualification_map = _build_existing_item_embedding_map(
+            existing_embedding_doc.get("qualifications_embeddings", []), "qualification"
+        )
+        existing_requirement_map = _build_existing_item_embedding_map(
+            existing_embedding_doc.get("job_requirements_embeddings", []), "requirement"
+        )
+        existing_benefit_map = _build_existing_item_embedding_map(
+            existing_embedding_doc.get("benefits_embeddings", []), "benefit"
+        )
         
         embeddings_data = {
             "posting_id": posting_id,
@@ -269,45 +380,76 @@ def embed_specific_job_posting(user_id):
         job_title = posting.get('jobTitle', '')
         if job_title:
             print(f"[{datetime.now()}]   ✓ Embedding jobTitle: {job_title}")
+            existing_title = existing_embedding_doc.get("jobTitle_embedding")
+            existing_title_embedding = None
+            if isinstance(existing_title, dict):
+                old_title_text = _normalized_text(existing_title.get("jobTitle", ""))
+                if old_title_text == _normalized_text(job_title):
+                    existing_title_embedding = _embedding_list(existing_title.get("embedding"))
             embeddings_data['jobTitle_embedding'] = {
                 "jobTitle": job_title,
-                "embedding": model_instance.encode(job_title).tolist()
+                "embedding": existing_title_embedding or encode_text(job_title)
             }
         
         # Job Category
         job_category = posting.get('jobCategory', '')
         if job_category:
             print(f"[{datetime.now()}]   ✓ Embedding jobCategory: {job_category}")
+            existing_category = existing_embedding_doc.get("jobCategory_embedding")
+            existing_category_embedding = None
+            if isinstance(existing_category, dict):
+                old_category_text = _normalized_text(existing_category.get("jobCategory", ""))
+                if old_category_text == _normalized_text(job_category):
+                    existing_category_embedding = _embedding_list(existing_category.get("embedding"))
             embeddings_data['jobCategory_embedding'] = {
                 "jobCategory": job_category,
-                "embedding": model_instance.encode(job_category).tolist()
+                "embedding": existing_category_embedding or encode_text(job_category)
             }
         
         # Experience Required
         exp_required = posting.get('experienceRequired', '')
         if exp_required:
             print(f"[{datetime.now()}]   ✓ Embedding experienceRequired: {exp_required}")
+            exp_required_text = str(exp_required)
+            existing_experience = existing_embedding_doc.get("experienceRequired_embedding")
+            existing_experience_embedding = None
+            if isinstance(existing_experience, dict):
+                old_experience_text = _normalized_text(existing_experience.get("experienceRequired", ""))
+                if old_experience_text == _normalized_text(exp_required_text):
+                    existing_experience_embedding = _embedding_list(existing_experience.get("embedding"))
             embeddings_data['experienceRequired_embedding'] = {
                 "experienceRequired": exp_required,
-                "embedding": model_instance.encode(str(exp_required)).tolist()
+                "embedding": existing_experience_embedding or encode_text(exp_required_text)
             }
         
         # Job Location
         job_location = posting.get('jobLocation', '')
         if job_location:
             print(f"[{datetime.now()}]   ✓ Embedding jobLocation: {job_location}")
+            existing_location = existing_embedding_doc.get("jobLocation_embedding")
+            existing_location_embedding = None
+            if isinstance(existing_location, dict):
+                old_location_text = _normalized_text(existing_location.get("jobLocation", ""))
+                if old_location_text == _normalized_text(job_location):
+                    existing_location_embedding = _embedding_list(existing_location.get("embedding"))
             embeddings_data['jobLocation_embedding'] = {
                 "jobLocation": job_location,
-                "embedding": model_instance.encode(job_location).tolist()
+                "embedding": existing_location_embedding or encode_text(job_location)
             }
         
         # Job Type
         job_type = posting.get('jobType', '')
         if job_type:
             print(f"[{datetime.now()}]   ✓ Embedding jobType: {job_type}")
+            existing_type = existing_embedding_doc.get("jobType_embedding")
+            existing_type_embedding = None
+            if isinstance(existing_type, dict):
+                old_type_text = _normalized_text(existing_type.get("jobType", ""))
+                if old_type_text == _normalized_text(job_type):
+                    existing_type_embedding = _embedding_list(existing_type.get("embedding"))
             embeddings_data['jobType_embedding'] = {
                 "jobType": job_type,
-                "embedding": model_instance.encode(job_type).tolist()
+                "embedding": existing_type_embedding or encode_text(job_type)
             }
         
         # Qualifications
@@ -316,9 +458,13 @@ def embed_specific_job_posting(user_id):
             for qual in posting['structured_qualifications']:
                 qual_text = qual.get('qualification', '')
                 if qual_text:
+                    normalized_qual = _normalized_text(qual_text)
+                    embedding = existing_qualification_map.get(normalized_qual)
+                    if embedding is None:
+                        embedding = encode_text(qual_text)
                     embeddings_data['qualifications_embeddings'].append({
                         "qualification": qual_text,
-                        "embedding": model_instance.encode(qual_text).tolist()
+                        "embedding": embedding
                     })
                     print(f"[{datetime.now()}]     - Embedded qualification: {qual_text}")
 
@@ -326,9 +472,13 @@ def embed_specific_job_posting(user_id):
             raw_qualification = str(posting.get('requiredQualifications', '')).strip()
             if raw_qualification:
                 print(f"[{datetime.now()}]   ⚠️  Structured qualifications empty. Using raw qualification fallback embedding.")
+                normalized_raw_qualification = _normalized_text(raw_qualification)
+                embedding = existing_qualification_map.get(normalized_raw_qualification)
+                if embedding is None:
+                    embedding = encode_text(raw_qualification)
                 embeddings_data['qualifications_embeddings'].append({
                     "qualification": raw_qualification,
-                    "embedding": model_instance.encode(raw_qualification).tolist()
+                    "embedding": embedding
                 })
         
         # Job Requirements
@@ -337,9 +487,13 @@ def embed_specific_job_posting(user_id):
             for req in posting['structured_job_requirements']:
                 req_text = req.get('requirement', '')
                 if req_text:
+                    normalized_req = _normalized_text(req_text)
+                    embedding = existing_requirement_map.get(normalized_req)
+                    if embedding is None:
+                        embedding = encode_text(req_text)
                     embeddings_data['job_requirements_embeddings'].append({
                         "requirement": req_text,
-                        "embedding": model_instance.encode(req_text).tolist()
+                        "embedding": embedding
                     })
                     print(f"[{datetime.now()}]     - Embedded requirement: {req_text}")
 
@@ -351,9 +505,13 @@ def embed_specific_job_posting(user_id):
                 if not fallback_chunks:
                     fallback_chunks = [raw_job_description]
                 for chunk in fallback_chunks[:6]:
+                    normalized_chunk = _normalized_text(chunk)
+                    embedding = existing_requirement_map.get(normalized_chunk)
+                    if embedding is None:
+                        embedding = encode_text(chunk)
                     embeddings_data['job_requirements_embeddings'].append({
                         "requirement": chunk,
-                        "embedding": model_instance.encode(chunk).tolist()
+                        "embedding": embedding
                     })
         
         # Benefits
@@ -362,9 +520,13 @@ def embed_specific_job_posting(user_id):
             for benefit in posting['structured_benefits']:
                 benefit_text = benefit.get('benefit', '')
                 if benefit_text:
+                    normalized_benefit = _normalized_text(benefit_text)
+                    embedding = existing_benefit_map.get(normalized_benefit)
+                    if embedding is None:
+                        embedding = encode_text(benefit_text)
                     embeddings_data['benefits_embeddings'].append({
                         "benefit": benefit_text,
-                        "embedding": model_instance.encode(benefit_text).tolist()
+                        "embedding": embedding
                     })
                     print(f"[{datetime.now()}]     - Embedded benefit: {benefit_text}")
 
@@ -372,9 +534,13 @@ def embed_specific_job_posting(user_id):
             raw_benefits = str(posting.get('benefits', '')).strip()
             if raw_benefits:
                 print(f"[{datetime.now()}]   ⚠️  Structured benefits empty. Using raw benefits fallback embedding.")
+                normalized_raw_benefits = _normalized_text(raw_benefits)
+                embedding = existing_benefit_map.get(normalized_raw_benefits)
+                if embedding is None:
+                    embedding = encode_text(raw_benefits)
                 embeddings_data['benefits_embeddings'].append({
                     "benefit": raw_benefits,
-                    "embedding": model_instance.encode(raw_benefits).tolist()
+                    "embedding": embedding
                 })
         
         # Store/Update embeddings

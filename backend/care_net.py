@@ -173,16 +173,17 @@ class CARENetRanker:
 
 
         location_score = self._compute_location_score(user_doc, job_doc, constraint_nodes)
-        user_location = str(user_doc.get("location_embedding", {}).get("location", "")).lower()
-        job_location = str(job_doc.get("jobLocation_embedding", {}).get("jobLocation", "")).lower()
+        user_location = self._embedding_text(user_doc.get("location_embedding"), "location").lower()
+        job_location = self._embedding_text(job_doc.get("jobLocation_embedding"), "jobLocation").lower()
         constraint_text_all = " ".join([c["text"].lower() for c in constraint_nodes])
-        
+
+        dynamic_weights = self._generate_dynamic_weights(user_doc, constraint_nodes)
+        conflict_penalty, conflict_reasons = self._detect_conflicts(constraint_nodes, job_doc, job_constraint_nodes)
+
         if any(word in constraint_text_all for word in ['close to home','near home' , 'within commuting distance','neary by','near me']):
             if user_location and job_location and user_location not in job_location:
                 conflict_penalty += 0.6
-                conflict_reasons.append("Job is not near user's preferred location.")                           
-        dynamic_weights = self._generate_dynamic_weights(user_doc, constraint_nodes)
-        conflict_penalty, conflict_reasons = self._detect_conflicts(constraint_nodes, job_doc, job_constraint_nodes)
+                conflict_reasons.append("Job is not near user's preferred location.")
         conflict_penalty = min(conflict_penalty, 0.85)
         underutil_penalty = self._detect_underutilization(user_skill_nodes, job_skill_nodes)
 
@@ -675,16 +676,26 @@ class CARENetRanker:
 
             # detect if constraint talks about time restriction
             time_words = ["night", "evening", "late", "after"]
-            negative_words = ["cannot", "cant", "no", "not"]
+            negative_words = ["cannot", "cant", "can't", "no", "not", "unable", "won't", "wont"]
 
             is_time_constraint = any(word in constraint_text for word in time_words)
             is_negative = any(word in constraint_text for word in negative_words)
 
-            # detect job has night/late shift
-            job_has_night = any(word in job_text for word in ["night", "overnight", "pm", "late", "am"])
+            # Detect explicit late-hour language only (avoid treating any AM/PM mention as a conflict).
+            job_has_night = any(
+                word in job_text
+                for word in [
+                    "night",
+                    "overnight",
+                    "late shift",
+                    "night shift",
+                    "evening shift",
+                    "rotating shift",
+                ]
+            )
                     
             if is_time_constraint and is_negative and job_has_night:
-                penalties.append(0.85)
+                penalties.append(0.35)
                 reasons.append("Time constraint conflict: user cannot work late but job requires night shift.")
             if self._contains_any(text, {"part time", "part-time"}) and "full-time" in full_job_text:
                 penalties.append(0.1)
@@ -711,7 +722,7 @@ class CARENetRanker:
 
             time_penalty, time_reason = self._detect_time_conflict(text, embedding, job_feature_nodes, full_job_text)
 
-            if time_penalty not in  reasons:
+            if time_penalty > 0.0 and time_reason:
                 penalties.append(time_penalty)
                 reasons.append(time_reason)
 
@@ -815,7 +826,7 @@ class CARENetRanker:
             )
 
         if location_score >= 0.95:
-            job_location = (job_doc.get("jobLocation_embedding") or {}).get("jobLocation", "the job location")
+            job_location = self._embedding_text(job_doc.get("jobLocation_embedding"), "jobLocation") or "the job location"
             evidence_parts.append(f"location compatibility is strong for {job_location}")
 
         if not evidence_parts:
@@ -854,6 +865,11 @@ class CARENetRanker:
         ]
         text_parts.extend(feature["text"] for feature in job_feature_nodes)
         return self._normalized_text(" ".join(part for part in text_parts if part))
+
+    def _embedding_text(self, value: Any, key: str) -> str:
+        if isinstance(value, dict):
+            return str(value.get(key, ""))
+        return ""
 
     def _all_constraint_text(self, constraint_nodes: Sequence[Dict[str, Any]]) -> str:
         return self._normalized_text(" ".join(node["text"] for node in constraint_nodes))

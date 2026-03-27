@@ -40,6 +40,10 @@ STRICT_LOCALITY_HINTS = (
 )
 
 
+def _is_demo_mode() -> bool:
+    return os.getenv("DEMO_MODE", "0").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def get_db():
     """Lazy load MongoDB connection only when needed."""
     global mongo_client, db, js_embeddings_collection, jp_embeddings_collection, job_scores_collection
@@ -81,12 +85,15 @@ def get_ranker():
     if ranker is None:
         weight_predictor = None
         graph_signal_provider = None
+        demo_mode = _is_demo_mode()
         model_dir = os.getenv("CARE_NET_MODEL_DIR", os.path.join(os.path.dirname(__file__), "models"))
         dynamic_model_path = os.path.join(model_dir, "dynamic_weight_model.pt")
         graph_model_path = os.path.join(model_dir, "graph_signal_model.pt")
         minimum_graph_accuracy = float(os.getenv("CARE_NET_MIN_GRAPH_ACCURACY", "0.50"))
 
-        if os.path.exists(dynamic_model_path):
+        if demo_mode:
+            logger.info("DEMO_MODE enabled: skipping dynamic and graph model loading for low-memory runtime")
+        elif os.path.exists(dynamic_model_path):
             try:
                 try:
                     from dynamic_weight_learning import DynamicWeightPredictor
@@ -98,7 +105,7 @@ def get_ranker():
             except Exception as exc:
                 logger.warning("Dynamic weight model unavailable, falling back to rule-based weights: %s", exc)
 
-        if os.path.exists(graph_model_path):
+        if (not demo_mode) and os.path.exists(graph_model_path):
             try:
                 try:
                     from graph_learning import GraphSignalProvider
@@ -206,8 +213,11 @@ def _prefilter_jobs_for_user(jp_collection, user_doc):
 
     user_city = _get_user_city(user_doc)
     enforce_city_filter = bool(user_city) and _should_enforce_city_filter(user_doc)
-    candidate_limit = int(os.getenv("RECOMMENDATION_CANDIDATE_LIMIT", "50"))
-    prefetch_multiplier = int(os.getenv("RECOMMENDATION_PREFETCH_MULTIPLIER", "4"))
+    demo_mode = _is_demo_mode()
+    candidate_limit = int(os.getenv("RECOMMENDATION_CANDIDATE_LIMIT", "12" if demo_mode else "50"))
+    if demo_mode:
+        candidate_limit = max(1, min(candidate_limit, 15))
+    prefetch_multiplier = 1 if demo_mode else int(os.getenv("RECOMMENDATION_PREFETCH_MULTIPLIER", "4"))
     fetch_cap = max(candidate_limit, candidate_limit * max(prefetch_multiplier, 1))
 
     query = {}
@@ -283,6 +293,13 @@ def generate_job_recommendations(user_id):
     except Exception as exc:
         logger.warning("Invalid user_id format: %s - %s", user_id, exc)
         return []
+
+    cached = job_scores.find_one({"user_id": user_id_obj}, {"ranked_jobs": 1, "stale": 1})
+    if cached and not bool(cached.get("stale", False)):
+        ranked_jobs = cached.get("ranked_jobs", [])
+        if isinstance(ranked_jobs, list):
+            logger.info("Returning cached recommendations for user_id=%s count=%s", user_id, len(ranked_jobs))
+            return ranked_jobs
 
     user_doc = js_collection.find_one({"user_id": user_id_obj})
     if not user_doc:
