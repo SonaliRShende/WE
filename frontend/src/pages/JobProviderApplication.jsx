@@ -33,6 +33,9 @@ const initialFormData = {
   requiredQualifications: "",
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\d{10}$/;
+
 const VoiceFeedbackModal = ({ voiceState, toggleVoiceInput, fieldLabels, messages }) => {
   const { state, field } = voiceState;
 
@@ -285,14 +288,38 @@ export default function JobProviderApplication({ existingData = null, onSuccess 
       return;
     }
 
-    if (!formData.name || !formData.email || !formData.phoneNumber || !formData.jobTitle || !formData.jobDescription) {
+    let user;
+    try {
+      user = JSON.parse(localStorage.getItem("user"));
+    } catch (error) {
+      user = null;
+    }
+
+    const sessionEmail = user?.email?.trim() || "";
+
+    if (!user?.id || !sessionEmail) {
+      alert(messages.common.sessionMissing);
+      return;
+    }
+
+    if (
+      !formData.name.trim() ||
+      !formData.phoneNumber.trim() ||
+      !formData.jobTitle.trim() ||
+      !formData.jobDescription.trim()
+    ) {
       alert(copy.requiredAlert);
       return;
     }
 
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user?.id) {
-      alert(messages.common.sessionMissing);
+    if (!EMAIL_REGEX.test(sessionEmail)) {
+      alert(copy.invalidEmailAlert);
+      return;
+    }
+
+    const phoneValue = formData.phoneNumber.trim();
+    if (!PHONE_REGEX.test(phoneValue)) {
+      alert(copy.invalidPhoneAlert);
       return;
     }
 
@@ -302,6 +329,8 @@ export default function JobProviderApplication({ existingData = null, onSuccess 
     const { companyLogo, ...dataToSend } = formData;
     const payload = {
       ...dataToSend,
+      email: sessionEmail,
+      phoneNumber: phoneValue,
       user_id: user.id,
       posting_id: existingData?._id || null,
       company_logo: logoPreview || null,
@@ -324,7 +353,7 @@ export default function JobProviderApplication({ existingData = null, onSuccess 
       }
 
       setIsSuccess(true);
-      setFormData(initialFormData);
+      setFormData({ ...initialFormData, email: sessionEmail });
       setLogoPreview(null);
 
       if (onSuccess) {
@@ -340,6 +369,17 @@ export default function JobProviderApplication({ existingData = null, onSuccess 
       alert(messages.common.backendUnavailable);
     }
   };
+
+  useEffect(() => {
+    try {
+      const parsedUser = JSON.parse(localStorage.getItem("user"));
+      if (parsedUser?.email) {
+        setFormData((previous) => ({ ...previous, email: parsedUser.email.trim() }));
+      }
+    } catch (error) {
+      console.error("User session parse error:", error);
+    }
+  }, []);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -526,17 +566,18 @@ export default function JobProviderApplication({ existingData = null, onSuccess 
                     toggleVoiceInput={toggleVoiceInput}
                     voiceButtonTitle={messages.voice.speak}
                   />
-                  <InputField
-                    label={copy.fields.email.label}
-                    field="email"
-                    value={formData.email}
-                    placeholder={copy.fields.email.placeholder}
-                    type="email"
-                    mandatory
-                    handleInputChange={handleInputChange}
-                    toggleVoiceInput={toggleVoiceInput}
-                    voiceButtonTitle={messages.voice.speak}
-                  />
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      {copy.fields.email.label} <span className="text-rose-500">*</span>
+                    </span>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      readOnly
+                      disabled
+                      className="w-full cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-slate-600 outline-none"
+                    />
+                  </label>
                 </div>
                 <div className="mt-6 grid gap-6 md:grid-cols-[1fr_0.9fr]">
                   <InputField

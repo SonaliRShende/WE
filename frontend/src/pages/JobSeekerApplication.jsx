@@ -28,6 +28,9 @@ const initialFormData = {
   preferences: "",
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\d{10}$/;
+
 const VoiceFeedbackModal = ({ voiceState, toggleVoiceInput, fieldLabels, messages }) => {
   const { state, field } = voiceState;
 
@@ -217,7 +220,6 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
         accent: "text-sky-700",
         fields: [
           { field: "name", mandatory: true },
-          { field: "email", type: "email", mandatory: true },
           { field: "contact", type: "tel" },
           { field: "location", mandatory: true },
         ],
@@ -271,14 +273,33 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
       return;
     }
 
-    if (!formData.name || !formData.email || !formData.location) {
+    let user;
+    try {
+      user = JSON.parse(localStorage.getItem("user"));
+    } catch (error) {
+      user = null;
+    }
+
+    const sessionEmail = user?.email?.trim() || "";
+
+    if (!user?.id || !sessionEmail) {
+      alert(messages.common.sessionMissing);
+      return;
+    }
+
+    if (!formData.name.trim() || !formData.location.trim()) {
       alert(copy.requiredAlert);
       return;
     }
 
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user?.id) {
-      alert(messages.common.sessionMissing);
+    if (!EMAIL_REGEX.test(sessionEmail)) {
+      alert(copy.invalidEmailAlert);
+      return;
+    }
+
+    const contactValue = formData.contact.trim();
+    if (contactValue && !PHONE_REGEX.test(contactValue)) {
+      alert(copy.invalidContactAlert);
       return;
     }
 
@@ -288,6 +309,8 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
     const { profilePic, ...dataToSend } = formData;
     const payload = {
       ...dataToSend,
+      email: sessionEmail,
+      contact: contactValue,
       user_id: user.id,
       profile_pic: profilePreview || null,
     };
@@ -318,7 +341,7 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
       }
 
       setIsSuccess(true);
-      setFormData(initialFormData);
+      setFormData({ ...initialFormData, email: sessionEmail });
       setProfilePreview(null);
 
       if (onSuccess) {
@@ -334,6 +357,17 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
       alert(messages.common.backendUnavailable);
     }
   };
+
+  useEffect(() => {
+    try {
+      const parsedUser = JSON.parse(localStorage.getItem("user"));
+      if (parsedUser?.email) {
+        setFormData((previous) => ({ ...previous, email: parsedUser.email.trim() }));
+      }
+    } catch (error) {
+      console.error("User session parse error:", error);
+    }
+  }, []);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -489,23 +523,28 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
               <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/60 p-6">
                 <h2 className="text-2xl font-semibold text-slate-950">{copy.personal}</h2>
                 <div className="mt-6 grid gap-6 md:grid-cols-2">
-                  {sections[0].fields.slice(0, 2).map((config) => {
-                    const fieldCopy = copy.fields[config.field];
-                    return (
-                      <InputField
-                        key={config.field}
-                        label={fieldCopy.label}
-                        field={config.field}
-                        value={formData[config.field]}
-                        placeholder={fieldCopy.placeholder}
-                        type={config.type}
-                        mandatory={config.mandatory}
-                        handleInputChange={handleInputChange}
-                        toggleVoiceInput={toggleVoiceInput}
-                        voiceButtonTitle={messages.voice.speak}
-                      />
-                    );
-                  })}
+                  <InputField
+                    label={copy.fields.name.label}
+                    field="name"
+                    value={formData.name}
+                    placeholder={copy.fields.name.placeholder}
+                    mandatory
+                    handleInputChange={handleInputChange}
+                    toggleVoiceInput={toggleVoiceInput}
+                    voiceButtonTitle={messages.voice.speak}
+                  />
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      {copy.fields.email.label} <span className="text-rose-500">*</span>
+                    </span>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      readOnly
+                      disabled
+                      className="w-full cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-slate-600 outline-none"
+                    />
+                  </label>
                 </div>
                 <div className="mt-6 grid gap-6 md:grid-cols-[0.75fr_1.25fr]">
                   <InputField

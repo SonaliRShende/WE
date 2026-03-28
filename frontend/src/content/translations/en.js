@@ -124,7 +124,9 @@ const en = {
     preferences: "Preferences and constraints",
     submit: "Submit profile",
     update: "Update profile",
-    requiredAlert: "Please fill all mandatory fields: name, email, and location.",
+    requiredAlert: "Please fill all mandatory fields: name, login email, and location.",
+    invalidEmailAlert: "Your login email is invalid. Please log in again.",
+    invalidContactAlert: "Please enter a valid contact number (exactly 10 digits).",
     uploadLabel: "Profile picture",
     fields: {
       name: {
@@ -184,7 +186,9 @@ const en = {
     details: "Job details",
     submit: "Post job opening",
     update: "Update job posting",
-    requiredAlert: "Please fill all mandatory fields: name, email, phone number, job title, and job description.",
+    requiredAlert: "Please fill all mandatory fields: name, login email, phone number, job title, and job description.",
+    invalidEmailAlert: "Your login email is invalid. Please log in again.",
+    invalidPhoneAlert: "Please enter a valid phone number (exactly 10 digits).",
     uploadLabel: "Company logo",
     fields: {
       name: {
