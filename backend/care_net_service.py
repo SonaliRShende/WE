@@ -2,6 +2,7 @@ import os
 import re
 import logging
 from datetime import datetime
+import numpy as np
 
 try:
     from care_net import CARENetRanker
@@ -38,6 +39,20 @@ STRICT_LOCALITY_HINTS = (
     "dont want outside",
     "do not want outside",
 )
+
+CITY_ALIAS_MAP = {
+    "मुंबई": {"mumbai", "bombay"},
+    "mumbai": {"मुंबई", "bombay"},
+    "पुणे": {"pune"},
+    "pune": {"पुणे"},
+    "दिल्ली": {"delhi", "new delhi"},
+    "delhi": {"दिल्ली", "new delhi"},
+    "new delhi": {"delhi", "दिल्ली"},
+    "नाशिक": {"nashik"},
+    "nashik": {"नाशिक"},
+    "नागपूर": {"nagpur"},
+    "nagpur": {"नागपूर"},
+}
 
 
 def _is_demo_mode() -> bool:
@@ -158,6 +173,95 @@ def _is_remote_friendly_job(job_doc):
     return any(keyword in combined for keyword in REMOTE_LOCATION_HINTS)
 
 
+def _expand_city_aliases(city_text):
+    normalized = str(city_text or "").strip().lower()
+    if not normalized:
+        return []
+
+    aliases = {normalized}
+    aliases.update(CITY_ALIAS_MAP.get(normalized, set()))
+    # Keep deterministic order for predictable filtering
+    return [alias for alias in sorted(aliases) if alias]
+
+
+def _location_semantic_match(user_doc, job_doc, threshold=0.45):
+    user_location = user_doc.get("location_embedding")
+    job_location = job_doc.get("jobLocation_embedding")
+
+    if not isinstance(user_location, dict) or not isinstance(job_location, dict):
+        return False
+
+    user_vec = user_location.get("embedding")
+    job_vec = job_location.get("embedding")
+    try:
+        user_arr = np.asarray(user_vec, dtype=float).reshape(-1)
+        job_arr = np.asarray(job_vec, dtype=float).reshape(-1)
+    except Exception:
+        return False
+
+    if user_arr.size == 0 or job_arr.size == 0:
+        return False
+
+    user_norm = float(np.linalg.norm(user_arr))
+    job_norm = float(np.linalg.norm(job_arr))
+    if user_norm == 0.0 or job_norm == 0.0:
+        return False
+
+    similarity = float(np.dot(user_arr, job_arr) / (user_norm * job_norm))
+    return similarity >= threshold
+
+
+def _quick_skill_relevance(user_doc, job_doc):
+    user_vectors = []
+    for item in user_doc.get("skills_embeddings", []):
+        if isinstance(item, dict):
+            vec = item.get("embedding")
+            if isinstance(vec, list) and vec:
+                user_vectors.append(vec)
+
+    qualification = user_doc.get("qualification_embedding")
+    if isinstance(qualification, dict):
+        qvec = qualification.get("embedding")
+        if isinstance(qvec, list) and qvec:
+            user_vectors.append(qvec)
+
+    if not user_vectors:
+        return 0.0
+
+    job_vectors = []
+    for field in ("jobTitle_embedding", "jobCategory_embedding"):
+        value = job_doc.get(field)
+        if isinstance(value, dict):
+            vec = value.get("embedding")
+            if isinstance(vec, list) and vec:
+                job_vectors.append(vec)
+
+    for item in (job_doc.get("job_requirements_embeddings") or [])[:3]:
+        if isinstance(item, dict):
+            vec = item.get("embedding")
+            if isinstance(vec, list) and vec:
+                job_vectors.append(vec)
+
+    if not job_vectors:
+        return 0.0
+
+    try:
+        user_matrix = np.asarray(user_vectors, dtype=float)
+        job_matrix = np.asarray(job_vectors, dtype=float)
+    except Exception:
+        return 0.0
+
+    user_norms = np.linalg.norm(user_matrix, axis=1, keepdims=True)
+    job_norms = np.linalg.norm(job_matrix, axis=1, keepdims=True)
+    if np.any(user_norms == 0.0) or np.any(job_norms == 0.0):
+        return 0.0
+
+    user_matrix = user_matrix / user_norms
+    job_matrix = job_matrix / job_norms
+    sim = np.matmul(user_matrix, job_matrix.T)
+    return float(np.max(sim)) if sim.size else 0.0
+
+
 def _should_enforce_city_filter(user_doc):
     constraints_blob = _get_user_constraints_blob(user_doc)
     return any(keyword in constraints_blob for keyword in STRICT_LOCALITY_HINTS)
@@ -165,6 +269,18 @@ def _should_enforce_city_filter(user_doc):
 
 def _extract_keyword_terms(user_doc):
     terms = []
+    stopwords = {
+        "and",
+        "the",
+        "for",
+        "with",
+        "from",
+        "into",
+        "your",
+        "job",
+        "work",
+        "role",
+    }
 
     for item in user_doc.get("skills_embeddings", []):
         if not isinstance(item, dict):
@@ -175,7 +291,15 @@ def _extract_keyword_terms(user_doc):
         for token in re.split(r"[^a-z0-9+#]+", raw):
             token = token.strip()
             if len(token) >= 3:
+                if token in stopwords:
+                    continue
                 terms.append(token)
+                if token.endswith("ing") and len(token) > 5:
+                    terms.append(token[:-3])
+                if token.endswith("ed") and len(token) > 4:
+                    terms.append(token[:-2])
+                if token.endswith("s") and len(token) > 4:
+                    terms.append(token[:-1])
 
     deduped = []
     seen = set()
@@ -183,7 +307,7 @@ def _extract_keyword_terms(user_doc):
         if token not in seen:
             seen.add(token)
             deduped.append(token)
-        if len(deduped) >= 8:
+        if len(deduped) >= 48:
             break
     return deduped
 
@@ -212,6 +336,7 @@ def _prefilter_jobs_for_user(jp_collection, user_doc):
     }
 
     user_city = _get_user_city(user_doc)
+    user_city_aliases = _expand_city_aliases(user_city)
     enforce_city_filter = bool(user_city) and _should_enforce_city_filter(user_doc)
     demo_mode = _is_demo_mode()
     candidate_limit = int(os.getenv("RECOMMENDATION_CANDIDATE_LIMIT", "12" if demo_mode else "50"))
@@ -223,11 +348,12 @@ def _prefilter_jobs_for_user(jp_collection, user_doc):
     query = {}
     and_conditions = []
 
-    if enforce_city_filter:
+    if enforce_city_filter and user_city_aliases:
+        city_pattern = "|".join(re.escape(alias) for alias in user_city_aliases)
         and_conditions.append(
             {
                 "$or": [
-                    {"jobLocation_text": {"$regex": re.escape(user_city), "$options": "i"}},
+                    {"jobLocation_text": {"$regex": city_pattern, "$options": "i"}},
                     {"jobType_text": {"$regex": "remote|work from home|wfh|home based|anywhere", "$options": "i"}},
                 ]
             }
@@ -255,6 +381,25 @@ def _prefilter_jobs_for_user(jp_collection, user_doc):
         .limit(fetch_cap)
     )
 
+    # Blend with recent jobs so lexical keyword misses do not hide strong semantic matches.
+    if len(jobs) < fetch_cap:
+        recent_jobs = list(
+            jp_collection.find({}, projection=base_projection)
+            .sort("updated_at", -1)
+            .limit(fetch_cap)
+        )
+        merged = []
+        seen = set()
+        for job_doc in jobs + recent_jobs:
+            identity = str(job_doc.get("posting_id") or job_doc.get("_id"))
+            if identity in seen:
+                continue
+            seen.add(identity)
+            merged.append(job_doc)
+            if len(merged) >= fetch_cap:
+                break
+        jobs = merged
+
     if not jobs and query:
         jobs = list(
             jp_collection.find({}, projection=base_projection)
@@ -263,17 +408,22 @@ def _prefilter_jobs_for_user(jp_collection, user_doc):
         )
 
     if not enforce_city_filter:
-        return jobs[:candidate_limit], len(jobs)
+        ranked_jobs = sorted(jobs, key=lambda job_doc: _quick_skill_relevance(user_doc, job_doc), reverse=True)
+        return ranked_jobs[:candidate_limit], len(jobs)
 
     filtered_jobs = []
     for job_doc in jobs:
         job_location_text = str(job_doc.get("jobLocation_text", "")).lower()
-        if user_city in job_location_text or _is_remote_friendly_job(job_doc):
+        city_text_match = any(alias in job_location_text for alias in user_city_aliases)
+        if (
+            city_text_match
+            or _is_remote_friendly_job(job_doc)
+            or _location_semantic_match(user_doc, job_doc)
+        ):
             filtered_jobs.append(job_doc)
-        if len(filtered_jobs) >= candidate_limit:
-            break
 
-    return filtered_jobs, len(jobs)
+    ranked_filtered = sorted(filtered_jobs, key=lambda job_doc: _quick_skill_relevance(user_doc, job_doc), reverse=True)
+    return ranked_filtered[:candidate_limit], len(jobs)
 
 
 def generate_job_recommendations(user_id):

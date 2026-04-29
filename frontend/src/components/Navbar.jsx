@@ -29,7 +29,7 @@ const getInitials = (name) => {
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { messages } = useLocale();
+  const { messages, language } = useLocale();
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -51,7 +51,9 @@ export default function Navbar() {
       }
 
       try {
-        const response = await fetch(buildApiUrl(`/api/notifications/${parsedUser.id}`));
+        const response = await fetch(
+          buildApiUrl(`/api/notifications/${parsedUser.id}`, { lang: language })
+        );
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data.error || "Failed to load notifications");
@@ -64,7 +66,7 @@ export default function Navbar() {
     };
 
     fetchNotifications();
-  }, [location.pathname]);
+  }, [language, location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -143,7 +145,7 @@ export default function Navbar() {
                     setShowDropdown(false);
                   }}
                   className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
-                  title="Notifications"
+                  title={messages.nav.notifications}
                 >
                   <Bell size={18} />
                   {unreadCount > 0 && (
@@ -156,18 +158,18 @@ export default function Navbar() {
                   <div className="absolute right-0 mt-3 w-80 rounded-3xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-900/10">
                     <div className="mb-2 flex items-center justify-between px-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                        Notifications
+                        {messages.nav.notifications}
                       </p>
                       <button
                         type="button"
                         onClick={markAllNotificationsRead}
                         className="text-xs font-semibold text-sky-700 transition hover:text-sky-800"
                       >
-                        Mark all read
+                        {messages.nav.markAllRead}
                       </button>
                     </div>
                     {!notifications.length ? (
-                      <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">No notifications yet.</div>
+                      <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">{messages.nav.noNotifications}</div>
                     ) : (
                       <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
                         {notifications.map((item) => (
@@ -285,7 +287,7 @@ export default function Navbar() {
                 >
                   <span className="inline-flex items-center gap-2">
                     <Bell size={16} />
-                    Notifications
+                    {messages.nav.notifications}
                   </span>
                   {unreadCount > 0 && (
                     <span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold text-white">
@@ -297,17 +299,17 @@ export default function Navbar() {
                 {showNotifications && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-3">
                     <div className="mb-2 flex items-center justify-between">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Notifications</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{messages.nav.notifications}</p>
                       <button
                         type="button"
                         onClick={markAllNotificationsRead}
                         className="text-xs font-semibold text-sky-700"
                       >
-                        Mark all read
+                        {messages.nav.markAllRead}
                       </button>
                     </div>
                     {!notifications.length ? (
-                      <p className="text-sm text-slate-600">No notifications yet.</p>
+                      <p className="text-sm text-slate-600">{messages.nav.noNotifications}</p>
                     ) : (
                       <div className="space-y-2">
                         {notifications.slice(0, 5).map((item) => (

@@ -14,6 +14,18 @@ function InfoField({ label, value, emptyLabel }) {
   );
 }
 
+function formatStatusLabel(messages, status) {
+  const normalizedStatus = String(status || "").toLowerCase();
+  if (!normalizedStatus) {
+    return "";
+  }
+
+  return (
+    messages.common.statusLabels?.[normalizedStatus] ||
+    `${normalizedStatus.charAt(0).toUpperCase()}${normalizedStatus.slice(1)}`
+  );
+}
+
 function ViewApplicationData({ data, onBack, copy, messages }) {
   return (
     <div>
@@ -92,7 +104,7 @@ function UnavailableData({ message, onBack, messages }) {
   );
 }
 
-function ViewJobRecommendations({ userId, onBack, messages }) {
+function ViewJobRecommendations({ userId, onBack, messages, language }) {
   const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState([]);
   const [appliedPostingIds, setAppliedPostingIds] = useState([]);
@@ -100,12 +112,13 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
   const [applyingPostingIds, setApplyingPostingIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [recommendationStatus, setRecommendationStatus] = useState("idle");
   const [page, setPage] = useState(0);
   const perPage = 6;
 
   const handleApply = async ({ postingId, jobId }) => {
     if (!postingId) {
-      alert("Unable to apply because this recommendation has no posting id.");
+      alert(messages.jobSeekerDashboard.missingPostingId);
       return;
     }
 
@@ -128,7 +141,7 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.error || "Failed to apply for this job.");
+        throw new Error(result.error || messages.jobSeekerDashboard.applyFailure);
       }
 
       setAppliedPostingIds((previous) =>
@@ -138,34 +151,101 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
         ...previous,
         [postingId]: previous[postingId] || "applied",
       }));
-      alert(result.message || "Application submitted successfully.");
+      alert(messages.jobSeekerDashboard.applySuccess);
     } catch (applyError) {
       console.error("Error applying to recommended job:", applyError);
-      alert(applyError.message || "Could not submit your application.");
+      alert(messages.jobSeekerDashboard.applyFailure);
     } finally {
       setApplyingPostingIds((previous) => previous.filter((id) => id !== postingId));
     }
   };
 
   useEffect(() => {
+    let isActive = true;
+    let pollTimer = null;
+    const maxPollAttempts = 30;
+    const pollDelayMs = 2000;
+
     const fetchJobRecommendations = async () => {
+      const requestRecommendations = async (attempt = 0) => {
+        let keepLoading = false;
+
+        try {
+          if (attempt === 0) {
+            setLoading(true);
+            setError(null);
+            setRecommendationStatus("idle");
+          }
+
+          const response = await fetch(
+            buildApiUrl(`/api/job-recommendations/${userId}`, { lang: language })
+          );
+          const data = await response.json();
+
+          if (!isActive) {
+            return;
+          }
+
+          const rankedJobs = Array.isArray(data.ranked_jobs) ? data.ranked_jobs : [];
+          const nextStatus = typeof data.status === "string" ? data.status : "ready";
+          setRecommendations(rankedJobs);
+          setAppliedPostingIds(data.applied_posting_ids || []);
+          setApplicationStatusByPosting(data.application_status_by_posting || {});
+          setRecommendationStatus(nextStatus);
+
+          if (nextStatus === "failed" && !rankedJobs.length) {
+            setError(messages.jobSeekerDashboard.recommendationsPreparingFailed);
+            return;
+          }
+
+          const shouldPollAgain =
+            (nextStatus === "queued" || nextStatus === "regenerating") &&
+            !rankedJobs.length &&
+            attempt < maxPollAttempts;
+
+          if (shouldPollAgain) {
+            keepLoading = true;
+            pollTimer = window.setTimeout(() => {
+              requestRecommendations(attempt + 1);
+            }, pollDelayMs);
+          }
+        } catch (fetchError) {
+          console.error("Error fetching recommendations:", fetchError);
+          if (isActive) {
+            setError(messages.jobSeekerDashboard.couldNotLoadRecommendations);
+          }
+        } finally {
+          if (isActive && !keepLoading) {
+            setLoading(false);
+          }
+        }
+      };
+
       try {
-        setLoading(true);
-        const response = await fetch(buildApiUrl(`/api/job-recommendations/${userId}`));
-        const data = await response.json();
-        setRecommendations(data.ranked_jobs || []);
-        setAppliedPostingIds(data.applied_posting_ids || []);
-        setApplicationStatusByPosting(data.application_status_by_posting || {});
-      } catch (fetchError) {
-        console.error("Error fetching recommendations:", fetchError);
-        setError(messages.jobSeekerDashboard.couldNotLoadRecommendations);
-      } finally {
-        setLoading(false);
+        await requestRecommendations();
+      } catch (unexpectedError) {
+        console.error("Unexpected recommendation polling error:", unexpectedError);
+        if (isActive) {
+          setError(messages.jobSeekerDashboard.couldNotLoadRecommendations);
+          setLoading(false);
+        }
       }
     };
 
     fetchJobRecommendations();
-  }, [messages.jobSeekerDashboard.couldNotLoadRecommendations, userId]);
+
+    return () => {
+      isActive = false;
+      if (pollTimer) {
+        window.clearTimeout(pollTimer);
+      }
+    };
+  }, [
+    language,
+    messages.jobSeekerDashboard.couldNotLoadRecommendations,
+    messages.jobSeekerDashboard.recommendationsPreparingFailed,
+    userId,
+  ]);
 
   const currentItems = recommendations.slice(page * perPage, (page + 1) * perPage);
 
@@ -175,6 +255,30 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
 
   if (error) {
     return <p className="text-lg text-rose-600">{error}</p>;
+  }
+
+  if (
+    !recommendations.length &&
+    (recommendationStatus === "queued" || recommendationStatus === "regenerating")
+  ) {
+    return (
+      <div className="rounded-[1.75rem] border border-dashed border-sky-300 bg-sky-50/70 p-8 text-center">
+        <h2 className="text-2xl font-semibold text-slate-950">
+          {messages.jobSeekerDashboard.updatingRecommendationsTitle}
+        </h2>
+        <p className="mt-3 text-base text-slate-600">
+          {messages.jobSeekerDashboard.updatingRecommendationsBody}
+        </p>
+        <button
+          type="button"
+          onClick={onBack}
+          className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-sky-700"
+        >
+          <ArrowLeft size={18} />
+          {messages.common.backToOptions}
+        </button>
+      </div>
+    );
   }
 
   if (!recommendations.length) {
@@ -241,7 +345,7 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
                   <p className="mt-2 text-base text-slate-600">{job.company}</p>
                   {applicationStatus && (
                     <span className="mt-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                      {applicationStatus}
+                      {formatStatusLabel(messages, applicationStatus)}
                     </span>
                   )}
                 </div>
@@ -301,7 +405,13 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
                   onClick={() => handleApply({ postingId, jobId: job.job_id })}
                   className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSelected ? "Selected" : alreadyApplied ? "Applied" : isApplying ? "Applying..." : "Apply"}
+                  {isSelected
+                    ? messages.jobSeekerDashboard.selectedAction
+                    : alreadyApplied
+                      ? messages.jobSeekerDashboard.appliedAction
+                      : isApplying
+                        ? messages.jobSeekerDashboard.applyingAction
+                        : messages.jobSeekerDashboard.applyAction}
                 </button>
               </div>
             </div>
@@ -346,7 +456,7 @@ function ViewJobRecommendations({ userId, onBack, messages }) {
 
 export default function JobSeekerDashboard() {
   const navigate = useNavigate();
-  const { messages } = useLocale();
+  const { messages, language } = useLocale();
   const copy = messages.jobSeekerForm;
   const [applicationData, setApplicationData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -366,7 +476,7 @@ export default function JobSeekerDashboard() {
     const fetchApplicationData = async () => {
       try {
         const response = await fetch(
-          buildApiUrl(`/api/get-job-seeker-application/${userFromStorage.id}`)
+          buildApiUrl(`/api/get-job-seeker-application/${userFromStorage.id}`, { lang: language })
         );
         const result = await response.json();
         if (result.application) {
@@ -380,7 +490,7 @@ export default function JobSeekerDashboard() {
     };
 
     fetchApplicationData();
-  }, [messages.common.sessionMissing, navigate]);
+  }, [language, messages.common.sessionMissing, navigate]);
 
   if (loading) {
     return (
@@ -490,6 +600,7 @@ export default function JobSeekerDashboard() {
                 userId={user.id}
                 onBack={() => setActiveTab("options")}
                 messages={messages}
+                language={language}
               />
             )}
 

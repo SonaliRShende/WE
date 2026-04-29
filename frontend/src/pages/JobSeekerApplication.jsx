@@ -176,7 +176,7 @@ const InputField = ({
 );
 
 export default function JobSeekerApplication({ existingData = null, onSuccess = null }) {
-  const { messages, speechLocale, languageLabel, t } = useLocale();
+  const { messages, speechLocale, language, languageLabel, t } = useLocale();
   const copy = messages.jobSeekerForm;
 
   const [formData, setFormData] = useState(
@@ -313,6 +313,7 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
       contact: contactValue,
       user_id: user.id,
       profile_pic: profilePreview || null,
+      content_language: language,
     };
 
     try {

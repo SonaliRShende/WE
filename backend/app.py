@@ -1,5 +1,6 @@
 import os
 import re
+import hashlib
 import importlib
 import logging
 from flask import Flask, request, jsonify
@@ -65,6 +66,7 @@ applications_collection = db['job_applications']
 users_collection = db['users']
 recommendation_applications_collection = db['recommended_job_applications']
 notifications_collection = db['notifications']
+translation_cache_collection = db['content_translation_cache']
 
 
 # Connect to OpenAI/OpenRouter
@@ -80,6 +82,35 @@ llm_client = OpenAI(
 
 _recommendation_jobs_lock = threading.Lock()
 _recommendation_jobs = {}
+
+SUPPORTED_UI_LANGUAGES = ("en", "hi", "mr")
+TRANSLATABLE_JOB_SEEKER_FIELDS = (
+    "location",
+    "qualification",
+    "skills",
+    "previousJob",
+    "roles",
+    "skillsApplied",
+    "certifications",
+    "preferences",
+)
+TRANSLATABLE_JOB_POSTING_FIELDS = (
+    "jobTitle",
+    "job_title",
+    "jobDescription",
+    "job_description",
+    "experienceRequired",
+    "experience_required",
+    "benefits",
+    "requiredQualifications",
+    "required_qualifications",
+    "jobLocation",
+    "job_location",
+)
+TRANSLATABLE_RECOMMENDATION_FIELDS = (
+    "job_title",
+    "explanation",
+)
 
 
 def normalize_text(text):
@@ -101,6 +132,225 @@ def translate_to_english(text):
     except Exception as e:
         print(f"Translation Error: {e}")
         return text # Fallback to original text if translation fails
+
+
+def _normalize_language_code(value, default=None):
+    code = str(value or "").strip().lower()
+    if not code:
+        return default
+
+    primary_code = (
+        code.split(",")[0]
+        .split(";")[0]
+        .replace("_", "-")
+        .split("-")[0]
+    )
+    return primary_code if primary_code in SUPPORTED_UI_LANGUAGES else default
+
+
+def _get_requested_language():
+    return _normalize_language_code(
+        request.args.get("lang") or request.headers.get("X-UI-Language"),
+        default=None,
+    )
+
+
+def _serialize_entity_id(value):
+    return str(value) if value is not None else "unknown"
+
+
+def _hash_source_text(text):
+    return hashlib.sha256(str(text).encode("utf-8")).hexdigest()
+
+
+def _translate_text_cached(entity_type, entity_id, field_name, text, target_language, source_language=None):
+    text_value = str(text or "")
+    if not text_value.strip():
+        return text
+
+    normalized_target = _normalize_language_code(target_language, default=None)
+    normalized_source = _normalize_language_code(source_language, default=None)
+
+    if not normalized_target:
+        return text_value
+    if normalized_source and normalized_source == normalized_target:
+        return text_value
+
+    entity_id_text = _serialize_entity_id(entity_id)
+    source_hash = _hash_source_text(text_value)
+    cache_key = f"{entity_type}:{entity_id_text}:{field_name}:{normalized_target}:{source_hash}"
+    cache_query = {
+        "cache_key": cache_key,
+        "entity_type": entity_type,
+        "entity_id": entity_id_text,
+        "field_name": field_name,
+        "target_language": normalized_target,
+        "source_hash": source_hash,
+    }
+
+    cached = translation_cache_collection.find_one(cache_query, {"translated_text": 1})
+    if cached and isinstance(cached.get("translated_text"), str) and cached["translated_text"].strip():
+        return cached["translated_text"]
+
+    try:
+        translated_text = GoogleTranslator(
+            source=normalized_source or "auto",
+            target=normalized_target,
+        ).translate(text_value)
+    except Exception as exc:
+        logger.warning(
+            "Translation failed entity_type=%s entity_id=%s field=%s target=%s error=%s",
+            entity_type,
+            entity_id_text,
+            field_name,
+            normalized_target,
+            exc,
+        )
+        return text_value
+
+    translated_text = translated_text or text_value
+    translation_cache_collection.update_one(
+        cache_query,
+        {
+            "$set": {
+                "source_language": normalized_source or "auto",
+                "source_text": text_value,
+                "translated_text": translated_text,
+                "updated_at": datetime.now(),
+            },
+            "$setOnInsert": {"created_at": datetime.now()},
+        },
+        upsert=True,
+    )
+    return translated_text
+
+
+def _collect_translatable_fields(document, field_names):
+    values = {}
+    if not isinstance(document, dict):
+        return values
+
+    for field_name in field_names:
+        value = document.get(field_name)
+        if isinstance(value, str) and value.strip():
+            values[field_name] = value
+    return values
+
+
+def _prefetch_translation_cache(entity_type, entity_id, field_values, source_language=None, target_languages=None):
+    prepared_values = {
+        field_name: value
+        for field_name, value in (field_values or {}).items()
+        if isinstance(value, str) and value.strip()
+    }
+    if not prepared_values:
+        return
+
+    normalized_targets = []
+    for language in target_languages or SUPPORTED_UI_LANGUAGES:
+        normalized = _normalize_language_code(language, default=None)
+        if normalized and normalized not in normalized_targets:
+            normalized_targets.append(normalized)
+
+    def _worker():
+        try:
+            for language in normalized_targets:
+                for field_name, value in prepared_values.items():
+                    field_source_language = "en" if field_name == "explanation" else source_language
+                    _translate_text_cached(
+                        entity_type,
+                        entity_id,
+                        field_name,
+                        value,
+                        language,
+                        source_language=field_source_language,
+                    )
+        except Exception as exc:
+            logger.exception(
+                "Translation prefetch failed entity_type=%s entity_id=%s error=%s",
+                entity_type,
+                _serialize_entity_id(entity_id),
+                exc,
+            )
+
+    threading.Thread(target=_worker, daemon=True).start()
+
+
+def _translate_document_fields(document, entity_type, entity_id, field_names, target_language, source_language=None):
+    if not isinstance(document, dict):
+        return document
+
+    translated_document = dict(document)
+    for field_name in field_names:
+        value = translated_document.get(field_name)
+        if isinstance(value, str) and value.strip():
+            translated_document[field_name] = _translate_text_cached(
+                entity_type,
+                entity_id,
+                field_name,
+                value,
+                target_language,
+                source_language=source_language,
+            )
+    return translated_document
+
+
+def _translate_recommendation_list(ranked_jobs, target_language):
+    translated_jobs = []
+
+    for job in ranked_jobs if isinstance(ranked_jobs, list) else []:
+        if not isinstance(job, dict):
+            translated_jobs.append(job)
+            continue
+
+        translated_job = dict(job)
+        entity_id = job.get("posting_id") or job.get("job_id") or job.get("job_title")
+        for field_name in TRANSLATABLE_RECOMMENDATION_FIELDS:
+            value = translated_job.get(field_name)
+            if isinstance(value, str) and value.strip():
+                translated_job[field_name] = _translate_text_cached(
+                    "job_recommendation",
+                    entity_id,
+                    field_name,
+                    value,
+                    target_language,
+                    source_language="en" if field_name == "explanation" else None,
+                )
+        translated_jobs.append(translated_job)
+
+    return translated_jobs
+
+
+def _prefetch_recommendation_translations(ranked_jobs):
+    prepared_jobs = []
+    for job in ranked_jobs if isinstance(ranked_jobs, list) else []:
+        if not isinstance(job, dict):
+            continue
+        field_values = _collect_translatable_fields(job, TRANSLATABLE_RECOMMENDATION_FIELDS)
+        entity_id = job.get("posting_id") or job.get("job_id") or job.get("job_title")
+        if entity_id and field_values:
+            prepared_jobs.append((entity_id, field_values))
+
+    if not prepared_jobs:
+        return
+
+    def _worker():
+        try:
+            for entity_id, field_values in prepared_jobs:
+                for language in SUPPORTED_UI_LANGUAGES:
+                    for field_name, value in field_values.items():
+                        _translate_text_cached(
+                            "job_recommendation",
+                            entity_id,
+                            field_name,
+                            value,
+                            language,
+                            source_language="en" if field_name == "explanation" else None,
+                        )
+        except Exception as exc:
+            logger.exception("Recommendation translation prefetch failed: %s", exc)
+
+    threading.Thread(target=_worker, daemon=True).start()
 
 
 
@@ -417,10 +667,11 @@ def login_user():
 def submit_job_application():
     try:
         from bson import ObjectId
-        from datetime import datetime
         
         data = request.get_json()
         user_id = data.get('user_id')
+        requested_posting_id = data.get('posting_id')
+        content_language = _normalize_language_code(data.get("content_language"), default=None)
         
         # 1. Validate user_id
         if not user_id:
@@ -481,6 +732,7 @@ def submit_job_application():
             "skills": new_skills,
             "structured_skills": parsed_skills,
             "structured_constraints": parsed_constraints,
+            "content_language": content_language,
             "updated_at": datetime.now()
         }
             
@@ -495,12 +747,10 @@ def submit_job_application():
         )
         
         message = "Application created successfully!" if result.upserted_id else "Application updated successfully!"
-        invalidate_job_seeker_recommendations(user_id)
         
         # Trigger embedding service in background to update embeddings after saving
         try:
             import traceback
-            from datetime import datetime
 
             def run_seeker_embeddings():
                 try:
@@ -511,6 +761,7 @@ def submit_job_application():
                     if result:
                         invalidate_job_seeker_recommendations(user_id)
                         print(f"[{datetime.now()}] Marked recommendations stale for updated seeker")
+                    queue_recommendation_generation(user_id, reason="seeker_profile_updated")
                 except Exception as ee:
                     print(f"[{datetime.now()}] ❌ Background seeker embedding error: {ee}")
                     traceback.print_exc()
@@ -522,6 +773,13 @@ def submit_job_application():
             print(f"[{datetime.now()}] ❌ Could not start embedding_service for seeker: {e}")
             import traceback
             traceback.print_exc()
+
+        _prefetch_translation_cache(
+            "job_seeker_application",
+            user_id,
+            _collect_translatable_fields(update_document, TRANSLATABLE_JOB_SEEKER_FIELDS),
+            source_language=content_language,
+        )
 
         # 6. Return Success with change tracking info
         return jsonify({
@@ -546,11 +804,21 @@ def get_job_seeker_application(user_id):
     """
     try:
         from bson import ObjectId
+        target_language = _get_requested_language()
         
         application = applications_collection.find_one({"user_id": ObjectId(user_id)})
         
         if not application:
             return jsonify({"application": None}), 200
+
+        application = _translate_document_fields(
+            application,
+            "job_seeker_application",
+            user_id,
+            TRANSLATABLE_JOB_SEEKER_FIELDS,
+            target_language,
+            source_language=application.get("content_language"),
+        )
         
         # Convert ObjectIds to strings for JSON serialization
         application['_id'] = str(application['_id'])
@@ -565,6 +833,7 @@ def get_job_seeker_application(user_id):
 @app.route('/api/provider-seeker-profile', methods=['GET'])
 def get_provider_safe_seeker_profile():
     try:
+        target_language = _get_requested_language()
         provider_user_id = request.args.get("provider_user_id")
         seeker_user_id = request.args.get("seeker_user_id")
         posting_id = request.args.get("posting_id")
@@ -601,11 +870,21 @@ def get_provider_safe_seeker_profile():
             "certifications": 1,
             "portfolio": 1,
             "user_id": 1,
+            "content_language": 1,
         }
 
         application = applications_collection.find_one({"user_id": seeker_id_obj}, projection=projection)
         if not application:
             return jsonify({"application": None}), 200
+
+        application = _translate_document_fields(
+            application,
+            "job_seeker_application",
+            seeker_user_id,
+            TRANSLATABLE_JOB_SEEKER_FIELDS,
+            target_language,
+            source_language=application.get("content_language"),
+        )
 
         if "_id" in application:
             application["_id"] = str(application["_id"])
@@ -704,7 +983,7 @@ def get_latest_recommendation_source_timestamp():
         return None
 
 
-def _serialize_recommendation_doc(result):
+def _serialize_recommendation_doc(result, target_language=None):
     response_data = {
         "ranked_jobs": [],
     }
@@ -718,7 +997,14 @@ def _serialize_recommendation_doc(result):
         response_data['_id'] = str(result['_id'])
 
     ranked_jobs = result.get('ranked_jobs', [])
-    response_data['ranked_jobs'] = ranked_jobs if isinstance(ranked_jobs, list) else []
+    if isinstance(ranked_jobs, list):
+        response_data['ranked_jobs'] = (
+            _translate_recommendation_list(ranked_jobs, target_language)
+            if target_language
+            else ranked_jobs
+        )
+    else:
+        response_data['ranked_jobs'] = []
 
     if 'generated_at' in result and result['generated_at']:
         value = result['generated_at']
@@ -830,6 +1116,7 @@ def _run_recommendation_job(user_id, reason="manual"):
         from care_net_service import generate_job_recommendations
 
         ranked_jobs = generate_job_recommendations(user_id)
+        _prefetch_recommendation_translations(ranked_jobs)
         _set_recommendation_job_status(
             user_id,
             status="completed",
@@ -875,6 +1162,7 @@ def get_job_recommendations(user_id):
     try:
         from bson import ObjectId
         from datetime import datetime, timedelta
+        target_language = _get_requested_language()
         
         # Convert string user_id to ObjectId for DB lookups
         try:
@@ -915,7 +1203,7 @@ def get_job_recommendations(user_id):
         application_status_by_posting = _get_application_status_by_posting_for_seeker(user_id_obj)
 
         if existing_result:
-            response_data = _serialize_recommendation_doc(existing_result)
+            response_data = _serialize_recommendation_doc(existing_result, target_language=target_language)
             response_data["status"] = "regenerating" if should_refresh else "ready"
             response_data["job_state"] = job_state
             response_data["applied_posting_ids"] = applied_posting_ids
@@ -981,11 +1269,19 @@ def generate_embeddings_for_user(user_id):
         from bson import ObjectId
         from datetime import datetime
 
+        try:
+            ObjectId(user_id)
+        except Exception:
+            return jsonify({"error": f"Invalid user_id format: {user_id}"}), 400
+
         # Run embedding_service in a background thread to avoid blocking the request
         def run_embeddings():
             try:
                 embedding_service = importlib.import_module("embedding_service")
-                embedding_service.embed_specific_job_seeker(user_id)
+                result = embedding_service.embed_specific_job_seeker(user_id)
+                if result:
+                    invalidate_job_seeker_recommendations(user_id)
+                queue_recommendation_generation(user_id, reason="manual_embedding_refresh")
             except Exception as ee:
                 print(f"Background embedding error: {ee}")
 
@@ -1009,6 +1305,8 @@ def submit_job_posting():
         
         data = request.get_json()
         user_id = data.get('user_id')
+        requested_posting_id = data.get('posting_id')
+        content_language = _normalize_language_code(data.get("content_language"), default=None)
         
         if not user_id:
             return jsonify({"error": "User ID required"}), 401
@@ -1019,7 +1317,15 @@ def submit_job_posting():
         # Check if existing job posting exists
         db_instance = mongo_client['skill_constraint_db']
         job_postings_collection = db_instance['job_postings']
-        existing_posting = job_postings_collection.find_one({"user_id": ObjectId(user_id)})
+        existing_posting = None
+        posting_query = {"user_id": ObjectId(user_id)}
+        if requested_posting_id:
+            try:
+                posting_query = {"_id": ObjectId(requested_posting_id), "user_id": ObjectId(user_id)}
+            except Exception:
+                return jsonify({"error": "Invalid posting_id format"}), 400
+
+        existing_posting = job_postings_collection.find_one(posting_query)
         
         existing_job_desc = existing_posting.get('jobDescription', '') if existing_posting else ''
         existing_qualif = existing_posting.get('requiredQualifications', '') if existing_posting else ''
@@ -1085,11 +1391,12 @@ def submit_job_posting():
             "structured_job_requirements": parsed_requirements,
             "structured_qualifications": parsed_qualifications,
             "structured_benefits": parsed_benefits,
+            "content_language": content_language,
             "updated_at": datetime.now()
         }
         
-        result = job_postings_collection.update_one(
-            {"user_id": ObjectId(user_id)},
+        write_result = job_postings_collection.update_one(
+            posting_query,
             {
                 "$set": job_posting_document,
                 "$setOnInsert": {"created_at": datetime.now()}
@@ -1097,7 +1404,7 @@ def submit_job_posting():
             upsert=True
         )
         
-        message = "Job posting created!" if result.upserted_id else "Job posting updated!"
+        message = "Job posting created!" if write_result.upserted_id else "Job posting updated!"
         embedding_refreshed = False
         
         # Refresh posting embeddings immediately when possible, then fall back to a background retry.
@@ -1109,9 +1416,17 @@ def submit_job_posting():
                 try:
                     print(f"[{datetime.now()}] Starting job posting embedding for user_id: {user_id}")
                     embedding_service = importlib.import_module("embedding_service")
-                    result = embedding_service.embed_specific_job_posting(user_id)
-                    print(f"[{datetime.now()}] Job posting embedding completed. Result: {result}")
-                    if result:
+                    target_posting_id = (
+                        existing_posting.get("_id")
+                        if existing_posting and existing_posting.get("_id") is not None
+                        else write_result.upserted_id
+                    )
+                    embedding_success = embedding_service.embed_specific_job_posting(
+                        user_id=user_id,
+                        posting_id=target_posting_id,
+                    )
+                    print(f"[{datetime.now()}] Job posting embedding completed. Result: {embedding_success}")
+                    if embedding_success:
                         # AFTER embedding is done, invalidate all job seeker recommendations
                         # so they see the new job posting in their next query
                         invalidate_all_job_seeker_recommendations()
@@ -1127,6 +1442,20 @@ def submit_job_posting():
             print(f"[{datetime.now()}] ❌ Could not start embedding_service for posting: {e}")
             import traceback
             traceback.print_exc()
+
+        posting_entity_id = (
+            existing_posting.get("_id")
+            if existing_posting and existing_posting.get("_id") is not None
+            else write_result.upserted_id
+            if write_result.upserted_id is not None
+            else user_id
+        )
+        _prefetch_translation_cache(
+            "job_posting",
+            posting_entity_id,
+            _collect_translatable_fields(job_posting_document, TRANSLATABLE_JOB_POSTING_FIELDS),
+            source_language=content_language,
+        )
 
         return jsonify({
             "message": message,
@@ -1151,6 +1480,7 @@ def get_job_posting(user_id):
     """Fetch job provider's posting"""
     try:
         from bson import ObjectId
+        target_language = _get_requested_language()
         
         db_instance = mongo_client['skill_constraint_db']
         job_postings_collection = db_instance['job_postings']
@@ -1159,6 +1489,15 @@ def get_job_posting(user_id):
         
         if not posting:
             return jsonify({"posting": None}), 200
+
+        posting = _translate_document_fields(
+            posting,
+            "job_posting",
+            posting.get("_id") or posting.get("posting_id") or user_id,
+            TRANSLATABLE_JOB_POSTING_FIELDS,
+            target_language,
+            source_language=posting.get("content_language"),
+        )
         
         posting['_id'] = str(posting['_id'])
         posting['user_id'] = str(posting['user_id'])
@@ -1174,6 +1513,7 @@ def get_job_posting_by_id(job_id):
     """Fetch job posting details by job ID (for job seekers to view recommendations)"""
     try:
         from bson import ObjectId
+        target_language = _get_requested_language()
         
         db_instance = mongo_client['skill_constraint_db']
         jp_embeddings_collection = db_instance['JP_embeddings']
@@ -1205,6 +1545,14 @@ def get_job_posting_by_id(job_id):
             embedding_posting = jp_embeddings_collection.find_one({"posting_id": job_id})
 
         if direct_posting:
+            direct_posting = _translate_document_fields(
+                direct_posting,
+                "job_posting",
+                direct_posting.get("_id") or direct_posting.get("posting_id") or job_id,
+                TRANSLATABLE_JOB_POSTING_FIELDS,
+                target_language,
+                source_language=direct_posting.get("content_language"),
+            )
             return jsonify({"posting": serialize_posting(direct_posting)}), 200
 
         if not embedding_posting:
@@ -1222,6 +1570,14 @@ def get_job_posting_by_id(job_id):
                 linked_posting = None
 
         resolved_posting = linked_posting or embedding_posting
+        resolved_posting = _translate_document_fields(
+            resolved_posting,
+            "job_posting",
+            resolved_posting.get("_id") or resolved_posting.get("posting_id") or job_id,
+            TRANSLATABLE_JOB_POSTING_FIELDS,
+            target_language,
+            source_language=resolved_posting.get("content_language"),
+        )
 
         return jsonify({"posting": serialize_posting(resolved_posting)}), 200
     except Exception as e:
@@ -1508,6 +1864,7 @@ def select_applied_candidate():
 @app.route('/api/notifications/<user_id>', methods=['GET'])
 def get_notifications(user_id):
     try:
+        target_language = _get_requested_language()
         user_id_obj = _object_id_from_value(user_id, "user_id")
         docs = list(
             notifications_collection.find({"$or": [{"user_id": user_id_obj}, {"user_id": str(user_id_obj)}]})
@@ -1518,11 +1875,21 @@ def get_notifications(user_id):
         notifications = []
         for doc in docs:
             created_at = doc.get("created_at")
+            message = doc.get("message", "")
+            if target_language and message:
+                message = _translate_text_cached(
+                    "notification",
+                    doc.get("_id"),
+                    "message",
+                    message,
+                    target_language,
+                    source_language="en",
+                )
             notifications.append(
                 {
                     "id": str(doc.get("_id")),
                     "type": doc.get("type", "notification"),
-                    "message": doc.get("message", ""),
+                    "message": message,
                     "created_at": created_at.isoformat() if hasattr(created_at, "isoformat") else str(created_at),
                     "metadata": doc.get("metadata", {}),
                     "is_read": bool(doc.get("is_read", False)),

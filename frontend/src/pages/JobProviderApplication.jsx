@@ -198,7 +198,7 @@ const InputField = ({
 );
 
 export default function JobProviderApplication({ existingData = null, onSuccess = null }) {
-  const { messages, speechLocale, languageLabel, t } = useLocale();
+  const { messages, speechLocale, language, languageLabel, t } = useLocale();
   const copy = messages.jobProviderForm;
 
   const [formData, setFormData] = useState(
@@ -334,6 +334,7 @@ export default function JobProviderApplication({ existingData = null, onSuccess 
       user_id: user.id,
       posting_id: existingData?._id || null,
       company_logo: logoPreview || null,
+      content_language: language,
     };
 
     try {

@@ -100,7 +100,7 @@ export default function ViewJobPostingPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { jobId } = useParams();
-  const { messages } = useLocale();
+  const { messages, language } = useLocale();
   const copy = messages.jobProviderForm;
   const [postingData, setPostingData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -121,7 +121,7 @@ export default function ViewJobPostingPage() {
 
         for (const candidateId of candidateIds) {
           const response = await fetch(
-            buildApiUrl(`/api/get-job-posting-by-id/${candidateId}`)
+            buildApiUrl(`/api/get-job-posting-by-id/${candidateId}`, { lang: language })
           );
 
           if (!response.ok) {
@@ -163,7 +163,7 @@ export default function ViewJobPostingPage() {
     return () => {
       isActive = false;
     };
-  }, [candidateIdsKey, messages.viewPages.couldNotLoadJob, messages.viewPages.retryJob]);
+  }, [candidateIdsKey, language, messages.viewPages.couldNotLoadJob, messages.viewPages.retryJob]);
 
   return (
     <>

@@ -17,7 +17,10 @@ const en = {
     logout: "Log out",
     language: "Language",
     signedInAs: "Signed in as",
-    menu: "Menu"
+    menu: "Menu",
+    notifications: "Notifications",
+    markAllRead: "Mark all read",
+    noNotifications: "No notifications yet."
   },
   common: {
     loading: "Loading...",
@@ -37,7 +40,11 @@ const en = {
     sessionMissing: "User session not found. Please log in again.",
     voiceStartError: "We could not start the microphone. It may already be in use. Please try again.",
     voiceWait: "Please wait for voice input to finish processing or stop the current recording first.",
-    fieldPrefix: "Field"
+    fieldPrefix: "Field",
+    statusLabels: {
+      applied: "Applied",
+      selected: "Selected"
+    }
   },
   footer: {
     quickLinks: "Quick links",
@@ -302,12 +309,22 @@ const en = {
     recommendationCount: ({ count }) => `${count} role(s) found for your profile`,
     noMatchesTitle: "No recommended jobs yet.",
     noMatchesBody: "Add more complete profile details to improve your recommendations.",
+    updatingRecommendationsTitle: "Your recommendations are being refreshed.",
+    updatingRecommendationsBody: "We are rebuilding matches for your updated profile. Please check back in a moment.",
     overallMatch: "Overall match",
     skillsMatch: "Skills match",
     constraintsMatch: "Preference match",
     explanation: "Match insights",
     loadingRecommendations: "Loading recommendations...",
-    couldNotLoadRecommendations: "Could not load recommendations. Please try again."
+    couldNotLoadRecommendations: "Could not load recommendations. Please try again.",
+    recommendationsPreparingFailed: "We could not refresh recommendations yet. Please try again in a moment.",
+    missingPostingId: "Unable to apply because this recommendation has no posting id.",
+    applyAction: "Apply",
+    applyingAction: "Applying...",
+    appliedAction: "Applied",
+    selectedAction: "Selected",
+    applySuccess: "Application submitted successfully.",
+    applyFailure: "Could not submit your application."
   },
   jobProviderDashboard: {
     title: "Employer dashboard",
@@ -329,7 +346,15 @@ const en = {
     noCandidates: "No matching candidates found yet.",
     loadingCandidates: "Loading matching candidates...",
     couldNotLoadCandidates: "Could not load matching candidates. Please try again.",
-    clickProfile: "Open candidate profile"
+    clickProfile: "Open candidate profile",
+    appliedCandidatesTitle: "Applied candidates",
+    appliedCandidatesCount: ({ count }) => `${count} candidate(s) applied and are ranked for this role.`,
+    statusLabel: "Status",
+    selectCandidate: "Select candidate",
+    selectingCandidate: "Selecting...",
+    selectCandidateSuccess: "Candidate selected successfully.",
+    selectCandidateFailure: "Could not select candidate.",
+    missingCandidateIdentifiers: "Missing candidate or posting id."
   },
   //check
   viewPages: {

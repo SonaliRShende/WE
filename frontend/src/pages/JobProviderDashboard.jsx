@@ -15,6 +15,18 @@ function InfoField({ label, value, emptyLabel }) {
   );
 }
 
+function formatStatusLabel(messages, status) {
+  const normalizedStatus = String(status || "").toLowerCase();
+  if (!normalizedStatus) {
+    return "";
+  }
+
+  return (
+    messages.common.statusLabels?.[normalizedStatus] ||
+    `${normalizedStatus.charAt(0).toUpperCase()}${normalizedStatus.slice(1)}`
+  );
+}
+
 function ViewJobPosting({ data, onBack, copy, messages }) {
   return (
     <div>
@@ -92,7 +104,7 @@ function UnavailableData({ message, onBack, messages }) {
   );
 }
 
-function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, messages }) {
+function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, messages, language }) {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [selectingCandidateIds, setSelectingCandidateIds] = useState([]);
@@ -103,7 +115,7 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
 
   const handleSelectCandidate = async (candidate) => {
     if (!candidate?.seeker_id || !candidate?.posting_id) {
-      alert("Missing candidate or posting id.");
+      alert(messages.jobProviderDashboard.missingCandidateIdentifiers);
       return;
     }
 
@@ -123,7 +135,7 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.error || "Failed to select candidate.");
+        throw new Error(result.error || messages.jobProviderDashboard.selectCandidateFailure);
       }
 
       setApplications((previous) =>
@@ -134,10 +146,10 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
         )
       );
 
-      alert(result.message || "Candidate selected successfully.");
+      alert(messages.jobProviderDashboard.selectCandidateSuccess);
     } catch (selectionError) {
       console.error("Error selecting candidate:", selectionError);
-      alert(selectionError.message || "Could not select candidate.");
+      alert(messages.jobProviderDashboard.selectCandidateFailure);
     } finally {
       setSelectingCandidateIds((previous) => previous.filter((id) => id !== key));
     }
@@ -153,7 +165,9 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
       try {
         setLoading(true);
         const query = postingId ? `?posting_id=${encodeURIComponent(postingId)}` : "";
-        const response = await fetch(buildApiUrl(`/api/matching-job-seekers/${userId}${query}`));
+        const response = await fetch(
+          buildApiUrl(`/api/matching-job-seekers/${userId}${query}`, { lang: language })
+        );
         const data = await response.json();
         setApplications(data.matches || []);
       } catch (fetchError) {
@@ -165,7 +179,7 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
     };
 
     fetchApplications();
-  }, [hasJobPosting, messages.jobProviderDashboard.couldNotLoadCandidates, postingId, userId]);
+  }, [hasJobPosting, language, messages.jobProviderDashboard.couldNotLoadCandidates, postingId, userId]);
 
   if (!hasJobPosting) {
     return (
@@ -216,9 +230,11 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
         {messages.common.backToOptions}
       </button>
 
-      <h2 className="mt-6 text-3xl font-semibold text-slate-950">Applied candidates</h2>
+      <h2 className="mt-6 text-3xl font-semibold text-slate-950">
+        {messages.jobProviderDashboard.appliedCandidatesTitle}
+      </h2>
       <p className="mt-2 text-base text-slate-600">
-        {applications.length} candidate(s) applied and are ranked for this role.
+        {messages.jobProviderDashboard.appliedCandidatesCount({ count: applications.length })}
       </p>
 
       <div className="mt-8 space-y-5">
@@ -233,7 +249,7 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
                 <p className="mt-2 text-base text-slate-600">{seeker.seeker_email}</p>
                 {seeker.status && (
                   <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                    Status: {String(seeker.status).charAt(0).toUpperCase() + String(seeker.status).slice(1)}
+                    {messages.jobProviderDashboard.statusLabel}: {formatStatusLabel(messages, seeker.status)}
                   </p>
                 )}
               </div>
@@ -264,10 +280,10 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
                 className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {seeker.status === "selected"
-                  ? "Selected"
+                  ? messages.common.statusLabels.selected
                   : selectingCandidateIds.includes(`${seeker.seeker_id}:${seeker.posting_id}`)
-                    ? "Selecting..."
-                    : "Select Candidate"}
+                    ? messages.jobProviderDashboard.selectingCandidate
+                    : messages.jobProviderDashboard.selectCandidate}
               </button>
             </div>
           </div>
@@ -311,7 +327,7 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
 
 export default function JobProviderDashboard() {
   const navigate = useNavigate();
-  const { messages } = useLocale();
+  const { messages, language } = useLocale();
   const copy = messages.jobProviderForm;
   const [jobPostingData, setJobPostingData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -330,7 +346,9 @@ export default function JobProviderDashboard() {
 
     const fetchJobPostingData = async () => {
       try {
-        const response = await fetch(buildApiUrl(`/api/get-job-posting/${userFromStorage.id}`));
+        const response = await fetch(
+          buildApiUrl(`/api/get-job-posting/${userFromStorage.id}`, { lang: language })
+        );
         const result = await response.json();
         if (result.posting) {
           setJobPostingData(result.posting);
@@ -343,7 +361,7 @@ export default function JobProviderDashboard() {
     };
 
     fetchJobPostingData();
-  }, [messages.common.sessionMissing, navigate]);
+  }, [language, messages.common.sessionMissing, navigate]);
 
   if (loading) {
     return (
@@ -455,6 +473,7 @@ export default function JobProviderDashboard() {
                 onBack={() => setActiveTab("options")}
                 hasJobPosting={!!jobPostingData}
                 messages={messages}
+                language={language}
               />
             )}
 

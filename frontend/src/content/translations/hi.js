@@ -17,7 +17,10 @@ const hi = {
     logout: "लॉग आउट",
     language: "भाषा",
     signedInAs: "इस रूप में लॉग इन",
-    menu: "मेन्यू"
+    menu: "मेन्यू",
+    notifications: "सूचनाएँ",
+    markAllRead: "सभी को पढ़ा हुआ चिह्नित करें",
+    noNotifications: "अभी तक कोई सूचना नहीं है।"
   },
   common: {
     loading: "लोड हो रहा है...",
@@ -37,7 +40,11 @@ const hi = {
     sessionMissing: "यूज़र सेशन नहीं मिला। कृपया फिर से लॉग इन करें।",
     voiceStartError: "माइक्रोफ़ोन शुरू नहीं हो सका। हो सकता है यह पहले से उपयोग में हो। कृपया फिर से प्रयास करें।",
     voiceWait: "कृपया वॉइस इनपुट की प्रक्रिया पूरी होने तक प्रतीक्षा करें या पहले वर्तमान रिकॉर्डिंग रोकें।",
-    fieldPrefix: "फ़ील्ड"
+    fieldPrefix: "फ़ील्ड",
+    statusLabels: {
+      applied: "आवेदन किया",
+      selected: "चयनित"
+    }
   },
   footer: {
     quickLinks: "त्वरित लिंक",
@@ -303,12 +310,22 @@ const hi = {
     recommendationCount: ({ count }) => `आपके प्रोफ़ाइल के लिए ${count} भूमिका मिली`,
     noMatchesTitle: "अभी तक कोई अनुशंसित नौकरी नहीं है।",
     noMatchesBody: "अनुशंसाओं को बेहतर बनाने के लिए अधिक पूर्ण प्रोफ़ाइल विवरण जोड़ें।",
+    updatingRecommendationsTitle: "आपकी अनुशंसाएँ फिर से तैयार की जा रही हैं।",
+    updatingRecommendationsBody: "आपकी अपडेट की गई प्रोफ़ाइल के लिए नए मैच बनाए जा रहे हैं। कृपया थोड़ी देर बाद फिर देखें।",
     overallMatch: "कुल मिलान",
     skillsMatch: "कौशल मिलान",
     constraintsMatch: "प्राथमिकता मिलान",
     explanation: "मिलान संबंधी जानकारी",
     loadingRecommendations: "अनुशंसाएँ लोड हो रही हैं...",
-    couldNotLoadRecommendations: "अनुशंसाएँ लोड नहीं हो सकीं। कृपया फिर से प्रयास करें।"
+    couldNotLoadRecommendations: "अनुशंसाएँ लोड नहीं हो सकीं। कृपया फिर से प्रयास करें।",
+    recommendationsPreparingFailed: "हम अभी अनुशंसाएँ रीफ़्रेश नहीं कर सके। कृपया थोड़ी देर बाद फिर प्रयास करें।",
+    missingPostingId: "इस अनुशंसा पर आवेदन नहीं किया जा सकता क्योंकि इसमें posting id नहीं है।",
+    applyAction: "आवेदन करें",
+    applyingAction: "आवेदन किया जा रहा है...",
+    appliedAction: "आवेदन किया",
+    selectedAction: "चयनित",
+    applySuccess: "आवेदन सफलतापूर्वक भेज दिया गया।",
+    applyFailure: "आपका आवेदन जमा नहीं हो सका।"
   },
   jobProviderDashboard: {
     title: "नियोक्ता डैशबोर्ड",
@@ -330,7 +347,15 @@ const hi = {
     noCandidates: "अभी तक कोई उपयुक्त उम्मीदवार नहीं मिला।",
     loadingCandidates: "मिलान वाले उम्मीदवार लोड हो रहे हैं...",
     couldNotLoadCandidates: "मिलान वाले उम्मीदवार लोड नहीं हो सके। कृपया फिर से प्रयास करें।",
-    clickProfile: "उम्मीदवार प्रोफ़ाइल खोलें"
+    clickProfile: "उम्मीदवार प्रोफ़ाइल खोलें",
+    appliedCandidatesTitle: "आवेदन करने वाले उम्मीदवार",
+    appliedCandidatesCount: ({ count }) => `इस भूमिका के लिए ${count} उम्मीदवारों ने आवेदन किया है और उनकी रैंकिंग की गई है।`,
+    statusLabel: "स्थिति",
+    selectCandidate: "उम्मीदवार चुनें",
+    selectingCandidate: "चयन किया जा रहा है...",
+    selectCandidateSuccess: "उम्मीदवार सफलतापूर्वक चुना गया।",
+    selectCandidateFailure: "उम्मीदवार का चयन नहीं हो सका।",
+    missingCandidateIdentifiers: "उम्मीदवार या posting id नहीं मिली।"
   },
   viewPages: {
     seekerTitle: "जॉब सीकर प्रोफ़ाइल",

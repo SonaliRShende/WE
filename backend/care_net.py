@@ -121,6 +121,7 @@ class CARENetRanker:
 
     def rank_jobs(self, user_doc: Dict[str, Any], job_docs: Sequence[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
         ranked: List[Dict[str, Any]] = []
+        scored_results: List[Dict[str, Any]] = []
         rejected_by_skill_gate = 0
         low_skill_confidence = 0
         user_skill_nodes = self._extract_user_skill_nodes(user_doc)
@@ -141,11 +142,16 @@ class CARENetRanker:
                 user_skill_nodes=user_skill_nodes,
                 constraint_nodes=constraint_nodes,
             )
+            scored_results.append(result)
             if result["skill_gate_passed"]:
                 ranked.append(result)
             else:
                 rejected_by_skill_gate += 1
                 low_skill_confidence += 1
+
+        if not ranked and scored_results:
+            scored_results.sort(key=lambda item: item["job_score"], reverse=True)
+            ranked = scored_results[:5]
 
         ranked.sort(key=lambda item: item["job_score"], reverse=True)
         return ranked, {"rejected_by_skill_gate": rejected_by_skill_gate, "low_skill_confidence": low_skill_confidence}

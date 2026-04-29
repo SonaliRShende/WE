@@ -87,7 +87,7 @@ export default function ViewJobSeekerProfilePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { seekerId } = useParams();
-  const { messages } = useLocale();
+  const { messages, language } = useLocale();
   const copy = messages.jobSeekerForm;
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -109,7 +109,8 @@ export default function ViewJobSeekerProfilePage() {
         }
 
         const endpoint = buildApiUrl(
-          `/api/provider-seeker-profile?provider_user_id=${encodeURIComponent(providerUserId)}&seeker_user_id=${encodeURIComponent(seekerId)}${postingId ? `&posting_id=${encodeURIComponent(postingId)}` : ""}`
+          `/api/provider-seeker-profile?provider_user_id=${encodeURIComponent(providerUserId)}&seeker_user_id=${encodeURIComponent(seekerId)}${postingId ? `&posting_id=${encodeURIComponent(postingId)}` : ""}`,
+          { lang: language }
         );
         const response = await fetch(
           endpoint
@@ -129,7 +130,7 @@ export default function ViewJobSeekerProfilePage() {
     };
 
     fetchSeekerProfile();
-  }, [location.search, messages.common.sessionMissing, messages.viewPages.couldNotLoadProfile, messages.viewPages.retryProfile, seekerId]);
+  }, [language, location.search, messages.common.sessionMissing, messages.viewPages.couldNotLoadProfile, messages.viewPages.retryProfile, seekerId]);
 
   return (
     <>

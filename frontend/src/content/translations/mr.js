@@ -17,7 +17,10 @@ const mr = {
     logout: "लॉग आउट",
     language: "भाषा",
     signedInAs: "लॉग इन केलेला वापरकर्ता",
-    menu: "मेन्यू"
+    menu: "मेन्यू",
+    notifications: "सूचना",
+    markAllRead: "सर्व वाचलेले चिन्हांकित करा",
+    noNotifications: "अजून कोणतीही सूचना नाही."
   },
   common: {
     loading: "लोड होत आहे...",
@@ -37,7 +40,11 @@ const mr = {
     sessionMissing: "वापरकर्ता सत्र सापडले नाही. कृपया पुन्हा लॉग इन करा.",
     voiceStartError: "मायक्रोफोन सुरू करता आला नाही. तो कदाचित आधीपासून वापरात असेल. कृपया पुन्हा प्रयत्न करा.",
     voiceWait: "कृपया आवाज इनपुट प्रक्रिया पूर्ण होईपर्यंत थांबा किंवा सध्याचे रेकॉर्डिंग आधी थांबवा.",
-    fieldPrefix: "फील्ड"
+    fieldPrefix: "फील्ड",
+    statusLabels: {
+      applied: "अर्ज केला",
+      selected: "निवडले"
+    }
   },
   footer: {
     quickLinks: "जलद दुवे",
@@ -303,12 +310,22 @@ const mr = {
     recommendationCount: ({ count }) => `तुमच्या प्रोफाइलसाठी ${count} भूमिका सापडल्या`,
     noMatchesTitle: "अजून शिफारस केलेल्या नोकऱ्या नाहीत.",
     noMatchesBody: "शिफारसी सुधारण्यासाठी अधिक संपूर्ण प्रोफाइल तपशील जोडा.",
+    updatingRecommendationsTitle: "तुमच्या शिफारसी पुन्हा तयार केल्या जात आहेत.",
+    updatingRecommendationsBody: "तुमच्या अद्ययावत प्रोफाइलसाठी नवीन जुळण्या तयार होत आहेत. कृपया थोड्या वेळाने पुन्हा पाहा.",
     overallMatch: "एकूण जुळण",
     skillsMatch: "कौशल्य जुळण",
     constraintsMatch: "पसंती जुळण",
     explanation: "जुळणीविषयक माहिती",
     loadingRecommendations: "शिफारसी लोड होत आहेत...",
-    couldNotLoadRecommendations: "शिफारसी लोड करता आल्या नाहीत. कृपया पुन्हा प्रयत्न करा."
+    couldNotLoadRecommendations: "शिफारसी लोड करता आल्या नाहीत. कृपया पुन्हा प्रयत्न करा.",
+    recommendationsPreparingFailed: "आम्हाला शिफारसी लगेच रीफ्रेश करता आल्या नाहीत. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.",
+    missingPostingId: "या शिफारसीवर अर्ज करता येत नाही कारण यात posting id नाही.",
+    applyAction: "अर्ज करा",
+    applyingAction: "अर्ज केला जात आहे...",
+    appliedAction: "अर्ज केला",
+    selectedAction: "निवडले",
+    applySuccess: "अर्ज यशस्वीरीत्या सबमिट झाला.",
+    applyFailure: "तुमचा अर्ज सबमिट करता आला नाही."
   },
   jobProviderDashboard: {
     title: "नियोक्ता डॅशबोर्ड",
@@ -330,7 +347,15 @@ const mr = {
     noCandidates: "अजून जुळणारे उमेदवार सापडले नाहीत.",
     loadingCandidates: "जुळणारे उमेदवार लोड होत आहेत...",
     couldNotLoadCandidates: "जुळणारे उमेदवार लोड करता आले नाहीत. कृपया पुन्हा प्रयत्न करा.",
-    clickProfile: "उमेदवार प्रोफाइल उघडा"
+    clickProfile: "उमेदवार प्रोफाइल उघडा",
+    appliedCandidatesTitle: "अर्ज केलेले उमेदवार",
+    appliedCandidatesCount: ({ count }) => `या भूमिकेसाठी ${count} उमेदवारांनी अर्ज केला आहे आणि त्यांची क्रमवारी लावली आहे.`,
+    statusLabel: "स्थिती",
+    selectCandidate: "उमेदवार निवडा",
+    selectingCandidate: "निवड केली जात आहे...",
+    selectCandidateSuccess: "उमेदवार यशस्वीरीत्या निवडला गेला.",
+    selectCandidateFailure: "उमेदवार निवडता आला नाही.",
+    missingCandidateIdentifiers: "उमेदवार किंवा posting id मिळाली नाही."
   },
   viewPages: {
     seekerTitle: "नोकरी शोधक प्रोफाइल",

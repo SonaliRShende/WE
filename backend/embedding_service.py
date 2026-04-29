@@ -304,18 +304,22 @@ def embed_specific_job_seeker(user_id):
         return False
 
 
-def embed_specific_job_posting(user_id):
+def embed_specific_job_posting(user_id=None, posting_id=None):
     """
     Generate embeddings for a SPECIFIC job posting only.
     Called when a job provider updates their posting.
     
     Args:
-        user_id: ObjectId or string of the job provider
+        user_id: ObjectId or string of the job provider (fallback lookup)
+        posting_id: ObjectId or string of the specific posting to embed
     """
     try:
         from bson import ObjectId
-        
-        print(f"[{datetime.now()}] embed_specific_job_posting START - user_id: {user_id}")
+
+        print(
+            f"[{datetime.now()}] embed_specific_job_posting START - "
+            f"user_id: {user_id}, posting_id: {posting_id}"
+        )
         
         collections = get_db()
         job_postings_collection = collections['postings']
@@ -328,21 +332,32 @@ def embed_specific_job_posting(user_id):
                 model_instance = get_model()
             return model_instance.encode(text).tolist()
         
-        # Convert string to ObjectId if needed
-        if isinstance(user_id, str):
-            user_id = ObjectId(user_id)
-            print(f"[{datetime.now()}] Converted user_id to ObjectId: {user_id}")
-        
-        # Fetch only this provider's posting
-        posting = job_postings_collection.find_one({"user_id": user_id})
+        posting_id_obj = None
+        user_id_obj = None
+
+        if posting_id is not None:
+            posting_id_obj = ObjectId(posting_id) if isinstance(posting_id, str) else posting_id
+            print(f"[{datetime.now()}] Resolved posting_id: {posting_id_obj}")
+
+        if user_id is not None:
+            user_id_obj = ObjectId(user_id) if isinstance(user_id, str) else user_id
+            print(f"[{datetime.now()}] Resolved user_id: {user_id_obj}")
+
+        # Prefer explicit posting lookup; fall back to provider lookup for legacy callers.
+        posting = None
+        if posting_id_obj is not None:
+            posting = job_postings_collection.find_one({"_id": posting_id_obj})
+        if posting is None and user_id_obj is not None:
+            posting = job_postings_collection.find_one({"user_id": user_id_obj})
         
         if not posting:
-            print(f"[{datetime.now()}] ⚠️  No posting found for user_id: {user_id}")
+            print(f"[{datetime.now()}] ⚠️  No posting found for user_id: {user_id} posting_id: {posting_id}")
             return False
-        
+
         posting_id = posting['_id']
-        print(f"[{datetime.now()}] [SELECTIVE] Embedding job posting: {user_id}, posting_id: {posting_id}")
-        existing_embedding_doc = jp_embeddings_collection.find_one({"user_id": user_id}) or {}
+        posting_user_id = posting.get('user_id')
+        print(f"[{datetime.now()}] [SELECTIVE] Embedding job posting: {posting_user_id}, posting_id: {posting_id}")
+        existing_embedding_doc = jp_embeddings_collection.find_one({"posting_id": posting_id}) or {}
         existing_qualification_map = _build_existing_item_embedding_map(
             existing_embedding_doc.get("qualifications_embeddings", []), "qualification"
         )
@@ -355,7 +370,7 @@ def embed_specific_job_posting(user_id):
         
         embeddings_data = {
             "posting_id": posting_id,
-            "user_id": user_id,
+            "user_id": posting_user_id,
             "type": "job_posting",
             "jobTitle": posting.get('jobTitle', ''),
             "company": posting.get('companyName', ''),
@@ -545,7 +560,7 @@ def embed_specific_job_posting(user_id):
         
         # Store/Update embeddings
         result = jp_embeddings_collection.update_one(
-            {"user_id": user_id},
+            {"posting_id": posting_id},
             {
                 "$set": embeddings_data,
                 "$setOnInsert": {"created_at": datetime.now()}
@@ -553,7 +568,7 @@ def embed_specific_job_posting(user_id):
             upsert=True
         )
         print(f"[{datetime.now()}]   ✅ Embeddings stored. Matched: {result.matched_count}, Upserted: {result.upserted_id}")
-        print(f"[{datetime.now()}] embed_specific_job_posting COMPLETE - user_id: {user_id}")
+        print(f"[{datetime.now()}] embed_specific_job_posting COMPLETE - user_id: {posting_user_id}, posting_id: {posting_id}")
         return True
         
     except Exception as e:
