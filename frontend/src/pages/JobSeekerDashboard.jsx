@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
 import { buildApiUrl } from "../config/api";
-
+import SpeakButton from "../components/SpeakButton";
 function InfoField({ label, value, emptyLabel }) {
   return (
     <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-slate-100">
@@ -27,6 +27,24 @@ function formatStatusLabel(messages, status) {
 }
 
 function ViewApplicationData({ data, onBack, copy, messages }) {
+  const profileSpeech =
+  [
+    data.name && `Name: ${data.name}`,
+    data.email && `Email: ${data.email}`,
+    data.contact && `Contact: ${data.contact}`,
+    data.location && `Location: ${data.location}`,
+    data.qualification && `Qualification: ${data.qualification}`,
+    data.skills && `Skills: ${data.skills}`,
+    data.previousJob && `Previous Job: ${data.previousJob}`,
+    data.roles && `Roles: ${data.roles}`,
+    data.skillsApplied && `Skills Applied: ${data.skillsApplied}`,
+    data.certifications && `Certifications: ${data.certifications}`,
+    data.portfolio && `Portfolio: ${data.portfolio}`,
+    data.preferences && `Preferences: ${data.preferences}`,
+  ]
+    .filter(Boolean)
+    .join(". ") || "No profile information available.";
+  
   return (
     <div>
       <button
@@ -47,7 +65,13 @@ function ViewApplicationData({ data, onBack, copy, messages }) {
           />
         )}
         <div>
-          <h2 className="text-3xl font-semibold text-slate-950">{messages.viewPages.seekerTitle}</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-semibold text-slate-950">
+              {messages.viewPages.seekerTitle}
+            </h2>
+
+            <SpeakButton text={profileSpeech} />
+          </div>
           <p className="mt-2 text-base text-slate-600">{messages.jobSeekerDashboard.viewBody}</p>
         </div>
       </div>
@@ -334,22 +358,57 @@ function ViewJobRecommendations({ userId, onBack, messages, language }) {
           const isSelected = applicationStatus === "selected";
           const isApplying = postingId ? applyingPostingIds.includes(postingId) : false;
 
+          const jobSpeech = [
+            job.job_title && `Job Title: ${job.job_title}`,
+          
+            job.company && `Company: ${job.company}`,
+          
+            (job.location || job.job_location) &&
+              `Location: ${job.location || job.job_location}`,
+          
+            (job.job_description || job.description) &&
+              `Job Description: ${
+                job.job_description || job.description
+              }`,
+
+            job.job_score != null &&
+              `Overall Match Score: ${(job.job_score * 100).toFixed(0)} percent`,
+
+            
+            job.explanation &&
+              `Why this job matches you: ${job.explanation}`,
+            
+            job.skill_score != null &&
+              `Skills Match: ${(job.skill_score * 100).toFixed(0)} percent`,
+            
+            job.constraint_score != null &&
+              `Constraint Match: ${(job.constraint_score * 100).toFixed(0)} percent`,
+          ]
+            .filter(Boolean)
+            .join(". ") || "No job information available.";
           return (
             <div
               key={routeJobId || job.job_title}
               className="w-full rounded-[1.75rem] border border-slate-200 bg-white p-6 text-left shadow-[0_24px_60px_-40px_rgba(15,23,42,0.35)]"
             >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-2xl font-semibold text-slate-950">{job.job_title}</h3>
-                  <p className="mt-2 text-base text-slate-600">{job.company}</p>
+                  <h3 className="text-2xl font-semibold text-slate-950">
+                    {job.job_title}
+                  </h3>
+
+                  <p className="mt-2 text-base text-slate-600">
+                    {job.company}
+                  </p>
+
                   {applicationStatus && (
                     <span className="mt-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
                       {formatStatusLabel(messages, applicationStatus)}
                     </span>
                   )}
                 </div>
-
+                
+                <SpeakButton text={jobSpeech} />
               </div>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">

@@ -11,6 +11,8 @@ import {
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
 import { buildApiUrl } from "../config/api";
+import {speak , stopSpeaking} from "../utils/speech";
+import SpeakButton from "../components/SpeakButton";
 
 const initialFormData = {
   name: "",
@@ -142,9 +144,14 @@ const InputField = ({
   voiceButtonTitle,
 }) => (
   <label className="block">
-    <span className="mb-2 block text-sm font-semibold text-slate-700">
-      {label} {mandatory && <span className="text-rose-500">*</span>}
-    </span>
+    <div className="mb-2 flex items-center gap-2">
+      <span className="text-sm font-semibold text-slate-700">
+        {label}
+        {mandatory && <span className="text-rose-500">*</span>}
+      </span>
+    
+      <SpeakButton text={placeholder} />
+    </div>
     <div className="relative">
       {type === "textarea" ? (
         <textarea
@@ -435,6 +442,7 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
     recognitionRef.current = recognition;
 
     return () => {
+      stopSpeaking();
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -456,27 +464,42 @@ export default function JobSeekerApplication({ existingData = null, onSuccess = 
     }
 
     if (isActive) {
+      stopSpeaking();
       recognitionRef.current.stop();
       processingRef.current = false;
       return;
     }
 
     if (voiceState.state !== "idle") {
+      stopSpeaking();
       recognitionRef.current.stop();
       processingRef.current = false;
     }
 
     setVoiceState({ state: "starting", field });
+    stopSpeaking();
 
-    setTimeout(() => {
+    const fieldInfo = copy.fields[field];
+
+    let question ="";
+    if (fieldInfo) {
+      question = fieldInfo.speech ??
+      `${fieldInfo.label}. ${fieldInfo.placeholder}`;
+    }else{
+      question = field;
+    }
+
+    speak(question, speechLocale, () => {
       try {
         recognitionRef.current.start();
       } catch (error) {
-        console.error("Failed to start recognition:", error);
+        console.error("Recognition start error:", error);
         setVoiceState({ state: "idle", field: null });
         alert(messages.common.voiceStartError);
       }
-    }, 180);
+    });
+
+
   };
 
   return (

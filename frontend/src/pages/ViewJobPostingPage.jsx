@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import { formatOptionLabel } from "../content/locales";
 import { useLocale } from "../context/LocaleContext";
 import { buildApiUrl } from "../config/api";
+import SpeakButton from "../components/SpeakButton";
 
 function InfoField({ label, value, emptyLabel }) {
   return (
@@ -16,6 +17,63 @@ function InfoField({ label, value, emptyLabel }) {
 }
 
 function ViewJobPostingDetail({ data, onBack, matchScore, messages, copy }) {
+const jobSpeech =
+  [
+    (data.jobTitle || data.job_title) &&
+      `Job Title: ${data.jobTitle || data.job_title}`,
+
+    (data.companyName || data.company_name) &&
+      `Company Name: ${data.companyName || data.company_name}`,
+
+    (data.jobLocation || data.job_location) &&
+      `Location: ${data.jobLocation || data.job_location}`,
+
+    (data.jobCategory || data.job_category) &&
+      `Job Category: ${formatOptionLabel(
+        messages,
+        "jobCategories",
+        data.jobCategory || data.job_category
+      )}`,
+
+    (data.jobType || data.job_type) &&
+      `Job Type: ${formatOptionLabel(
+        messages,
+        "jobTypes",
+        data.jobType || data.job_type
+      )}`,
+
+    (data.experienceRequired || data.experience_required) &&
+      `Experience Required: ${
+        data.experienceRequired || data.experience_required
+      }`,
+
+    (data.salaryMin || data.salary_min) &&
+      `Salary: ${data.salaryMin || data.salary_min} to ${
+        data.salaryMax || data.salary_max
+      } ${formatOptionLabel(
+        messages,
+        "salaryTypes",
+        data.salaryType || data.salary_type
+      )}`,
+
+    (data.jobDescription || data.job_description) &&
+      `Job Description: ${
+        data.jobDescription || data.job_description
+      }`,
+
+    data.benefits &&
+      `Benefits: ${data.benefits}`,
+
+    (data.requiredQualifications || data.required_qualifications) &&
+      `Required Qualifications: ${
+        data.requiredQualifications ||
+        data.required_qualifications
+      }`,
+  ]
+    .filter(Boolean)
+    .join(". ") ||
+  "No job information available.";
+  
   return (
     <div>
       <button
@@ -36,7 +94,15 @@ function ViewJobPostingDetail({ data, onBack, matchScore, messages, copy }) {
           />
         )}
         <div>
-          <h2 className="text-3xl font-semibold text-slate-950">{messages.viewPages.jobTitle}</h2>
+          <div className="flex items-center gap-3">
+
+              <h2 className="text-3xl font-semibold text-slate-950">
+                  {messages.viewPages.jobTitle}
+              </h2>
+
+              <SpeakButton text={jobSpeech} />
+
+          </div>
           {matchScore && (
             <p className="mt-2 text-base font-semibold text-sky-700">
               {messages.viewPages.matchScore({ score: matchScore })}
@@ -57,7 +123,10 @@ function ViewJobPostingDetail({ data, onBack, matchScore, messages, copy }) {
         </section>
 
         <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
-          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.jobDetailsSection}</h3>
+          <div className="flex items-center gap-3">
+            <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.jobDetailsSection}</h3>
+            <SpeakButton text={jobSpeech} />
+          </div>
           <div className="mt-5 grid gap-4">
             <InfoField label={copy.fields.jobTitle.label} value={data.jobTitle || data.job_title} emptyLabel={messages.common.notProvided} />
             <InfoField label={copy.fields.jobCategory.label} value={formatOptionLabel(messages, "jobCategories", data.jobCategory || data.job_category)} emptyLabel={messages.common.notProvided} />

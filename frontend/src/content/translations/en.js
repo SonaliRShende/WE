@@ -138,51 +138,63 @@ const en = {
     fields: {
       name: {
         label: "Full name",
-        placeholder: "Enter your full name"
+        placeholder: "Enter your full name",
+        speech:"Please tell me your full name."
       },
       email: {
         label: "Email address",
-        placeholder: "your.email@example.com"
+        placeholder: "your.email@example.com",
+        speech:"Please tell me your email address."
       },
       contact: {
         label: "Contact number",
-        placeholder: "+91 98765 43210"
+        placeholder: "+91 98765 43210",
+        speech:"Please tell me your contact number."
       },
       location: {
         label: "Location / city",
-        placeholder: "Enter your city"
+        placeholder: "Enter your city",
+        speech:"Please tell me your location or city."
       },
       qualification: {
         label: "Highest qualification",
-        placeholder: "For example: B.E. IT, diploma, MBA"
+        placeholder: "For example: B.E. IT, diploma, MBA",
+        speech:"Please tell me your highest qualification."
       },
       skills: {
         label: "Skills",
-        placeholder: "List your technical, communication, and  skills in detail."
+        placeholder: "List your technical, communication, and  skills in detail.",
+        speech:"Please tell me your skills."
       },
       previousJob: {
         label: "Previous job / internship",
-        placeholder: "Share your most relevant role or internship"
+        placeholder: "Share your most relevant role or internship",
+        speech:"Please tell me about your previous job or internship."
       },
       roles: {
         label: "Roles / responsibilities",
-        placeholder: "Describe the tasks you handled in your previous work"
+        placeholder: "Describe the tasks you handled in your previous work",
+        speech:"Please tell me about the roles and responsibilities you had in your previous work."
       },
       skillsApplied: {
         label: "Skills applied",
-        placeholder: "Which skills did you use in your earlier work?"
+        placeholder: "Which skills did you use in your earlier work?",
+        speech:"Please tell me which skills you applied in your earlier work."
       },
       certifications: {
         label: "Certifications / achievements",
-        placeholder: "Add any certificates, awards, or achievements"
+        placeholder: "Add any certificates, awards, or achievements",
+        speech:"Please tell me about any certifications or achievements you have."
       },
       portfolio: {
         label: "Portfolio / resume link",
-        placeholder: "Paste a portfolio, LinkedIn, or resume link"
+        placeholder: "Paste a portfolio, LinkedIn, or resume link",
+        speech:"Please tell me your portfolio or resume link."
       },
       preferences: {
         label: "Your preferences",
-        placeholder: "Tell us about availability, work preferences, schedule constraints, or special requirements."
+        placeholder: "Tell us about availability, work preferences, schedule constraints, or special requirements.",
+        speech:"Please tell me about your preferences."
       }
     }
   },
@@ -200,67 +212,84 @@ const en = {
     fields: {
       name: {
         label: "Full name",
-        placeholder: "Enter your full name"
+        placeholder: "Enter your full name",
+        speech:"Please tell me your full name."
       },
       age: {
         label: "Age",
-        placeholder: "Enter your age"
+        placeholder: "Enter your age",
+        speech:"Please tell me your age."
       },
       phoneNumber: {
         label: "Phone number",
-        placeholder: "+91 98765 43210"
+        placeholder: "+91 98765 43210",
+        speech:"Please tell me your phone number."
       },
       email: {
         label: "Email address",
-        placeholder: "your.email@example.com"
+        placeholder: "your.email@example.com",
+        speech:"Please tell me your email address."
       },
       companyName: {
         label: "Company name",
-        placeholder: "Enter your company name"
+        placeholder: "Enter your company name",
+        speech:"Please tell me your company name."
       },
       jobTitle: {
         label: "Job title",
-        placeholder: "For example: Operations Associate, Marketing Manager"
+        placeholder: "For example: Operations Associate, Marketing Manager",
+        speech:"Please tell me your job title."
       },
       jobCategory: {
-        label: "Job category"
+        label: "Job category",
+        speech:"Please tell me the job category."
       },
       jobDescription: {
         label: "Job description",
-        placeholder: "Describe responsibilities, expectations, and the role scope."
+        placeholder: "Describe responsibilities, expectations, and the role scope.",
+        speech:"Please tell me the job description."
       },
       experienceRequired: {
         label: "Experience required",
-        placeholder: "For example: 2-4 years in customer support"
+        placeholder: "For example: 2-4 years in customer support",
+        speech:"Please tell me about your experience."
       },
       salaryMin: {
         label: "Minimum salary",
-        placeholder: "Enter amount"
+        placeholder: "Enter amount",
+        speech:"Please tell me the minimum salary."
       },
       salaryMax: {
         label: "Maximum salary",
-        placeholder: "Enter amount"
+        placeholder: "Enter amount",
+        speech:"Please tell me the maximum salary."
       },
       salaryType: {
-        label: "Salary type"
+        label: "Salary type",
+        speech:"Please tell me the salary type."
       },
       jobLocation: {
         label: "Job location",
-        placeholder: "For example: Pune, Remote, Bengaluru"
+        placeholder: "For example: Pune, Remote, Bengaluru",
+        speech:"Please tell me the job location."
       },
       jobType: {
-        label: "Job type"
+        label: "Job type",
+        speech:"Please tell me the job type."
       },
       benefits: {
         label: "Benefits and perks",
-        placeholder: "Mention flexibility, insurance, leave, travel support, and more."
+        placeholder: "Mention flexibility, insurance, leave, travel support, and more.",
+        speech:"Please tell me about the benefits and perks."
       },
       applicationDeadline: {
-        label: "Application deadline"
+        label: "Application deadline",
+        speech:"Please tell me the application deadline."
       },
       requiredQualifications: {
         label: "Required qualifications",
-        placeholder: "List education, certifications, or must-have qualifications"
+        placeholder: "List education, certifications, or must-have qualifications",
+        speech:"Please tell me about your required qualifications."
       }
     }
   },

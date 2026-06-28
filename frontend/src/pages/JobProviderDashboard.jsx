@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
 import { formatOptionLabel } from "../content/locales";
 import { buildApiUrl } from "../config/api";
+import  SpeakButton  from "../components/SpeakButton";
 
 function InfoField({ label, value, emptyLabel }) {
   return (
@@ -28,6 +29,36 @@ function formatStatusLabel(messages, status) {
 }
 
 function ViewJobPosting({ data, onBack, copy, messages }) {
+  const jobSpeech = [
+  (data.jobTitle || data.job_title) &&
+    `Job Title: ${data.jobTitle || data.job_title}`,
+
+  (data.companyName || data.company_name) &&
+    `Company: ${data.companyName || data.company_name}`,
+
+  (data.jobLocation || data.job_location) &&
+    `Location: ${data.jobLocation || data.job_location}`,
+
+  (data.jobDescription || data.job_description) &&
+    `Description: ${data.jobDescription || data.job_description}`,
+
+  (data.experienceRequired || data.experience_required) &&
+    `Experience Required: ${
+      data.experienceRequired || data.experience_required
+    }`,
+
+  data.benefits &&
+    `Benefits: ${data.benefits}`,
+
+  (data.requiredQualifications || data.required_qualifications) &&
+    `Required Qualifications: ${
+      data.requiredQualifications || data.required_qualifications
+    }`,
+]
+  .filter(Boolean)
+  .join(". ")||
+  "No details available for this job posting.";
+
   return (
     <div>
       <button
@@ -48,7 +79,13 @@ function ViewJobPosting({ data, onBack, copy, messages }) {
           />
         )}
         <div>
-          <h2 className="text-3xl font-semibold text-slate-950">{messages.viewPages.jobTitle}</h2>
+          <div className="flex items-center gap-3">
+              <h2 className="text-3xl font-semibold text-slate-950">
+                  {messages.viewPages.jobTitle}
+              </h2>
+
+              <SpeakButton text={jobSpeech} />
+          </div>
           <p className="mt-2 text-base text-slate-600">{messages.jobProviderDashboard.viewBody}</p>
         </div>
       </div>
@@ -65,7 +102,13 @@ function ViewJobPosting({ data, onBack, copy, messages }) {
         </section>
 
         <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
-          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.jobDetailsSection}</h3>
+          <div className="flex items-center gap-3">
+              <h3 className="text-2xl font-semibold text-slate-950">
+                  {messages.viewPages.jobDetailsSection}
+              </h3>
+
+              <SpeakButton text={jobSpeech} />
+          </div>
           <div className="mt-5 grid gap-4">
             <InfoField label={copy.fields.jobTitle.label} value={data.jobTitle || data.job_title} emptyLabel={messages.common.notProvided} />
             <InfoField label={copy.fields.jobCategory.label} value={formatOptionLabel(messages, "jobCategories", data.jobCategory || data.job_category)} emptyLabel={messages.common.notProvided} />
@@ -237,58 +280,88 @@ function ViewJobApplications({ userId, postingId, onBack, hasJobPosting, message
         {messages.jobProviderDashboard.appliedCandidatesCount({ count: applications.length })}
       </p>
 
-      <div className="mt-8 space-y-5">
-        {currentItems.map((seeker) => (
-          <div
-            key={seeker.seeker_id}
-            className="w-full rounded-[1.75rem] border border-slate-200 bg-white p-6 text-left shadow-[0_24px_60px_-40px_rgba(15,23,42,0.35)]"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h3 className="text-2xl font-semibold text-slate-950">{seeker.seeker_name}</h3>
-                <p className="mt-2 text-base text-slate-600">{seeker.seeker_email}</p>
-                {seeker.status && (
-                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                    {messages.jobProviderDashboard.statusLabel}: {formatStatusLabel(messages, seeker.status)}
-                  </p>
-                )}
-              </div>
-              <ChevronRight className="hidden text-sky-700 sm:block" />
-            </div>
+<div className="mt-8 space-y-5">
+  {currentItems.map((seeker) => {
+    const candidateSpeech = [
+      seeker.seeker_name && `Candidate Name: ${seeker.seeker_name}`,
+      seeker.seeker_email && `Email: ${seeker.seeker_email}`,
+      seeker.status &&
+        `Application Status: ${formatStatusLabel(messages, seeker.status)}`,
+    ]
+      .filter(Boolean)
+      .join(". ") ||
+      "No details available for this candidate.";
 
-            <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    `/view-seeker/${seeker.seeker_id}?provider_user_id=${encodeURIComponent(userId)}&posting_id=${encodeURIComponent(seeker.posting_id || "")}`
-                  )
-                }
-                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:border-sky-300"
-              >
-                {messages.jobProviderDashboard.clickProfile}
-              </button>
+    return (
+      <div
+        key={seeker.seeker_id}
+        className="w-full rounded-[1.75rem] border border-slate-200 bg-white p-6 text-left shadow-[0_24px_60px_-40px_rgba(15,23,42,0.35)]"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h3 className="text-2xl font-semibold text-slate-950">
+              {seeker.seeker_name}
+            </h3>
 
-              <button
-                type="button"
-                disabled={
-                  seeker.status === "selected" ||
-                  !seeker.posting_id ||
-                  selectingCandidateIds.includes(`${seeker.seeker_id}:${seeker.posting_id}`)
-                }
-                onClick={() => handleSelectCandidate(seeker)}
-                className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {seeker.status === "selected"
-                  ? messages.common.statusLabels.selected
-                  : selectingCandidateIds.includes(`${seeker.seeker_id}:${seeker.posting_id}`)
-                    ? messages.jobProviderDashboard.selectingCandidate
-                    : messages.jobProviderDashboard.selectCandidate}
-              </button>
-            </div>
+            <p className="mt-2 text-base text-slate-600">
+              {seeker.seeker_email}
+            </p>
+
+            {seeker.status && (
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                {messages.jobProviderDashboard.statusLabel}:{" "}
+                {formatStatusLabel(messages, seeker.status)}
+              </p>
+            )}
           </div>
-        ))}
+
+          <SpeakButton text={candidateSpeech} />
+
+          <ChevronRight className="hidden text-sky-700 sm:block" />
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() =>
+              navigate(
+                `/view-seeker/${seeker.seeker_id}?provider_user_id=${encodeURIComponent(
+                  userId
+                )}&posting_id=${encodeURIComponent(
+                  seeker.posting_id || ""
+                )}`
+              )
+            }
+            className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:border-sky-300"
+          >
+            {messages.jobProviderDashboard.clickProfile}
+          </button>
+
+          <button
+            type="button"
+            disabled={
+              seeker.status === "selected" ||
+              !seeker.posting_id ||
+              selectingCandidateIds.includes(
+                `${seeker.seeker_id}:${seeker.posting_id}`
+              )
+            }
+            onClick={() => handleSelectCandidate(seeker)}
+            className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {seeker.status === "selected"
+              ? messages.common.statusLabels.selected
+              : selectingCandidateIds.includes(
+                  `${seeker.seeker_id}:${seeker.posting_id}`
+                )
+              ? messages.jobProviderDashboard.selectingCandidate
+              : messages.jobProviderDashboard.selectCandidate}
+          </button>
+        </div>
       </div>
+    );
+  })}
+</div>
 
       {applications.length > perPage && (
         <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">

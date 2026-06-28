@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
 import { buildApiUrl } from "../config/api";
+import SpeakButton from "../components/SpeakButton";
 
 function InfoField({ label, value, emptyLabel }) {
   return (
@@ -15,6 +16,42 @@ function InfoField({ label, value, emptyLabel }) {
 }
 
 function ViewApplicationData({ data, onBack, messages, copy }) {
+  const profileSpeech =
+  [
+    data.name && `Name: ${data.name}`,
+
+    data.email && `Email: ${data.email}`,
+
+    data.location && `Location: ${data.location}`,
+
+    data.qualification &&
+      `Qualification: ${data.qualification}`,
+
+    data.skills &&
+      `Skills: ${data.skills}`,
+
+    data.previousJob &&
+      `Previous Job: ${data.previousJob}`,
+
+    data.roles &&
+      `Roles: ${data.roles}`,
+
+    data.skillsApplied &&
+      `Skills Applied: ${data.skillsApplied}`,
+
+    data.certifications &&
+      `Certifications: ${data.certifications}`,
+
+    data.portfolio &&
+      `Portfolio: ${data.portfolio}`,
+
+    data.preferences &&
+      `Preferences: ${data.preferences}`,
+  ]
+    .filter(Boolean)
+    .join(". ") ||
+  "No profile information available.";
+  
   return (
     <div>
       <button
@@ -35,7 +72,12 @@ function ViewApplicationData({ data, onBack, messages, copy }) {
           />
         )}
         <div>
-          <h2 className="text-3xl font-semibold text-slate-950">{messages.viewPages.seekerTitle}</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-semibold text-slate-950">
+              {messages.viewPages.seekerTitle}
+            </h2>
+            <SpeakButton text={profileSpeech} />
+          </div>
         </div>
       </div>
 
@@ -50,7 +92,10 @@ function ViewApplicationData({ data, onBack, messages, copy }) {
         </section>
 
         <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-6">
-          <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.educationExperience}</h3>
+          <div className="flex items-center gap-3">
+            <h3 className="text-2xl font-semibold text-slate-950">{messages.viewPages.educationExperience}</h3>
+            <SpeakButton text={profileSpeech} />
+          </div>
           <div className="mt-5 grid gap-4">
             <InfoField label={copy.fields.qualification.label} value={data.qualification} emptyLabel={messages.common.notProvided} />
             <InfoField label={copy.fields.skills.label} value={data.skills} emptyLabel={messages.common.notProvided} />

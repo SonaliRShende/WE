@@ -139,51 +139,63 @@ const mr = {
     fields: {
       name: {
         label: "पूर्ण नाव",
-        placeholder: "तुमचे पूर्ण नाव टाका"
+        placeholder: "तुमचे पूर्ण नाव टाका",
+        speech:"कृपया तुमचे पूर्ण नाव सांगा."
       },
       email: {
         label: "ईमेल पत्ता",
-        placeholder: "your.email@example.com"
+        placeholder: "your.email@example.com",
+        speech:"कृपया तुमचा ईमेल पत्ता सांगा."
       },
       contact: {
         label: "संपर्क क्रमांक",
-        placeholder: "+91 98765 43210"
+        placeholder: "+91 98765 43210",
+        speech:"कृपया तुमचा संपर्क क्रमांक सांगा."  
       },
       location: {
         label: "स्थान / शहर",
-        placeholder: "तुमचे शहर टाका"
+        placeholder: "तुमचे शहर टाका",
+        speech:"कृपया तुमचे स्थान सांगा."
       },
       qualification: {
         label: "उच्चतम शैक्षणिक पात्रता",
-        placeholder: "उदा.: B.E. IT, डिप्लोमा, MBA"
+        placeholder: "उदा.: B.E. IT, डिप्लोमा, MBA",
+        speech:"कृपया तुमची योग्यता सांगा."
       },
       skills: {
         label: "कौशल्ये",
-        placeholder: "तुमची तांत्रिक, संवाद आणि इतर कौशल्ये तपशीलवार लिहा."
+        placeholder: "तुमची तांत्रिक, संवाद आणि इतर कौशल्ये तपशीलवार लिहा.",
+        speech:"कृपया तुमची कौशल्ये सांगा."
       },
       previousJob: {
         label: "मागील नोकरी / इंटर्नशिप",
-        placeholder: "तुमची सर्वात संबंधित भूमिका किंवा इंटर्नशिप सांगा"
+        placeholder: "तुमची सर्वात संबंधित भूमिका किंवा इंटर्नशिप सांगा",
+        speech:"कृपया तुमची मागील नोकरी किंवा इंटर्नशिप सांगा."
       },
       roles: {
         label: "भूमिका / जबाबदाऱ्या",
-        placeholder: "मागील कामात तुम्ही हाताळलेल्या कामांचे वर्णन करा"
+        placeholder: "मागील कामात तुम्ही हाताळलेल्या कामांचे वर्णन करा",
+        speech:"कृपया तुमची भूमिका आणि जबाबदारी सांगा."
       },
       skillsApplied: {
         label: "वापरलेली कौशल्ये",
-        placeholder: "मागील कामात तुम्ही कोणती कौशल्ये वापरली?"
+        placeholder: "मागील कामात तुम्ही कोणती कौशल्ये वापरली?",
+        speech:"कृपया तुमची वापरलेली कौशल्ये सांगा."
       },
       certifications: {
         label: "प्रमाणपत्रे / उपलब्धी",
-        placeholder: "प्रमाणपत्रे, पुरस्कार किंवा उपलब्धी जोडा"
+        placeholder: "प्रमाणपत्रे, पुरस्कार किंवा उपलब्धी जोडा",
+        speech:"कृपया तुमची प्रमाणपत्रे किंवा उपलब्धी सांगा."
       },
       portfolio: {
         label: "पोर्टफोलिओ / रिझ्युमे लिंक",
-        placeholder: "पोर्टफोलिओ, LinkedIn किंवा रिझ्युमे लिंक पेस्ट करा"
+        placeholder: "पोर्टफोलिओ, LinkedIn किंवा रिझ्युमे लिंक पेस्ट करा",
+        speech:"कृपया तुमचे पोर्टफोलिओ किंवा रिझ्युमे लिंक सांगा."
       },
       preferences: {
         label: "तुमच्या पसंती",
-        placeholder: "उपलब्धता, कामाच्या पसंती, वेळेच्या अडचणी किंवा विशेष गरजांबद्दल सांगा."
+        placeholder: "उपलब्धता, कामाच्या पसंती, वेळेच्या अडचणी किंवा विशेष गरजांबद्दल सांगा.",
+        speech:"कृपया तुमची पसंती सांगा."
       }
     }
   },
@@ -201,67 +213,84 @@ const mr = {
     fields: {
       name: {
         label: "पूर्ण नाव",
-        placeholder: "तुमचे पूर्ण नाव टाका"
+        placeholder: "तुमचे पूर्ण नाव टाका",
+        speech: "कृपया तुमचे पूर्ण नाव सांगा."
       },
       age: {
         label: "वय",
-        placeholder: "तुमचे वय टाका"
+        placeholder: "तुमचे वय टाका",
+        speech: "कृपया तुमचे वय सांगा."
       },
       phoneNumber: {
         label: "फोन नंबर",
-        placeholder: "+91 98765 43210"
+        placeholder: "+91 98765 43210",
+        speech: "कृपया तुमचे फोन नंबर सांगा."
       },
       email: {
         label: "ईमेल पत्ता",
-        placeholder: "your.email@example.com"
+        placeholder: "your.email@example.com",
+        speech: "कृपया तुमचे ईमेल पत्ता सांगा."
       },
       companyName: {
         label: "कंपनीचे नाव",
-        placeholder: "तुमच्या कंपनीचे नाव टाका"
+        placeholder: "तुमच्या कंपनीचे नाव टाका",
+        speech: "कृपया तुमचे कंपनीचे नाव सांगा."
       },
       jobTitle: {
         label: "नोकरीचे शीर्षक",
-        placeholder: "उदा.: Operations Associate, Marketing Manager"
+        placeholder: "उदा.: Operations Associate, Marketing Manager",
+        speech: "कृपया तुमचे नोकरीचे शीर्षक सांगा."
       },
       jobCategory: {
-        label: "नोकरी श्रेणी"
+        label: "नोकरी श्रेणी",
+        speech: "कृपया नोकरीची श्रेणी सांगा."
       },
       jobDescription: {
         label: "नोकरीचे वर्णन",
-        placeholder: "जबाबदाऱ्या, अपेक्षा आणि भूमिकेची व्याप्ती वर्णन करा."
+        placeholder: "जबाबदाऱ्या, अपेक्षा आणि भूमिकेची व्याप्ती वर्णन करा.",
+        speech: "कृपया नोकरीचे वर्णन सांगा."
       },
       experienceRequired: {
         label: "आवश्यक अनुभव",
-        placeholder: "उदा.: ग्राहक सहाय्य क्षेत्रात 2-4 वर्षे"
+        placeholder: "उदा.: ग्राहक सहाय्य क्षेत्रात 2-4 वर्षे",
+        speech: "कृपया तुमचे अनुभव सांगा."
       },
       salaryMin: {
         label: "किमान वेतन",
-        placeholder: "रक्कम टाका"
+        placeholder: "रक्कम टाका",
+        speech: "कृपया तुमचे किमान वेतन सांगा."
       },
       salaryMax: {
         label: "कमाल वेतन",
-        placeholder: "रक्कम टाका"
+        placeholder: "रक्कम टाका",
+        speech: "कृपया तुमचे कमाल वेतन सांगा."
       },
       salaryType: {
-        label: "वेतन प्रकार"
+        label: "वेतन प्रकार",
+        speech: "कृपया वेतन प्रकार सांगा."
       },
       jobLocation: {
         label: "नोकरीचे ठिकाण",
-        placeholder: "उदा.: पुणे, Remote, बेंगळुरू"
+        placeholder: "उदा.: पुणे, Remote, बेंगळुरू",
+        speech: "कृपया नोकरीचे ठिकाण सांगा."
       },
       jobType: {
-        label: "नोकरीचा प्रकार"
+        label: "नोकरीचा प्रकार",
+        speech: "कृपया नोकरीचा प्रकार सांगा."
       },
       benefits: {
         label: "फायदे आणि सुविधा",
-        placeholder: "लवचिकता, विमा, रजा, प्रवास सहाय्य आणि इतर गोष्टी नमूद करा."
+        placeholder: "लवचिकता, विमा, रजा, प्रवास सहाय्य आणि इतर गोष्टी नमूद करा.",
+        speech: "कृपया फायदे आणि सुविधा सांगा."
       },
       applicationDeadline: {
-        label: "अर्जाची अंतिम तारीख"
+        label: "अर्जाची अंतिम तारीख",
+        speech: "कृपया अर्जाची अंतिम तारीख सांगा."
       },
       requiredQualifications: {
         label: "आवश्यक पात्रता",
-        placeholder: "शिक्षण, प्रमाणपत्रे किंवा आवश्यक पात्रता लिहा"
+        placeholder: "शिक्षण, प्रमाणपत्रे किंवा आवश्यक पात्रता लिहा",
+        speech: "कृपया आवश्यक पात्रता सांगा."
       }
     }
   },

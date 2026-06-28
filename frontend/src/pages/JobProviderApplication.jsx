@@ -11,6 +11,7 @@ import {
 import Navbar from "../components/Navbar";
 import { useLocale } from "../context/LocaleContext";
 import { buildApiUrl } from "../config/api";
+import { speak, stopSpeaking } from "../utils/speech";
 
 const initialFormData = {
   name: "",
@@ -447,6 +448,7 @@ export default function JobProviderApplication({ existingData = null, onSuccess 
     recognitionRef.current = recognition;
 
     return () => {
+      stopSpeaking();
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -468,27 +470,40 @@ export default function JobProviderApplication({ existingData = null, onSuccess 
     }
 
     if (isActive) {
+      stopSpeaking();
       recognitionRef.current.stop();
       processingRef.current = false;
       return;
     }
 
     if (voiceState.state !== "idle") {
+      stopSpeaking();
       recognitionRef.current.stop();
       processingRef.current = false;
     }
 
     setVoiceState({ state: "starting", field });
+    stopSpeaking();
 
-    setTimeout(() => {
+    const fieldInfo = copy.fields[field];
+
+    let question = "";
+
+    if (fieldInfo){
+      question = fieldInfo.speech ??
+      `${fieldInfo.label}. ${fieldInfo.placeholder}`;
+    }else{
+      question = field;
+    }
+    speak(question, speechLocale, () => {
       try {
         recognitionRef.current.start();
       } catch (error) {
-        console.error("Failed to start recognition:", error);
+        console.error("Recognition start error:", error);
         setVoiceState({ state: "idle", field: null });
         alert(messages.common.voiceStartError);
       }
-    }, 180);
+    });
   };
 
   return (
